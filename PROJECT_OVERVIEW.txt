@@ -1,0 +1,319 @@
+================================================================
+  SENTINEL - IoT Security System
+  4th Year University Thesis Project
+================================================================
+
+
+----------------------------------------------------------------
+  TECH STACK
+----------------------------------------------------------------
+
+BACKEND
+  - Java 21
+  - Spring Boot 3.4.4
+  - Spring Security (JWT-based stateless auth)
+  - Spring WebSocket (STOMP + SockJS) for real-time dashboard updates
+  - Spring Data JPA + Hibernate
+  - MySQL (database)
+  - jjwt 0.12.6 (JSON Web Token library)
+  - Lombok (boilerplate reduction)
+  - Maven (build tool)
+  - Deployment: Railway or Render (free tier cloud hosting)
+
+FRONTEND
+  - Plain HTML5 / CSS3 / vanilla JavaScript
+  - Bootstrap 5.3.3
+  - Served as static files directly by Spring Boot (no separate server)
+  - Pages: login, dashboard, sensors, events
+
+FIRMWARE (Embedded)
+  - Arduino IDE
+  - ESP32-S3 DevKit  ->  central unit (brain of the system)
+  - ESP32-C3 DevKit  ->  sensor nodes (one per sensor location)
+  - ESP-NOW protocol for node-to-central communication (no router needed)
+  - INMP441 I2S microphone  ->  for AI voice input
+  - MAX98357A I2S amplifier + 3W speaker  ->  for AI voice output
+  - Libraries: ArduinoJson, ESP32-audioI2S (schreibfaul1), driver/i2s.h
+
+AI PIPELINE (on-alarm deterrence)
+  - OpenAI Whisper (whisper-1)  ->  speech-to-text from mic recording
+  - OpenAI GPT-4o               ->  conversational response generation
+  - OpenAI TTS (tts-1, voice: onyx)  ->  text-to-speech MP3 output
+  - Full pipeline runs on the Java backend; ESP32 sends WAV, receives MP3
+
+DATABASE
+  - MySQL
+  - Tables auto-created by Hibernate on first run (ddl-auto=update)
+  - Tables: users, sensors, events, system_config
+  - Default admin account created on first startup: admin / admin123
+
+
+----------------------------------------------------------------
+  SYSTEM ARCHITECTURE
+----------------------------------------------------------------
+
+  [ESP32-C3 Node]  ──ESP-NOW──►  [ESP32-S3 Central Unit]
+  [ESP32-C3 Node]  ──ESP-NOW──►       │
+  [ESP32-C3 Node]  ──ESP-NOW──►       │ HTTPS (home WiFi)
+                                       ▼
+                               [Spring Boot Backend]
+                               [Railway / Render cloud]
+                                       │
+                         ┌─────────────┴─────────────┐
+                         │                           │
+                    REST API                   WebSocket
+                    (arm/disarm,               (real-time push
+                     event history)             to dashboard)
+                         │                           │
+                         └─────────────┬─────────────┘
+                                       ▼
+                               [Browser Dashboard]
+                               (login, dashboard,
+                                sensors, events pages)
+
+
+----------------------------------------------------------------
+  ARM MODES
+----------------------------------------------------------------
+
+  DISARMED         - System off. All sensor events are logged
+                     silently but no alarm is triggered.
+
+  ARMED_HOME       - System on, but sensor events are ignored.
+                     Use this when you are home and awake.
+                     Sensors are still logged for history.
+
+  ARMED_HOME_NIGHT - All sensors active, NO entry delay.
+                     Alarm triggers immediately on any event.
+                     Use this when you are home and sleeping.
+
+  ARMED_AWAY       - All sensors active with a 10-second entry
+                     delay on door events (so you can get inside
+                     and disarm via the dashboard before the alarm
+                     goes off). Motion and vibration still trigger
+                     instantly with no delay.
+
+
+----------------------------------------------------------------
+  AI DETERRENCE FLOW (on alarm trigger)
+----------------------------------------------------------------
+
+  1. Alarm is triggered (sensor event reaches central unit).
+  2. Siren relay activates (GPIO HIGH).
+  3. Central unit POSTs to /api/ai/alarm-start
+       -> Backend picks a random pre-built deterrence phrase
+       -> OpenAI TTS converts it to MP3
+       -> MP3 is returned to ESP32 and played on the speaker
+  4. Mic monitoring loop begins:
+       a. If sound is detected above threshold:
+            - Record 5 seconds of audio (WAV saved to SPIFFS)
+            - POST WAV to /api/ai/respond
+            - Whisper transcribes the audio
+            - GPT-4o generates a response (with conversation history)
+            - TTS converts response to MP3
+            - MP3 returned and played on speaker
+            - Loop repeats
+       b. If silence for more than 4 seconds:
+            - POST to /api/ai/proactive
+            - Backend picks a random proactive deterrence statement
+            - Played on speaker, loop repeats
+  5. Loop continues until the system is disarmed remotely via
+     the dashboard. The ESP32 syncs state via heartbeat every 10s
+     during the conversation loop.
+
+
+----------------------------------------------------------------
+  HARDWARE - HOW TO CONNECT TO THE SYSTEM
+----------------------------------------------------------------
+
+STEP 1: Deploy or run the backend
+  Option A (local testing):
+    - Install Java 21 and MySQL
+    - Create a MySQL database named "sentinel_db"
+    - Fill in src/main/resources/application.properties:
+        spring.datasource.password=YOUR_DB_PASSWORD
+        jwt.secret=a-random-256-bit-string
+        esp.api-key=a-random-key-you-invent
+        openai.api-key=sk-...
+    - Run from IntelliJ IDEA (Run button) or terminal: mvn spring-boot:run
+    - Backend available at http://localhost:8080
+
+  Option B (cloud deployment on Railway):
+    - Push the backend/ folder to GitHub
+    - Connect repo to Railway, set the same env variables
+    - Railway gives you a public HTTPS URL (e.g. https://sentinel.up.railway.app)
+
+STEP 2: Flash the sensor nodes (ESP32-C3)
+  - Open firmware/sensor-node/sensor-node.ino in Arduino IDE
+  - At the top of the file, set:
+      #define SENSOR_TYPE     DOOR        (or MOTION, VIBRATION)
+      #define SENSOR_PIN      3           (GPIO pin your sensor is wired to)
+      #define CENTRAL_MAC     {0xAA,...}  (MAC address of the ESP32-S3)
+      const char* NODE_NAME = "Front Door"
+  - Board: "ESP32C3 Dev Module"
+  - Flash each sensor node with its own settings
+
+STEP 3: Flash the central unit (ESP32-S3)
+  - Open firmware/central-unit/central-unit.ino in Arduino IDE
+  - At the top of the file, set:
+      const char* WIFI_SSID     = "YourWiFiName"
+      const char* WIFI_PASSWORD = "YourWiFiPassword"
+      const char* BACKEND_URL   = "https://your-app.railway.app"
+      const char* ESP_API_KEY   = "the same key from application.properties"
+  - Board: "ESP32S3 Dev Module"
+  - Flash the board
+
+STEP 4: First boot
+  - Power on the central unit and all sensor nodes
+  - The central unit connects to WiFi and calls /api/esp/register
+    -> It appears automatically in the Sensors page of the dashboard
+  - Each sensor node boots, discovers the central unit via ESP-NOW,
+    and sends a NODE_ONLINE event
+    -> They also appear in the Sensors page automatically
+
+STEP 5: Use the dashboard
+  - Open https://your-app.railway.app/login.html (or http://localhost:8080/login.html)
+  - Login: admin / admin123  (change this in production)
+  - From the dashboard you can:
+      - Arm / disarm the system (Home, Night, Away modes)
+      - See live sensor status and event toasts via WebSocket
+      - Browse full event history on the Events page
+      - Manage sensor names and locations on the Sensors page
+
+
+----------------------------------------------------------------
+  COMMUNICATION SECURITY
+----------------------------------------------------------------
+
+  IMPLEMENTED:
+
+  - BCrypt password hashing
+      User passwords are hashed with BCrypt (cost factor 10).
+      Plain-text passwords are never stored anywhere.
+
+  - JWT authentication (dashboard <-> backend)
+      All dashboard API calls require a valid JWT in the
+      Authorization: Bearer <token> header.
+      Tokens expire after 24 hours.
+      Tokens are signed with HMAC-SHA256 using a secret
+      you set in application.properties (jwt.secret).
+
+  - ESP API key (ESP32 <-> backend)
+      Every request from the ESP32 includes an X-ESP-Key header.
+      The backend rejects any request where the key does not
+      match esp.api-key in application.properties.
+      Returns HTTP 401 on mismatch.
+
+  - CORS locked to a single origin
+      Cross-origin requests are only accepted from the URL
+      set in cors.allowed-origin (application.properties).
+      Default for local dev: http://localhost:8080
+      Before deploying: change to your Railway/Render URL.
+      This prevents foreign websites from making API calls
+      on behalf of a logged-in user.
+
+  - Login brute-force protection
+      After 5 consecutive failed login attempts the account
+      is locked for 15 minutes.
+      The lock is in-memory (no DB hit needed).
+      Returns HTTP 423 with a message showing seconds remaining.
+      Successful login resets the counter immediately.
+      The login page displays the lockout message to the user.
+
+  - Stateless sessions
+      Spring Security is configured for STATELESS session
+      management. No server-side session exists to hijack.
+
+  - HTTPS for all ESP32 <-> backend traffic
+      TLS provided by Railway/Render certificate.
+      During development the ESP32 uses setInsecure() to skip
+      cert verification. See TODO below.
+
+  TODO BEFORE FINAL DEMO:
+
+  - Change the default admin password (admin/admin123).
+  - Set cors.allowed-origin to your real Railway/Render URL.
+  - Generate a strong random jwt.secret (min 32 chars).
+  - Generate a strong random esp.api-key.
+  - Pin the Railway/Render TLS certificate in the ESP32 firmware
+    (replace secureClient.setInsecure() with the cert fingerprint).
+  - Never commit real secrets to Git — use environment variables
+    on Railway or a local .env file that is in .gitignore.
+
+
+----------------------------------------------------------------
+  IMPORTANT FILES
+----------------------------------------------------------------
+
+  backend/src/main/resources/application.properties
+    -> All secrets and config. Never commit real values to Git.
+    -> Key properties:
+         cors.allowed-origin   = your Railway/Render URL
+         jwt.secret            = random 32+ char string
+         esp.api-key           = random shared key for ESP32
+         openai.api-key        = OpenAI API key
+
+  backend/src/main/java/.../config/SecurityConfig.java
+    -> Spring Security filter chain, CORS config.
+    -> cors.allowed-origin is injected here.
+
+  backend/src/main/java/.../service/AuthService.java
+    -> Login logic + brute-force lockout (5 attempts, 15 min).
+
+  backend/src/main/resources/static/
+    -> All frontend HTML/CSS/JS files.
+
+  firmware/central-unit/central-unit.ino
+    -> ESP32-S3 firmware: ESP-NOW receive, arm mode filtering,
+       10s entry delay, siren relay, AI conversation loop,
+       I2S mic recording, I2S speaker playback.
+
+  firmware/sensor-node/sensor-node.ino
+    -> ESP32-C3 firmware: sensor reading, debounce, ESP-NOW send.
+
+  WIRING_GUIDE.txt
+    -> Full pin-by-pin wiring instructions for all hardware.
+
+  PROJECT_OVERVIEW.txt
+    -> This file.
+
+
+----------------------------------------------------------------
+  DEFAULT CREDENTIALS (change before demo)
+----------------------------------------------------------------
+
+  Dashboard login:   admin / admin123   !! CHANGE THIS !!
+  ESP API Key:       set in application.properties -> esp.api-key
+  JWT Secret:        set in application.properties -> jwt.secret
+  OpenAI Key:        set in application.properties -> openai.api-key
+  CORS Origin:       set in application.properties -> cors.allowed-origin
+
+
+----------------------------------------------------------------
+  DASHBOARD PAGES
+----------------------------------------------------------------
+
+  login.html
+    - JWT login form.
+    - Shows lockout message (HTTP 423) if too many failed attempts.
+    - Redirects to dashboard on success.
+
+  dashboard.html
+    - Live system status banner with arm mode icon.
+    - Four arm mode buttons: Arm Away, Arm Home, Arm Night, Disarm.
+    - Sensor grid with live status dots (online / triggered / offline).
+    - Real-time event toasts via WebSocket.
+    - Status banner colours:
+        Grey  = DISARMED
+        Blue  = ARMED_HOME  (home, awake — sensors ignored)
+        Green = ARMED_HOME_NIGHT or ARMED_AWAY (fully armed)
+
+  sensors.html
+    - Full list of registered sensors.
+    - Rename, change location, remove sensors.
+
+  events.html
+    - Full event history with type filters and timestamps.
+
+
+================================================================

@@ -1,0 +1,269 @@
+================================================================
+  SENTINEL — Hardware Wiring Guide
+================================================================
+
+NOTE: All pin numbers refer to GPIO numbers, not physical pin
+      positions on the board. Use the pinout diagram for your
+      specific DevKit variant to find the physical location.
+
+      Power all 3.3V modules from the 3V3 pin of the ESP32.
+      Power the relay and siren from 5V (USB or external supply).
+      Share a common GND between all modules and the ESP32.
+
+
+================================================================
+  PART 1 — CENTRAL UNIT (ESP32-S3 DevKit)
+================================================================
+
+The central unit handles: WiFi, ESP-NOW receive, siren relay,
+microphone input (AI), and speaker output (AI).
+
+----------------------------------------------------------------
+  1a. Relay Module (Siren / Alarm)
+----------------------------------------------------------------
+
+  Relay Module       ESP32-S3
+  -----------        --------
+  VCC          →     5V  (or external 5V supply)
+  GND          →     GND
+  IN1 (siren)  →     GPIO 10   (RELAY_SIREN_PIN)
+  IN2 (spare)  →     GPIO 11   (RELAY_AUX_PIN)
+
+  Siren wiring (connect to the relay's NO/COM screw terminals):
+    COM          →   + terminal of siren / 12V supply positive
+    NO           →   - terminal of siren
+    (relay closes the circuit when GPIO 10 goes HIGH = alarm on)
+
+  IMPORTANT: If using a 12V siren, power it from a separate
+             12V supply. Never power the siren from the ESP32.
+
+----------------------------------------------------------------
+  1b. Status LED
+----------------------------------------------------------------
+
+  LED anode (+)  →  220Ω resistor  →  GPIO 2  (STATUS_LED_PIN)
+  LED cathode (-) →  GND
+
+  Behavior:
+    Slow pulse (2s)  = DISARMED
+    Solid ON         = ARMED (any mode)
+    Fast blink (250ms) = ALARM ACTIVE
+    Very fast (200ms)  = ENTRY DELAY counting down
+
+----------------------------------------------------------------
+  1c. INMP441 Microphone (I2S input — AI voice capture)
+----------------------------------------------------------------
+
+  INMP441        ESP32-S3
+  -------        --------
+  VDD      →     3V3
+  GND      →     GND
+  SCK      →     GPIO 5   (I2S_MIC_SCK  = bit clock)
+  WS       →     GPIO 4   (I2S_MIC_WS   = word select / L-R clock)
+  SD       →     GPIO 6   (I2S_MIC_SD   = serial data out)
+  L/R      →     GND      (selects LEFT channel)
+
+  Uses I2S port I2S_NUM_1 (dedicated to mic input only).
+
+----------------------------------------------------------------
+  1d. MAX98357A Amplifier + Speaker (I2S output — AI voice play)
+----------------------------------------------------------------
+
+  MAX98357A      ESP32-S3
+  ---------      --------
+  VIN      →     5V  (needs 5V for adequate speaker volume)
+  GND      →     GND
+  BCLK     →     GPIO 12  (I2S_SPK_BCLK)
+  LRC      →     GPIO 13  (I2S_SPK_LRC)
+  DIN      →     GPIO 14  (I2S_SPK_DOUT)
+  GAIN     →     leave unconnected  (default 9dB gain)
+  SD       →     leave unconnected  (always on)
+
+  Speaker (3W, 4Ω or 8Ω):
+    + terminal  →   OUT+ on MAX98357A
+    - terminal  →   OUT- on MAX98357A
+
+  Uses I2S port I2S_NUM_0 (used by ESP32-audioI2S library).
+
+----------------------------------------------------------------
+  1e. Full GPIO summary for ESP32-S3 Central Unit
+----------------------------------------------------------------
+
+  GPIO  2   →   Status LED (via 220Ω resistor)
+  GPIO  4   →   INMP441 WS  (mic word select)
+  GPIO  5   →   INMP441 SCK (mic bit clock)
+  GPIO  6   →   INMP441 SD  (mic data)
+  GPIO 10   →   Relay IN1   (siren)
+  GPIO 11   →   Relay IN2   (spare)
+  GPIO 12   →   MAX98357A BCLK (speaker bit clock)
+  GPIO 13   →   MAX98357A LRC  (speaker word select)
+  GPIO 14   →   MAX98357A DIN  (speaker data)
+
+  3V3       →   INMP441 VDD
+  5V        →   MAX98357A VIN, Relay VCC
+  GND       →   all module GNDs
+
+
+================================================================
+  PART 2 — SENSOR NODES (ESP32-C3 Super Mini)
+================================================================
+
+Each node has ONE sensor. Flash each node separately with its
+own SENSOR_TYPE, SENSOR_PIN, NODE_NAME settings (see firmware).
+
+The ESP32-C3 Super Mini runs on 3.3V logic, but its 5V pin
+(from USB) can power sensors that need 5V (like HC-SR501 PIR).
+
+----------------------------------------------------------------
+  2a. Door / Window Sensor (MC-38 or 801S magnetic reed switch)
+----------------------------------------------------------------
+
+  Firmware settings:
+    #define SENSOR_TYPE        "DOOR"
+    #define SENSOR_PIN          4
+    #define SENSOR_INPUT_MODE   INPUT_PULLUP
+
+  Wiring:
+    MC-38 has two wires — polarity does not matter.
+
+    Wire 1   →   GPIO 4   (SENSOR_PIN)
+    Wire 2   →   GND
+
+  How it works:
+    Magnet present (door closed)  = circuit closed = pin pulled LOW
+    Magnet absent  (door opened)  = circuit open   = pin floats HIGH
+    INPUT_PULLUP keeps pin HIGH when open, triggers on LOW.
+
+  Mounting:
+    Main body  →   door frame
+    Magnet     →   door itself, aligned with main body when closed
+
+----------------------------------------------------------------
+  2b. Vibration Sensor (SW-420 or 801S)
+----------------------------------------------------------------
+
+  Firmware settings:
+    #define SENSOR_TYPE        "VIBRATION"
+    #define SENSOR_PIN          4
+    #define SENSOR_INPUT_MODE   INPUT_PULLUP
+
+  Wiring:
+    VCC    →   3V3
+    GND    →   GND
+    DO     →   GPIO 4   (SENSOR_PIN)
+
+  How it works:
+    Idle (no vibration)  = DO HIGH
+    Vibration detected   = DO pulses LOW
+    INPUT_PULLUP + trigger on LOW.
+
+  Sensitivity:
+    The SW-420 has a small potentiometer on the board.
+    Turn it clockwise to increase sensitivity (triggers easier).
+    Adjust after mounting so normal footsteps don't false-trigger.
+
+----------------------------------------------------------------
+  2c. PIR Motion Sensor (HC-SR501)
+----------------------------------------------------------------
+
+  Firmware settings:
+    #define SENSOR_TYPE        "MOTION"
+    #define SENSOR_PIN          4
+    #define SENSOR_INPUT_MODE   INPUT
+
+  Wiring:
+    VCC    →   5V   (HC-SR501 requires 5V — use the 5V/USB pin)
+    GND    →   GND
+    OUT    →   GPIO 4   (SENSOR_PIN)
+
+  How it works:
+    No motion  = OUT LOW
+    Motion     = OUT HIGH (stays HIGH for ~2-5s, adjustable)
+    Uses INPUT (not INPUT_PULLUP) because output is active-HIGH.
+
+  Adjustments (two potentiometers on the back of HC-SR501):
+    Left pot  (Sx)  →  sensitivity: turn right = wider range
+    Right pot (Tx)  →  delay time: turn left = shorter hold time
+    Jumper near pots: single-trigger mode (H = repeat trigger)
+
+----------------------------------------------------------------
+  2d. Full GPIO summary for each ESP32-C3 Sensor Node
+----------------------------------------------------------------
+
+  GPIO  4   →   Sensor output wire (any type)
+  5V        →   HC-SR501 VCC only (other sensors use 3V3)
+  3V3       →   SW-420 VCC, any 3.3V sensor VCC
+  GND       →   all sensor GNDs
+
+
+================================================================
+  PART 3 — POWER SUPPLY PLAN
+================================================================
+
+  Central unit:
+    Option A: USB cable from a 5V wall adapter (simplest)
+    Option B: USB powerbank (for backup power during outages)
+    Option C: 5V regulated supply wired to 5V + GND pins directly
+
+  Sensor nodes:
+    Each node powered by a USB cable or small USB charger.
+    Alternatively, a single USB hub with enough ports can
+    power multiple nodes from one socket.
+
+  Siren:
+    Most doorbell-type sirens run on 6-12V DC.
+    Use a separate 12V DC adapter.
+    Connect through the relay NO/COM terminals as described above.
+
+  Rule of thumb:
+    Never power the siren, relay coil, and ESP32 all from the
+    same 3.3V or 5V pin — the relay needs its own supply or
+    at minimum the 5V USB rail with a flyback diode across
+    the relay coil (1N4007 diode, cathode toward VCC).
+
+
+================================================================
+  PART 4 — GETTING THE CENTRAL UNIT MAC ADDRESS
+================================================================
+
+Before flashing any sensor nodes you need to know the MAC
+address of the ESP32-S3 central unit, so nodes know where
+to send ESP-NOW messages.
+
+Steps:
+  1. Flash the central unit firmware.
+  2. Open Arduino IDE > Serial Monitor (baud 115200).
+  3. Power on the central unit.
+  4. Look for this line in the output:
+       [ID] CENTRAL_AABBCCDDEEFF
+     The last 12 characters are the MAC without colons.
+  5. Convert to byte array format for the sensor node:
+       AABBCCDDEEFF  →  {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF}
+  6. Paste that into sensor-node.ino:
+       uint8_t centralUnitMac[] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
+  7. Flash each sensor node.
+
+
+================================================================
+  PART 5 — QUICK ASSEMBLY CHECKLIST
+================================================================
+
+  [ ] ESP32-S3 central unit flashed with central-unit.ino
+  [ ] WIFI_SSID, WIFI_PASSWORD, BACKEND_URL, ESP_API_KEY set
+  [ ] Relay module wired to GPIO 10 and 11
+  [ ] Siren wired through relay NO/COM with its own power supply
+  [ ] INMP441 mic wired to GPIO 4, 5, 6
+  [ ] MAX98357A amp wired to GPIO 12, 13, 14
+  [ ] Speaker connected to MAX98357A OUT+ / OUT-
+  [ ] Status LED wired to GPIO 2 (via 220Ω resistor)
+
+  For each sensor node:
+  [ ] SENSOR_TYPE set correctly (DOOR / VIBRATION / MOTION)
+  [ ] SENSOR_PIN set to 4
+  [ ] SENSOR_INPUT_MODE set correctly (INPUT_PULLUP or INPUT)
+  [ ] centralUnitMac[] filled with the ESP32-S3 MAC address
+  [ ] NODE_NAME and NODE_LOCATION set for the dashboard
+  [ ] Sensor physically wired according to its type above
+  [ ] Node flashed and powered on near the central unit to test
+
+================================================================
