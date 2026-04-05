@@ -8,6 +8,19 @@
     navigation: auto;
 }
 
+/* Slow down the logo morph so it's clearly visible */
+::view-transition-old(main-logo),
+::view-transition-new(main-logo) {
+    animation-duration: 800ms;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Fade the rest of the page content */
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation-duration: 500ms;
+}
+
 :root {
     --voxwall-green:  #00e676;
     --voxwall-red:    #ff1744;
