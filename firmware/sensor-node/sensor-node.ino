@@ -1,6 +1,6 @@
 /**
  * =============================================================
- * SENTINEL Security System — Sensor Node
+ * VOXWALL Security System — Sensor Node
  * Hardware: ESP32-C3 Super Mini
  *
  * Responsibilities:
@@ -124,7 +124,7 @@ void setup() {
 
     // Announce presence to central unit
     sendEvent("NODE_ONLINE", 1);
-    Serial.println("[SENTINEL] Sensor node ready.");
+    Serial.println("[VOXWALL] Sensor node ready.");
 }
 
 // -------------------------------------------------------

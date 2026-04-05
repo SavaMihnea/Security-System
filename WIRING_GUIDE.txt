@@ -1,5 +1,5 @@
 ================================================================
-  SENTINEL — Hardware Wiring Guide
+  VOXWALL — Hardware Wiring Guide
 ================================================================
 
 NOTE: All pin numbers refer to GPIO numbers, not physical pin

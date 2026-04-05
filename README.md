@@ -1,4 +1,4 @@
-# 🛡️ SENTINEL — IoT Security System
+# 🛡️ VOXWALL — IoT Security System
 
 A distributed home security system built as a 4th-year university thesis. Sensor nodes communicate wirelessly to a central unit, which talks to a cloud backend. When an alarm triggers, an AI agent speaks to the intruder through a speaker and holds a live conversation.
 

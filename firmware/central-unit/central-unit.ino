@@ -1,6 +1,6 @@
 ﻿/**
  * =============================================================
- * SENTINEL Security System - Central Unit
+ * VOXWALL Security System - Central Unit
  * Hardware: ESP32-S3 DevKit
  *
  * Responsibilities:
@@ -582,7 +582,7 @@ void setup() {
     lastHeartbeatMs = millis();
 
     digitalWrite(STATUS_LED_PIN, HIGH);
-    Serial.println("[SENTINEL] Central unit ready.");
+    Serial.println("[VOXWALL] Central unit ready.");
 }
 
 // =================================================================

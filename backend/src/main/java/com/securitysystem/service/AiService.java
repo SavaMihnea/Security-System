@@ -46,7 +46,7 @@ public class AiService {
     private final Map<String, List<Map<String, String>>> conversations = new ConcurrentHashMap<>();
 
     private static final String SYSTEM_PROMPT =
-            "You are SENTINEL, an AI security system that has detected an intruder. " +
+            "You are VOXWALL, an AI security system that has detected an intruder. " +
             "You speak in a calm, firm, and authoritative tone. " +
             "You have already announced the intrusion. Now you are engaged in active deterrence. " +
             "Remind the intruder they are being recorded, that law enforcement has been alerted, " +

@@ -1,13 +1,13 @@
 /* ============================================================
-   SENTINEL — Custom Dark Theme
+   VOXWALL — Custom Dark Theme
    Font: system stack (no Google Fonts dependency)
    ============================================================ */
 
 :root {
-    --sentinel-green:  #00e676;
-    --sentinel-red:    #ff1744;
-    --sentinel-amber:  #ffc400;
-    --sentinel-blue:   #2979ff;
+    --voxwall-green:  #00e676;
+    --voxwall-red:    #ff1744;
+    --voxwall-amber:  #ffc400;
+    --voxwall-blue:   #2979ff;
     --bg-card:         #0d0d14;
     --bg-surface:      #12121c;
     --border-color:    #1e1e2e;
@@ -42,14 +42,14 @@ body {
 
 .form-control-dark:focus {
     background-color: #0a0a0f;
-    border-color: var(--sentinel-green);
+    border-color: var(--voxwall-green);
     color: #e0e0e0;
     box-shadow: 0 0 0 0.2rem rgba(0, 230, 118, 0.15);
 }
 
 /* ---- Buttons ---- */
 .btn-sentinel {
-    background-color: var(--sentinel-green);
+    background-color: var(--voxwall-green);
     color: #000;
     font-weight: 600;
     border: none;
@@ -73,7 +73,7 @@ body {
 
 .status-armed {
     background-color: rgba(0, 230, 118, 0.07);
-    border-color: var(--sentinel-green);
+    border-color: var(--voxwall-green);
 }
 
 .status-home {
@@ -83,7 +83,7 @@ body {
 
 .status-alarm {
     background-color: rgba(255, 23, 68, 0.1);
-    border-color: var(--sentinel-red);
+    border-color: var(--voxwall-red);
     animation: alarmPulse 1s ease-in-out infinite;
 }
 
@@ -132,8 +132,8 @@ body {
     transition: border-color 0.2s;
 }
 
-.sensor-chip.online    { border-left: 3px solid var(--sentinel-green); }
-.sensor-chip.triggered { border-left: 3px solid var(--sentinel-red); background: rgba(255,23,68,0.05); }
+.sensor-chip.online    { border-left: 3px solid var(--voxwall-green); }
+.sensor-chip.triggered { border-left: 3px solid var(--voxwall-red); background: rgba(255,23,68,0.05); }
 .sensor-chip.offline   { border-left: 3px solid #444; opacity: 0.6; }
 
 .sensor-chip-name  { font-size: 0.9rem; font-weight: 500; }

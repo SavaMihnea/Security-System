@@ -1,5 +1,5 @@
 ================================================================
-  SENTINEL - IoT Security System
+  VOXWALL - IoT Security System
   4th Year University Thesis Project
 ================================================================
 
@@ -129,7 +129,7 @@ DATABASE
 STEP 1: Deploy or run the backend
   Option A (local testing):
     - Install Java 21 and MySQL
-    - Create a MySQL database named "sentinel_db"
+    - Create a MySQL database named "voxwall_db"
     - Fill in src/main/resources/application.properties:
         spring.datasource.password=YOUR_DB_PASSWORD
         jwt.secret=a-random-256-bit-string
@@ -141,7 +141,7 @@ STEP 1: Deploy or run the backend
   Option B (cloud deployment on Railway):
     - Push the backend/ folder to GitHub
     - Connect repo to Railway, set the same env variables
-    - Railway gives you a public HTTPS URL (e.g. https://sentinel.up.railway.app)
+    - Railway gives you a public HTTPS URL (e.g. https://voxwall-security.com)
 
 STEP 2: Flash the sensor nodes (ESP32-C3)
   - Open firmware/sensor-node/sensor-node.ino in Arduino IDE
