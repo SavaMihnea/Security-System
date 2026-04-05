@@ -23,9 +23,9 @@ public class DataInitializer implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         if (userRepository.count() == 0) {
-            authService.register("admin", "admin123");
+            authService.register("admin", "mihneasava345");
             log.warn("=================================================");
-            log.warn("  Default admin user created: admin / admin123");
+            log.warn("  Default admin user created: admin / mihneasava345");
             log.warn("  CHANGE THIS PASSWORD BEFORE GOING LIVE!");
             log.warn("=================================================");
         }
