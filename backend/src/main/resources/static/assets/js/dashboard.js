@@ -5,7 +5,6 @@
  */
 
 requireAuth();
-document.getElementById('navUsername').textContent = localStorage.getItem('username') || '';
 
 const STATUS_ICON = {
     DISARMED:         '🔓',
@@ -30,17 +29,11 @@ function updateStatusBanner(status) {
     const banner  = document.getElementById('statusBanner');
     const icon    = document.getElementById('statusIcon');
     const text    = document.getElementById('statusText');
-    const meta    = document.getElementById('statusMeta');
-
-
-    if (status.lastUpdated) {
-        meta.textContent = `Last changed ${timeAgo(status.lastUpdated)}${status.updatedBy ? ' by ' + status.updatedBy : ''}`;
-    }
 
     icon.textContent = STATUS_ICON[status.armMode] || '🔓';
     text.textContent = status.armMode.replaceAll('_', ' ');
 
-    banner.className = 'status-banner p-4 rounded-3 text-center';
+    banner.className = 'status-banner p-4 text-center';
     const isArmed = status.armed;
     const isHome  = status.armMode === 'ARMED_HOME';
 
@@ -82,6 +75,29 @@ async function loadSensors() {
     document.getElementById('statTotalSensors').textContent = sensors.length;
     document.getElementById('statOnline').textContent =
         sensors.filter(s => s.status === 'ONLINE' || s.status === 'TRIGGERED').length;
+
+    // Gateway ESP32-S3 status (CENTRAL sensor type)
+    const gateway = sensors.find(s => s.type === 'CENTRAL');
+    const gwEl  = document.getElementById('statGateway');
+    const hbEl  = document.getElementById('diagHeartbeat');
+    const fnEl  = document.getElementById('diagFaultNodes');
+
+    if (gateway && gateway.lastSeen) {
+        const ageSec = Math.floor((Date.now() - new Date(gateway.lastSeen)) / 1000);
+        const isOnline = ageSec < 90;
+        gwEl.innerHTML = `<span class="${isOnline ? 'text-success' : 'text-danger'}">${isOnline ? 'Online' : 'Offline'}</span>`;
+        const hbClass = ageSec < 60 ? 'text-success' : ageSec < 300 ? 'text-warning' : 'text-danger';
+        const hbText  = timeAgo(gateway.lastSeen).replace(/^(\d)/, '$1').replace(/\b(\w)/g, c => c.toUpperCase());
+        hbEl.innerHTML = `<span class="${hbClass}">${hbText}</span>`;
+    } else {
+        gwEl.innerHTML = '<span class="text-danger">Offline</span>';
+        hbEl.innerHTML = '<span class="text-danger">Offline</span>';
+    }
+
+    const faultCount = sensors.filter(s => s.status === 'FAULT').length;
+    fnEl.innerHTML = faultCount > 0
+        ? `<span class="text-danger">${faultCount}</span>`
+        : `<span class="text-white">0</span>`;
 
     if (sensors.length === 0) {
         container.innerHTML = '<p class="text-muted small text-center">No sensors registered yet.</p>';
@@ -125,7 +141,15 @@ async function loadEvents() {
     events = await res.json();
 
     const activeAlarms = events.filter(e => !e.resolved && ALARM_EVENT_TYPES.has(e.eventType));
-    document.getElementById('statAlarms').textContent = activeAlarms.length;
+    const alEl = document.getElementById('diagAlarms');
+    alEl.innerHTML = activeAlarms.length > 0
+        ? `<span class="text-danger">${activeAlarms.length}</span>`
+        : `<span class="text-white">0</span>`;
+
+    const lastArmed    = events.find(e => e.eventType === 'SYSTEM_ARMED');
+    const lastDisarmed = events.find(e => e.eventType === 'SYSTEM_DISARMED');
+    document.getElementById('diagLastArmed').textContent    = lastArmed    ? timeAgo(lastArmed.timestamp)    : 'NEVER';
+    document.getElementById('diagLastDisarmed').textContent = lastDisarmed ? timeAgo(lastDisarmed.timestamp) : 'NEVER';
 
     renderEventList(events.slice(0, 10));
 }
@@ -154,8 +178,10 @@ function addEventToList(event) {
     renderEventList(events.slice(0, 10));
 
     if (!event.resolved && ALARM_EVENT_TYPES.has(event.eventType)) {
-        const current = parseInt(document.getElementById('statAlarms').textContent) || 0;
-        document.getElementById('statAlarms').textContent = current + 1;
+        const alEl = document.getElementById('diagAlarms');
+        const current = parseInt(alEl.textContent) || 0;
+        const next = current + 1;
+        alEl.innerHTML = `<span class="text-danger">${next}</span>`;
     }
 }
 
@@ -206,8 +232,20 @@ function connectWebSocket() {
     client.activate();
 }
 
+// ---- AI / diagnostics ------------------------------------
+async function loadDiagnostics() {
+    const res = await apiFetch('/api/system/diagnostics');
+    if (!res) return;
+    const data = await res.json();
+    const el = document.getElementById('diagAiStatus');
+    const colorMap  = { READY: 'text-success', BUSY: 'text-warning', OFFLINE: 'text-danger' };
+    const labelMap  = { READY: 'Ready', BUSY: 'Busy', OFFLINE: 'Offline' };
+    el.innerHTML = `<span class="${colorMap[data.aiStatus] || 'text-muted'}">${labelMap[data.aiStatus] || '—'}</span>`;
+}
+
 // ---- Init -------------------------------------------------
 loadStatus();
 loadSensors();
 loadEvents();
+loadDiagnostics();
 connectWebSocket();

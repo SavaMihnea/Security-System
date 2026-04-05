@@ -245,6 +245,10 @@ public class AiService {
         return conversations.size();
     }
 
+    public boolean isConfigured() {
+        return isApiKeyConfigured();
+    }
+
     private boolean isApiKeyConfigured() {
         return openAiApiKey != null && !openAiApiKey.isBlank();
     }

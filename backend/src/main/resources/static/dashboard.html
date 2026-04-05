@@ -3,52 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VOXWALL — Dashboard</title>
+    <title>VOXWALL - Dashboard</title>
     <link rel="icon" type="image/png" href="/assets/keylogo.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
     <link rel="preload" as="image" href="/assets/keylogo.png">
     <link rel="stylesheet" href="assets/css/style.css">
-
-<!-- Navbar -->
+</head>
+<body class="bg-dark text-white" style="visibility:hidden;">
 <nav class="navbar navbar-dark bg-black border-bottom border-secondary px-4">
-    <a class="navbar-brand" href="/dashboard" style="font-family:'Rajdhani','Segoe UI',sans-serif; font-weight:700; font-size:1.2rem; letter-spacing:0.15em; text-transform:uppercase; color:#fff; text-shadow:0 0 12px rgba(180,0,20,0.6);">VOXWALL SECURITY DASHBOARD</a>
+    <a class="navbar-brand" href="/dashboard" style="font-family:'Rajdhani','Segoe UI',sans-serif; font-weight:700; font-size:1.2rem; letter-spacing:0.15em; text-transform:uppercase; color:#fff; text-shadow:0 0 12px rgba(180,0,20,0.6);">VOXWALL SECURITY</a>
     <div class="d-flex gap-3 align-items-center">
         <a href="/dashboard" class="nav-link text-white fw-semibold active">Dashboard</a>
         <a href="/sensors"   class="nav-link text-secondary">Sensors</a>
         <a href="/events"    class="nav-link text-secondary">Events</a>
-        <span class="text-muted small me-2" id="navUsername"></span>
         <button class="btn btn-sm btn-outline-secondary" onclick="logout()">Logout</button>
     </div>
 </nav>
 
 <div class="container-fluid px-4 py-4">
 
-    <!-- Logo -->
-    <div class="text-center mb-4">
-        <img src="/assets/keylogo.png" alt="VOXWALL" fetchpriority="high" style="height:160px; view-transition-name: main-logo;">
+    <!-- Logo + diagnostic panels -->
+    <div class="row align-items-center mb-4 g-0">
+        <div class="col-4">
+            <div class="diag-panel text-end pe-3 pe-md-5">
+                <div class="diag-row">
+                    <span class="diag-label">LAST HEARTBEAT</span>
+                    <span class="diag-value" id="diagHeartbeat">—</span>
+                </div>
+                <div class="diag-row">
+                    <span class="diag-label">LAST DISARMED</span>
+                    <span class="diag-value" id="diagLastDisarmed">—</span>
+                </div>
+                <div class="diag-row">
+                    <span class="diag-label">LAST ARMED</span>
+                    <span class="diag-value" id="diagLastArmed">—</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-4 text-center">
+            <img src="/assets/keylogo.png" alt="VOXWALL" fetchpriority="high" style="height:160px; view-transition-name: main-logo;">
+        </div>
+        <div class="col-4">
+            <div class="diag-panel text-start ps-3 ps-md-5">
+                <div class="diag-row">
+                    <span class="diag-label">ACTIVE ALARMS</span>
+                    <span class="diag-value" id="diagAlarms">—</span>
+                </div>
+                <div class="diag-row">
+                    <span class="diag-label">FAULT NODES</span>
+                    <span class="diag-value" id="diagFaultNodes">—</span>
+                </div>
+                <div class="diag-row">
+                    <span class="diag-label">AI MODULE</span>
+                    <span class="diag-value" id="diagAiStatus">—</span>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- System status banner -->
     <div class="row mb-4">
         <div class="col-12">
-            <div id="statusBanner" class="status-banner status-disarmed p-4 rounded-3 text-center">
-                <div class="status-icon mb-2" id="statusIcon">🔓</div>
-                <h1 class="fs-2 fw-bold mb-1" id="statusText">DISARMED</h1>
-                <p class="text-muted small mb-3" id="statusMeta">—</p>
-                <div class="d-flex gap-2 justify-content-center flex-wrap">
-                    <button id="btnArmAway" class="btn btn-sentinel px-4" onclick="arm('ARMED_AWAY')">
-                        🔒 Arm Away
-                    </button>
-                    <button id="btnArmHome" class="btn btn-outline-light px-4" onclick="arm('ARMED_HOME')">
-                        🏠 Arm Home
-                    </button>
-                    <button id="btnArmHomeNight" class="btn btn-outline-warning px-4" onclick="arm('ARMED_HOME_NIGHT')">
-                        🌙 Arm Night
-                    </button>
-                    <button id="btnDisarm" class="btn btn-danger px-4 d-none" onclick="disarm()">
-                        🔓 Disarm
-                    </button>
+            <div id="statusBanner" class="status-banner status-disarmed p-4 text-center">
+                <svg class="trap-svg" viewBox="0 0 1000 160" preserveAspectRatio="none" aria-hidden="true">
+                    <polygon class="trap-polygon" points="18,2 982,2 920,158 80,158" fill="#000000" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
+                </svg>
+                <div class="trap-content">
+                    <div class="status-icon mb-2" id="statusIcon">🔓</div>
+                    <h1 class="fs-2 fw-bold mb-1" id="statusText">DISARMED</h1>
+                    <div class="d-flex gap-2 justify-content-center flex-wrap mt-3">
+                        <button id="btnArmAway" class="btn btn-sentinel px-4" onclick="arm('ARMED_AWAY')">
+                            🔒 Arm Away
+                        </button>
+                        <button id="btnArmHome" class="btn btn-outline-light px-4" onclick="arm('ARMED_HOME')">
+                            🏠 Arm Home
+                        </button>
+                        <button id="btnArmHomeNight" class="btn btn-outline-warning px-4" onclick="arm('ARMED_HOME_NIGHT')">
+                            🌙 Arm Night
+                        </button>
+                        <button id="btnDisarm" class="btn btn-danger px-4 d-none" onclick="disarm()">
+                            🔓 Disarm
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -58,26 +95,46 @@
     <div class="row g-3 mb-4">
         <div class="col-6 col-md-3">
             <div class="stat-card">
-                <div class="stat-label">Total Sensors</div>
-                <div class="stat-value" id="statTotalSensors">—</div>
+                <svg class="trap-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                    <polygon class="trap-polygon trap-polygon-stat" points="6,2 94,2 86,98 14,98" fill="#000000" stroke="rgba(180,0,0,0.65)" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
+                </svg>
+                <div class="trap-content">
+                    <div class="stat-label">Total Sensors</div>
+                    <div class="stat-value" id="statTotalSensors">—</div>
+                </div>
             </div>
         </div>
         <div class="col-6 col-md-3">
             <div class="stat-card">
-                <div class="stat-label">Online</div>
-                <div class="stat-value text-success" id="statOnline">—</div>
+                <svg class="trap-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                    <polygon class="trap-polygon trap-polygon-stat" points="6,2 94,2 86,98 14,98" fill="#000000" stroke="rgba(180,0,0,0.65)" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
+                </svg>
+                <div class="trap-content">
+                    <div class="stat-label">Online Sensors</div>
+                    <div class="stat-value text-success" id="statOnline">—</div>
+                </div>
             </div>
         </div>
         <div class="col-6 col-md-3">
             <div class="stat-card">
-                <div class="stat-label">Active Alarms</div>
-                <div class="stat-value text-danger" id="statAlarms">—</div>
+                <svg class="trap-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                    <polygon class="trap-polygon trap-polygon-stat" points="6,2 94,2 86,98 14,98" fill="#000000" stroke="rgba(180,0,0,0.65)" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
+                </svg>
+                <div class="trap-content">
+                    <div class="stat-label">Gateway ESP32-S3</div>
+                    <div class="stat-value" id="statGateway">—</div>
+                </div>
             </div>
         </div>
         <div class="col-6 col-md-3">
             <div class="stat-card">
-                <div class="stat-label">WS Connection</div>
-                <div class="stat-value" id="statWs">—</div>
+                <svg class="trap-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                    <polygon class="trap-polygon trap-polygon-stat" points="6,2 94,2 86,98 14,98" fill="#000000" stroke="rgba(180,0,0,0.65)" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
+                </svg>
+                <div class="trap-content">
+                    <div class="stat-label">WS Connection</div>
+                    <div class="stat-value" id="statWs">—</div>
+                </div>
             </div>
         </div>
     </div>
