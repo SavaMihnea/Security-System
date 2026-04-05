@@ -11,10 +11,24 @@ function isAuthenticated() {
     return !!getToken();
 }
 
-function requireAuth() {
-    if (!isAuthenticated()) {
-        window.location.href = '/login.html';
+async function requireAuth() {
+    const token = getToken();
+    if (!token) {
+        window.location.replace('/login.html');
+        return;
     }
+    try {
+        const res = await fetch('/api/system/status', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.status === 401 || res.status === 403) {
+            logout();
+            return;
+        }
+    } catch {
+        // Network error — still allow page (server may be starting)
+    }
+    document.body.style.visibility = 'visible';
 }
 
 function logout() {
