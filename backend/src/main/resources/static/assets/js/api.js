@@ -14,7 +14,7 @@ function isAuthenticated() {
 async function requireAuth() {
     const token = getToken();
     if (!token) {
-        window.location.replace('/login.html');
+        window.location.replace('/login');
         return;
     }
     try {
@@ -34,7 +34,7 @@ async function requireAuth() {
 function logout() {
     localStorage.removeItem('jwt_token');
     localStorage.removeItem('username');
-    window.location.href = '/login.html';
+    window.location.href = '/login';
 }
 
 /**

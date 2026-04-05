@@ -7,17 +7,16 @@
     <link rel="icon" type="image/png" href="/assets/keylogo.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="preload" as="image" href="/assets/keylogo.png">
     <link rel="stylesheet" href="assets/css/style.css">
-</head>
-<body class="bg-dark text-white" style="visibility:hidden;">
 
 <!-- Navbar -->
 <nav class="navbar navbar-dark bg-black border-bottom border-secondary px-4">
-    <a class="navbar-brand" href="/dashboard.html" style="font-family:'Rajdhani','Segoe UI',sans-serif; font-weight:700; font-size:1.2rem; letter-spacing:0.15em; text-transform:uppercase; color:#fff; text-shadow:0 0 12px rgba(180,0,20,0.6);">VOXWALL SECURITY DASHBOARD</a>
+    <a class="navbar-brand" href="/dashboard" style="font-family:'Rajdhani','Segoe UI',sans-serif; font-weight:700; font-size:1.2rem; letter-spacing:0.15em; text-transform:uppercase; color:#fff; text-shadow:0 0 12px rgba(180,0,20,0.6);">VOXWALL SECURITY DASHBOARD</a>
     <div class="d-flex gap-3 align-items-center">
-        <a href="/dashboard.html" class="nav-link text-white fw-semibold active">Dashboard</a>
-        <a href="/sensors.html"   class="nav-link text-secondary">Sensors</a>
-        <a href="/events.html"    class="nav-link text-secondary">Events</a>
+        <a href="/dashboard" class="nav-link text-white fw-semibold active">Dashboard</a>
+        <a href="/sensors"   class="nav-link text-secondary">Sensors</a>
+        <a href="/events"    class="nav-link text-secondary">Events</a>
         <span class="text-muted small me-2" id="navUsername"></span>
         <button class="btn btn-sm btn-outline-secondary" onclick="logout()">Logout</button>
     </div>
@@ -27,7 +26,7 @@
 
     <!-- Logo -->
     <div class="text-center mb-4">
-        <img src="/assets/keylogo.png" alt="VOXWALL" style="height:160px; view-transition-name: main-logo;">
+        <img src="/assets/keylogo.png" alt="VOXWALL" fetchpriority="high" style="height:160px; view-transition-name: main-logo;">
     </div>
 
     <!-- System status banner -->
@@ -89,7 +88,7 @@
             <div class="card bg-black border-secondary">
                 <div class="card-header border-secondary d-flex justify-content-between align-items-center">
                     <span class="fw-semibold">Sensor Status</span>
-                    <a href="/sensors.html" class="text-muted small">View all →</a>
+                    <a href="/sensors" class="text-muted small">View all →</a>
                 </div>
                 <div class="card-body p-0">
                     <div id="sensorGrid" class="p-3">
@@ -102,7 +101,7 @@
             <div class="card bg-black border-secondary">
                 <div class="card-header border-secondary d-flex justify-content-between align-items-center">
                     <span class="fw-semibold">Recent Events</span>
-                    <a href="/events.html" class="text-muted small">View all →</a>
+                    <a href="/events" class="text-muted small">View all →</a>
                 </div>
                 <div class="card-body p-0">
                     <div id="recentEvents">
