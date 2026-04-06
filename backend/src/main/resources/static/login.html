@@ -17,20 +17,18 @@
     <!-- Outer large dark grey trapezoid -->
     <polygon points="10, 60 990, 60 700, 790 300, 790" fill="#111111" stroke="rgba(180,0,0,0.6)" stroke-width="2.5"/>
     <!-- Inner smaller black trapezoid -->
-    <polygon points="190, 110 810, 110 670, 470 330, 470" fill="#000000" stroke="rgba(180,0,0,0.6)" stroke-width="2.5"/>
+    <polygon points="190, 106 810, 106 670, 460 330, 460" fill="#000000" stroke="rgba(180,0,0,0.6)" stroke-width="2.5"/>
 </svg>
 
 <div class="login-card">
     <div class="text-center mb-3">
-        <h1 class="login-brand mb-2" style="font-size: 2.2rem;">VOXWALL SECURITY</h1>
-        <img src="/assets/keylogo.png" alt="VOXWALL" class="my-2" fetchpriority="high" style="width:80%; max-width:440px; height:auto; display:block; margin-left:auto; margin-right:auto; view-transition-name: main-logo;">
+        <h1 class="login-brand mb-2" style="font-size: 2.3rem;">VOXWALL SECURITY</h1>
+        <img src="/assets/keylogo.png" alt="VOXWALL" class="my-2" fetchpriority="high" style="width:80%; max-width:440px; height:auto; display:block; margin-left: 40px; margin-right:auto; view-transition-name: main-logo;">
         <p class="login-motto mt-3" style="font-size: 1.3rem;">Control the unseen.</p>
     </div>
 
-    <div id="errorMsg" class="alert alert-danger d-none" role="alert"></div>
-
     <form id="loginForm">
-        <div class="mb-3 mx-auto" style="margin-top: 60px; max-width: 260px;">
+        <div class="mb-3 mx-auto" style="margin-top: 40px; max-width: 260px;">
             <label for="username" class="form-label login-label">Username</label>
             <input type="text" class="form-control form-control-dark" id="username"
                    autocomplete="username" required>
@@ -44,6 +42,9 @@
             <button type="submit" class="btn btn-signin w-100" id="loginBtn">
                 Proceed
             </button>
+        </div>
+        <div class="mx-auto" style="max-width: 260px; min-height: 2.2rem; display: flex; align-items: center; justify-content: center;">
+            <div id="errorMsg" class="login-error-msg d-none" role="alert"></div>
         </div>
     </form>
 </div>
@@ -60,7 +61,7 @@
         const errMsg = document.getElementById('errorMsg');
 
         btn.disabled = true;
-        btn.textContent = 'Signing in...';
+        btn.textContent = 'Loading assets...';
         errMsg.classList.add('d-none');
 
         const username = document.getElementById('username').value.trim();
@@ -82,16 +83,19 @@
                 const data = await res.json();
                 errMsg.textContent = data.error || 'Account locked. Too many failed attempts.';
                 errMsg.classList.remove('d-none');
+                btn.disabled = false;
+                btn.textContent = 'Proceed';
             } else {
                 errMsg.textContent = 'Invalid username or password.';
                 errMsg.classList.remove('d-none');
+                btn.disabled = false;
+                btn.textContent = 'Proceed';
             }
         } catch {
             errMsg.textContent = 'Cannot reach the server. Check your connection.';
             errMsg.classList.remove('d-none');
-        } finally {
             btn.disabled = false;
-            btn.textContent = 'Sign In';
+            btn.textContent = 'Proceed';
         }
     });
 </script>

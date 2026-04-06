@@ -24,7 +24,11 @@
 <div class="container-fluid px-4 py-4">
 
     <!-- Logo + diagnostic panels -->
-    <div class="row align-items-center mb-4 g-0">
+    <div class="hero-trap-wrapper mb-4">
+        <svg class="trap-svg" viewBox="0 0 1000 900" preserveAspectRatio="none" aria-hidden="true">
+            <polygon points="156,10 844,10 793,880 207,880" fill="#000000" stroke="rgba(180,0,0,0.65)" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
+        </svg>
+        <div class="row align-items-center g-0" style="position:relative; z-index:1;">
         <div class="col-4">
             <div class="diag-panel text-end pe-3 pe-md-5">
                 <div class="diag-row">
@@ -60,6 +64,7 @@
                 </div>
             </div>
         </div>
+        </div>
     </div>
 
     <!-- System status banner -->
@@ -67,12 +72,12 @@
         <div class="col-12">
             <div id="statusBanner" class="status-banner status-disarmed p-4 text-center">
                 <svg class="trap-svg" viewBox="0 0 1000 160" preserveAspectRatio="none" aria-hidden="true">
-                    <polygon class="trap-polygon" points="18,2 982,2 920,158 80,158" fill="#000000" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
+                    <polygon class="trap-polygon" points="214,2 786,2 738,158 262,158" fill="#000000" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
                 </svg>
                 <div class="trap-content">
                     <div class="status-icon mb-2" id="statusIcon">🔓</div>
-                    <h1 class="fs-2 fw-bold mb-1" id="statusText">DISARMED</h1>
-                    <div class="d-flex gap-2 justify-content-center flex-wrap mt-3">
+                    <h1 class="fs-2 fw-bold mb-2" id="statusText">DISARMED</h1>
+                    <div class="d-flex gap-4 justify-content-center flex-wrap mt-4">
                         <button id="btnArmAway" class="btn btn-sentinel px-4" onclick="arm('ARMED_AWAY')">
                             🔒 Arm Away
                         </button>
