@@ -46,7 +46,17 @@
             </div>
         </div>
         <div class="col-4 text-center">
-            <img src="/assets/keylogo.png" alt="VOXWALL" fetchpriority="high" style="height:160px; view-transition-name: main-logo;">
+            <div class="logo-trap-wrapper">
+                <svg class="trap-svg" viewBox="0 0 1000 900" preserveAspectRatio="none" aria-hidden="true">
+                    <polygon points="136,4 864,4 780,896 220,896" fill="none" stroke="rgba(180,0,0,0.65)" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
+                </svg>
+                <video class="logo-trap-video" autoplay muted loop playsinline preload="auto">
+                    <source src="/assets/earth.mp4" type="video/mp4">
+                </video>
+                <div style="position:relative; z-index:3;">
+                    <img src="/assets/keylogo.png" alt="VOXWALL" fetchpriority="high" style="width: clamp(90px, 18vw, 220px); height: auto; view-transition-name: main-logo;">
+                </div>
+            </div>
         </div>
         <div class="col-4">
             <div class="diag-panel text-start ps-3 ps-md-5">
