@@ -130,15 +130,15 @@ body {
 
 .form-control-dark {
     background-color: #000000;
-    border: 1px solid rgba(180, 0, 0, 0.7);
+    border: 1px solid rgba(120, 120, 140, 0.5);
     color: #e0e0e0;
 }
 
 .form-control-dark:focus {
     background-color: #000000;
-    border-color: #cc0000;
+    border-color: #888;
     color: #e0e0e0;
-    box-shadow: 0 0 0 0.15rem rgba(180, 0, 0, 0.3);
+    box-shadow: 0 0 0 0.15rem rgba(120, 120, 140, 0.3);
 }
 
 /* ---- Buttons ---- */
@@ -159,7 +159,7 @@ body {
     position: relative;
 }
 
-.status-disarmed .trap-polygon { stroke: rgba(180,0,0,0.65); }
+.status-disarmed .trap-polygon { stroke: rgba(120,120,140,0.5); }
 .status-armed    .trap-polygon { stroke: rgba(0,230,118,0.65); }
 .status-home     .trap-polygon { stroke: rgba(41,121,255,0.65); }
 .status-alarm    .trap-polygon { stroke: rgba(255,23,68,0.8); animation: alarmStroke 1s ease-in-out infinite; }
@@ -340,3 +340,32 @@ body {
 ::-webkit-scrollbar       { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #2a2a3e; border-radius: 3px; }
+
+/* ---- Real-time animations ---- */
+@keyframes sensorFadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.sensor-card-enter {
+    animation: sensorFadeIn 0.4s ease-out both;
+}
+
+.sensor-chip-enter {
+    animation: sensorFadeIn 0.35s ease-out both;
+}
+
+@keyframes alarmPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,23,68,0.5); }
+    50%      { box-shadow: 0 0 16px 4px rgba(255,23,68,0.35); }
+}
+
+.sensor-chip.triggered,
+.event-row-alert {
+    animation: alarmPulse 1.5s ease-in-out infinite;
+}
+
+/* ---- Event row alert highlight ---- */
+.event-row-alert {
+    background: rgba(255,23,68,0.06);
+}

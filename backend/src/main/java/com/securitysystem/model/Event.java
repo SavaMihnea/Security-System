@@ -31,6 +31,8 @@ public class Event {
 
     private boolean resolved = false;
 
+    private LocalDateTime resolvedAt;
+
     @Column(length = 255)
     private String notes;
 

@@ -105,7 +105,7 @@ async function loadSensors() {
     }
 
     container.innerHTML = sensors.map(s => `
-        <div class="sensor-chip ${STATUS_DOT[s.status] || 'offline'}">
+        <div class="sensor-chip sensor-chip-enter ${STATUS_DOT[s.status] || 'offline'}">
             <span class="fs-5">${TYPE_ICON[s.type] || '🔌'}</span>
             <div class="flex-grow-1 overflow-hidden">
                 <div class="sensor-chip-name text-truncate">${s.name}</div>

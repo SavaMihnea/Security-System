@@ -25,12 +25,21 @@
 <div class="container-fluid px-4 py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="mb-0">Sensors</h4>
-        <button class="btn btn-sm btn-outline-light" onclick="loadSensors()">↺ Refresh</button>
+        <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-success" id="simulateBtn" onclick="simulateSensor()">+ Simulate Sensor</button>
+            <button class="btn btn-sm btn-outline-light" onclick="loadSensors()">↺ Refresh</button>
+        </div>
     </div>
 
-    <div class="row g-3" id="sensorCards">
-        <p class="text-muted">Loading...</p>
+    <!-- Empty state -->
+    <div id="emptyState" class="d-none text-center py-5">
+        <div style="font-size:3.5rem; opacity:0.3; margin-bottom:1rem;">📡</div>
+        <h5 class="text-muted mb-2">No sensors detected yet</h5>
+        <p class="text-secondary small mb-4" style="max-width:340px; margin:0 auto;">Power on a sensor node to auto-register, or simulate one for testing.</p>
+        <button class="btn btn-outline-success btn-sm px-4" onclick="simulateSensor()">+ Simulate Sensor</button>
     </div>
+
+    <div class="row g-3" id="sensorCards"></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -51,18 +60,34 @@
         CENTRAL:   '🖥'
     };
 
+    async function simulateSensor() {
+        const btn = document.getElementById('simulateBtn');
+        btn.disabled = true;
+        btn.textContent = 'Creating...';
+        try {
+            await apiFetch('/api/sensors/simulate', { method: 'POST' });
+            await loadSensors();
+        } catch(e) {
+            console.error('Simulate failed', e);
+        }
+        btn.disabled = false;
+        btn.textContent = '+ Simulate Sensor';
+    }
+
     async function loadSensors() {
         const container = document.getElementById('sensorCards');
+        const emptyState = document.getElementById('emptyState');
         const sensors = await apiFetch('/api/sensors').then(r => r?.json()).catch(() => []);
 
         if (!sensors || sensors.length === 0) {
-            container.innerHTML = '<p class="text-muted">No sensors registered yet. ' +
-                'Flash and boot a sensor node to register it automatically.</p>';
+            container.innerHTML = '';
+            emptyState.classList.remove('d-none');
             return;
         }
 
+        emptyState.classList.add('d-none');
         container.innerHTML = sensors.map(s => `
-            <div class="col-12 col-md-6 col-xl-4">
+            <div class="col-12 col-md-6 col-xl-4 sensor-card-enter">
                 <div class="card bg-black border-secondary h-100">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start mb-2">

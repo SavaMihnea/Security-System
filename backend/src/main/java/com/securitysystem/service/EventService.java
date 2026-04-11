@@ -54,6 +54,7 @@ public class EventService {
     public void resolveEvent(Long id) {
         eventRepository.findById(id).ifPresent(event -> {
             event.setResolved(true);
+            event.setResolvedAt(java.time.LocalDateTime.now());
             eventRepository.save(event);
         });
     }

@@ -16,6 +16,7 @@ public class EventDto {
     private String eventType;
     private LocalDateTime timestamp;
     private boolean resolved;
+    private LocalDateTime resolvedAt;
     private String notes;
 
     public static EventDto from(Event event) {
@@ -28,6 +29,7 @@ public class EventDto {
         dto.setEventType(event.getEventType().name());
         dto.setTimestamp(event.getTimestamp());
         dto.setResolved(event.isResolved());
+        dto.setResolvedAt(event.getResolvedAt());
         dto.setNotes(event.getNotes());
         return dto;
     }
