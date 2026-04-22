@@ -66,6 +66,20 @@ async function disarm() {
 const STATUS_DOT = { ONLINE: 'online', TRIGGERED: 'triggered', OFFLINE: 'offline', FAULT: 'offline' };
 const TYPE_ICON  = { MOTION: '👁', VIBRATION: '📳', DOOR: '🚪', CENTRAL: '🖥' };
 
+// Helper function to check if a sensor is online based on last heartbeat
+const isOnline = (lastHeartbeatISO) => {
+    // This forces the string into a Date object.
+    // If the backend sent it with 'Z', JS automatically converts it to local time.
+    const heartbeat = new Date(lastHeartbeatISO);
+    const now = new Date();
+
+    // Difference in seconds
+    const diff = (now.getTime() - heartbeat.getTime()) / 1000;
+
+    // If heartbeat was within the last 90 seconds, it's online
+    return diff < 90;
+};
+
 async function loadSensors() {
     const container = document.getElementById('sensorGrid');
     const res = await apiFetch('/api/sensors');
@@ -83,9 +97,9 @@ async function loadSensors() {
     const fnEl  = document.getElementById('diagFaultNodes');
 
     if (gateway && gateway.lastSeen) {
+        const gatewayOnline = isOnline(gateway.lastSeen);
         const ageSec = Math.floor((Date.now() - new Date(gateway.lastSeen)) / 1000);
-        const isOnline = ageSec < 90;
-        gwEl.innerHTML = `<span class="${isOnline ? 'text-success' : 'text-danger'}">${isOnline ? 'Online' : 'Offline'}</span>`;
+        gwEl.innerHTML = `<span class="${gatewayOnline ? 'text-success' : 'text-danger'}">${gatewayOnline ? 'Online' : 'Offline'}</span>`;
         const hbClass = ageSec < 60 ? 'text-success' : ageSec < 300 ? 'text-warning' : 'text-danger';
         const hbText  = timeAgo(gateway.lastSeen).replace(/^(\d)/, '$1').replace(/\b(\w)/g, c => c.toUpperCase());
         hbEl.innerHTML = `<span class="${hbClass}">${hbText}</span>`;
