@@ -29,10 +29,10 @@
 #include "Audio.h"          // ESP32-audioI2S library
 
 // ---- User configuration -----------------------------------------
-const char* WIFI_SSID     = "YOUR_WIFI_SSID";
-const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
-const char* BACKEND_URL   = "https://your-app.railway.app"; // No trailing slash
-const char* ESP_API_KEY   = "change-this-to-a-random-esp32-api-key";
+const char* WIFI_SSID     = "DIGI-2eS3";
+const char* WIFI_PASSWORD = "6bZ93ey3tJ";
+const char* BACKEND_URL   = "https://voxwall-security.com"; // No trailing slash
+const char* ESP_API_KEY   = "pFTF3EJ3MEKx0NE5sO1tAGouPNNeYwJ5CsPAg2zVUXgjevad";
 // -----------------------------------------------------------------
 
 // ---- GPIO pins --------------------------------------------------
@@ -379,53 +379,26 @@ void registerWithBackend() {
 // =================================================================
 void runAiConversation() {
     Serial.println("[AI] Starting conversation...");
-
-    // New session ID per alarm event
     snprintf(aiSessionId, sizeof(aiSessionId), "alarm_%lu", millis());
 
-    // 1. Request and play the initial deterrence phrase
-    String url     = String(BACKEND_URL) + "/api/ai/alarm-start";
+    String url = String(BACKEND_URL) + "/api/ai/alarm-start";
     String emptyBody = "{}";
+    
+    // Play the warning over the speaker
     if (postAndSaveMp3(url, emptyBody, aiSessionId, "/deterrence.mp3")) {
         playMp3("/deterrence.mp3");
     }
 
-    unsigned long lastSoundMs     = millis();
-    unsigned long lastHeartbeatAi = millis();
-
-    // 2. Mic monitoring loop - runs until alarm is cleared
+    // --- TEMPORARY BYPASS FOR DEAD MIC ---
+    // We are skipping the while(alarmActive) microphone reading loop 
+    // so the ESP32 doesn't record static and crash. 
+    // It will just wait here peacefully until you disarm via the dashboard.
+    
     while (alarmActive) {
-        // Periodic state sync so remote disarm reaches us
-        if (millis() - lastHeartbeatAi > 10000) {
-            lastHeartbeatAi = millis();
-            sendHeartbeat();
-        }
-
-        if (!alarmActive) break;  // Remote disarm detected by heartbeat
-
-        int32_t amplitude = measureMicAmplitude();
-
-        if (amplitude > MIC_AMPLITUDE_THRESHOLD) {
-            // Sound detected: record -> Whisper -> GPT-4o -> TTS -> play
-            Serial.printf("[AI] Sound detected (amp=%d), recording...\n", amplitude);
-            lastSoundMs = millis();
-
-            if (recordToSpiffs() > 0 && postWavAndSaveMp3(aiSessionId)) {
-                playMp3("/response.mp3");
-            }
-        } else if (millis() - lastSoundMs > AI_SILENCE_TIMEOUT_MS) {
-            // Silence timeout: play a proactive deterrence statement
-            Serial.println("[AI] Silence - requesting proactive statement");
-            lastSoundMs = millis();
-
-            String proUrl = String(BACKEND_URL) + "/api/ai/proactive";
-            if (postAndSaveMp3(proUrl, emptyBody, aiSessionId, "/proactive.mp3")) {
-                playMp3("/proactive.mp3");
-            }
-        }
-
-        delay(100);
+         sendHeartbeat(); // Keep checking if you clicked "Disarm" on the website
+         delay(5000);     // Wait 5 seconds between checks
     }
+    // -------------------------------------
 
     aiSessionId[0] = '\0';
     Serial.println("[AI] Conversation ended");
@@ -501,7 +474,7 @@ void handleSensorEvent(const char* fromNodeId, const char* eventType) {
 // =================================================================
 // ESP-NOW callback - store event, process safely in loop()
 // =================================================================
-void onDataReceived(const esp_now_recv_info_t* info, const uint8_t* data, int len) {
+void onDataReceived(const uint8_t* mac_addr, const uint8_t* data, int len) {
     if (pendingEvent) return;   // Drop if we haven't processed the previous event yet
 
     SensorMessage msg;
