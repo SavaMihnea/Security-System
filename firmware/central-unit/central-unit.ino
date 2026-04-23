@@ -438,11 +438,42 @@ bool isDoorEvent(const char* eventType) {
            strcmp(eventType, "DOOR_CLOSED")  == 0;
 }
 
-void handleSensorEvent(const char* fromNodeId, const char* eventType) {
-    // Always log the raw event for dashboard history
-    sendEventToBackend(fromNodeId, eventType, "");
+void registerOtherNode(const char* targetNodeId, const char* name, const char* location, const char* type) {
+    if (WiFi.status() != WL_CONNECTED) return; //
 
-    switch (currentArmMode) {
+    HTTPClient http;
+    String url = String(BACKEND_URL) + "/api/esp/register"; //
+    http.begin(secureClient, url); //
+    http.addHeader("Content-Type", "application/json");
+    http.addHeader("X-ESP-Key", ESP_API_KEY); //
+
+    StaticJsonDocument<256> doc;
+    doc["nodeId"]   = targetNodeId;
+    doc["name"]     = name;
+    doc["location"] = location;
+    doc["type"]     = type; //
+
+    String body;
+    serializeJson(doc, body);
+
+    int code = http.POST(body); //
+    Serial.printf("[REG-OTHER] Node %s: %d\n", targetNodeId, code);
+    http.end();
+}
+
+void handleSensorEvent(const char* fromNodeId, const char* eventType) {
+    // --- NEW: AUTO-REGISTRATION LOGIC ---
+    // If we hear a registration/online event from a node, tell the backend its name.
+    if (strcmp(eventType, "NODE_ONLINE") == 0) {
+        // This is where you set the Name and Location for the website
+        registerOtherNode(fromNodeId, "Front Door Sensor", "Entrance", "DOOR");
+    }
+    // ------------------------------------
+
+    // Always log the raw event for dashboard history
+    sendEventToBackend(fromNodeId, eventType, ""); //
+
+    switch (currentArmMode) { //
 
         case DISARMED:
         case ARMED_HOME:
@@ -451,21 +482,21 @@ void handleSensorEvent(const char* fromNodeId, const char* eventType) {
 
         case ARMED_HOME_NIGHT:
             // Immediate alarm, no grace period (you're sleeping)
-            if (!alarmActive) triggerAlarm(fromNodeId, eventType);
+            if (!alarmActive) triggerAlarm(fromNodeId, eventType); //
             break;
 
         case ARMED_AWAY:
             if (alarmActive) break;  // Already alarmed
 
-            if (isDoorEvent(eventType) && !entryDelayActive) {
+            if (isDoorEvent(eventType) && !entryDelayActive) { //
                 // Door opened: start 10-second entry delay countdown
                 entryDelayActive  = true;
-                entryDelayStartMs = millis();
+                entryDelayStartMs = millis(); //
                 Serial.println("[ENTRY DELAY] 10 seconds to disarm...");
-                sendEventToBackend(nodeId, "ALARM_TRIGGERED", "Entry delay started");
+                sendEventToBackend(nodeId, "ALARM_TRIGGERED", "Entry delay started"); //
             } else if (!isDoorEvent(eventType)) {
                 // Motion or vibration during AWAY: immediate alarm
-                triggerAlarm(fromNodeId, eventType);
+                triggerAlarm(fromNodeId, eventType); //
             }
             break;
     }
