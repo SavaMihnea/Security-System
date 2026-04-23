@@ -26,7 +26,6 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="mb-0">Sensors</h4>
         <div class="d-flex gap-2">
-            <button class="btn btn-sm btn-outline-success" id="simulateBtn" onclick="simulateSensor()">+ Simulate Sensor</button>
             <button class="btn btn-sm btn-outline-light" onclick="loadSensors()">↺ Refresh</button>
         </div>
     </div>
@@ -35,8 +34,7 @@
     <div id="emptyState" class="d-none text-center py-5">
         <div style="font-size:3.5rem; opacity:0.3; margin-bottom:1rem;">📡</div>
         <h5 class="text-muted mb-2">No sensors detected yet</h5>
-        <p class="text-secondary small mb-4" style="max-width:340px; margin:0 auto;">Power on a sensor node to auto-register, or simulate one for testing.</p>
-        <button class="btn btn-outline-success btn-sm px-4" onclick="simulateSensor()">+ Simulate Sensor</button>
+        <p class="text-secondary small mb-4" style="max-width:340px; margin:0 auto;">Power on a sensor node to auto-register it to the system.</p>
     </div>
 
     <div class="row g-3" id="sensorCards"></div>
@@ -59,20 +57,6 @@
         DOOR:      '🚪',
         CENTRAL:   '🖥'
     };
-
-    async function simulateSensor() {
-        const btn = document.getElementById('simulateBtn');
-        btn.disabled = true;
-        btn.textContent = 'Creating...';
-        try {
-            await apiFetch('/api/sensors/simulate', { method: 'POST' });
-            await loadSensors();
-        } catch(e) {
-            console.error('Simulate failed', e);
-        }
-        btn.disabled = false;
-        btn.textContent = '+ Simulate Sensor';
-    }
 
     async function loadSensors() {
         const container = document.getElementById('sensorCards');

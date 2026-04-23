@@ -65,8 +65,10 @@ function formatEventType(type) {
 
 function timeAgo(dateStr) {
     const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
-    if (diff < 60)   return `${diff}s ago`;
-    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    // Clamp to 0 to handle clock skew (server time ahead of client)
+    const safeDiff = Math.max(0, diff);
+    if (safeDiff < 60)   return `${safeDiff}s ago`;
+    if (safeDiff < 3600) return `${Math.floor(safeDiff / 60)}m ago`;
+    if (safeDiff < 86400) return `${Math.floor(safeDiff / 3600)}h ago`;
     return new Date(dateStr).toLocaleDateString();
 }
