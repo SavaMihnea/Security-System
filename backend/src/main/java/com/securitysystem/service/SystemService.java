@@ -10,7 +10,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +30,7 @@ public class SystemService {
         SystemConfig config = getConfig();
         config.setArmed(mode != SystemConfig.ArmMode.DISARMED);
         config.setArmMode(mode);
-        config.setLastUpdated(LocalDateTime.now());
+        config.setLastUpdated(Instant.now());
         config.setUpdatedBy(updatedBy);
 
         SystemConfig saved = systemConfigRepository.save(config);

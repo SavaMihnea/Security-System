@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "sensors")
@@ -39,7 +39,7 @@ public class Sensor {
     @Column(nullable = false, length = 20)
     private SensorStatus status = SensorStatus.OFFLINE;
 
-    private LocalDateTime lastSeen;
+    private Instant lastSeen;
 
     public enum SensorType {
         MOTION,

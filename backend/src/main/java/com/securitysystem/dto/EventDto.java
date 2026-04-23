@@ -4,7 +4,7 @@ import com.securitysystem.model.Event;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -14,9 +14,9 @@ public class EventDto {
     private Long sensorId;
     private String sensorName;
     private String eventType;
-    private LocalDateTime timestamp;
+    private Instant timestamp;
     private boolean resolved;
-    private LocalDateTime resolvedAt;
+    private Instant resolvedAt;
     private String notes;
 
     public static EventDto from(Event event) {

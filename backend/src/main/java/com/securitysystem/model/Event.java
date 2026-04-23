@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "events")
@@ -27,11 +27,11 @@ public class Event {
     private EventType eventType;
 
     @Column(nullable = false, updatable = false)
-    private LocalDateTime timestamp = LocalDateTime.now();
+    private Instant timestamp = Instant.now();
 
     private boolean resolved = false;
 
-    private LocalDateTime resolvedAt;
+    private Instant resolvedAt;
 
     @Column(length = 255)
     private String notes;

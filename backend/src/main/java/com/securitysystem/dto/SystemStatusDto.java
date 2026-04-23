@@ -4,7 +4,7 @@ import com.securitysystem.model.SystemConfig;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -12,7 +12,7 @@ public class SystemStatusDto {
 
     private boolean armed;
     private String armMode;
-    private LocalDateTime lastUpdated;
+    private Instant lastUpdated;
     private String updatedBy;
 
     public static SystemStatusDto from(SystemConfig config) {

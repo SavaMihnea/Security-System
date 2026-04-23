@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -54,7 +55,7 @@ public class EventService {
     public void resolveEvent(Long id) {
         eventRepository.findById(id).ifPresent(event -> {
             event.setResolved(true);
-            event.setResolvedAt(java.time.LocalDateTime.now());
+            event.setResolvedAt(Instant.now());
             eventRepository.save(event);
         });
     }

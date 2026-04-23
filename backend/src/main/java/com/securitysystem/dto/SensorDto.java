@@ -4,7 +4,7 @@ import com.securitysystem.model.Sensor;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -16,7 +16,7 @@ public class SensorDto {
     private String name;
     private String location;
     private String status;
-    private LocalDateTime lastSeen;
+    private Instant lastSeen;
 
     public static SensorDto from(Sensor sensor) {
         SensorDto dto = new SensorDto();

@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 /**
  * Singleton table (always id=1). Holds the current arm/disarm state
@@ -28,7 +28,7 @@ public class SystemConfig {
     @Column(nullable = false, length = 20)
     private ArmMode armMode = ArmMode.DISARMED;
 
-    private LocalDateTime lastUpdated = LocalDateTime.now();
+    private Instant lastUpdated = Instant.now();
 
     @Column(length = 50)
     private String updatedBy;

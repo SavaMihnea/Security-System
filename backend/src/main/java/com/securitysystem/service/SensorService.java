@@ -6,7 +6,7 @@ import com.securitysystem.repository.SensorRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -39,7 +39,7 @@ public class SensorService {
         sensor.setLocation(location);
         sensor.setType(type);
         sensor.setStatus(Sensor.SensorStatus.ONLINE);
-        sensor.setLastSeen(LocalDateTime.now());
+        sensor.setLastSeen(Instant.now());
         return sensorRepository.save(sensor);
     }
 
@@ -47,7 +47,7 @@ public class SensorService {
     public void markOnline(String nodeId) {
         sensorRepository.findByNodeId(nodeId).ifPresent(sensor -> {
             sensor.setStatus(Sensor.SensorStatus.ONLINE);
-            sensor.setLastSeen(LocalDateTime.now());
+            sensor.setLastSeen(Instant.now());
             sensorRepository.save(sensor);
         });
     }
@@ -62,7 +62,7 @@ public class SensorService {
     public void markTriggered(String nodeId) {
         sensorRepository.findByNodeId(nodeId).ifPresent(sensor -> {
             sensor.setStatus(Sensor.SensorStatus.TRIGGERED);
-            sensor.setLastSeen(LocalDateTime.now());
+            sensor.setLastSeen(Instant.now());
             sensorRepository.save(sensor);
         });
     }
