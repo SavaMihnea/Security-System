@@ -1,7 +1,6 @@
 package com.securitysystem.controller;
 
 import com.securitysystem.dto.SensorDto;
-import com.securitysystem.model.Sensor;
 import com.securitysystem.service.SensorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
