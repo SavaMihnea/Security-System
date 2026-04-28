@@ -22,11 +22,11 @@ import java.util.concurrent.ConcurrentHashMap;
  * AI Voice Deterrence service.
  *
  * Pipeline (per intrusion session):
- *   1. ESP32-S3 records intruder audio (I2S, 16kHz PCM/WAV)
- *   2. POST audio bytes here → Whisper STT → text
- *   3. text + conversation history → GPT-4o → response text
- *   4. response text → OpenAI TTS → MP3 bytes
- *   5. MP3 bytes returned to ESP32-S3 → played through MAX98357A + speaker
+ * 1. ESP32-S3 records intruder audio (I2S, 16kHz PCM/WAV)
+ * 2. POST audio bytes here → Whisper STT → text
+ * 3. text + conversation history → GPT-5.4-mini → response text
+ * 4. response text → OpenAI TTS → MP3 bytes
+ * 5. MP3 bytes returned to ESP32-S3 → played through MAX98357A + speaker
  *
  * Each intrusion event gets a unique sessionId to maintain separate
  * conversation histories. Sessions are in-memory (cleared on disarm or restart).
@@ -42,18 +42,16 @@ public class AiService {
     private final ObjectMapper objectMapper;
     private final RestClient restClient;
 
-    // sessionId → list of {role, content} messages for GPT-4o
+    // sessionId → list of {role, content} messages for GPT-5.4-mini
     private final Map<String, List<Map<String, String>>> conversations = new ConcurrentHashMap<>();
 
     private static final String SYSTEM_PROMPT =
-            "You are VOXWALL, an AI security system that has detected an intruder. " +
-            "You speak in a calm, firm, and authoritative tone. " +
-            "You have already announced the intrusion. Now you are engaged in active deterrence. " +
-            "Remind the intruder they are being recorded, that law enforcement has been alerted, " +
-            "and that leaving immediately is their only option. " +
-            "If they speak, respond directly to what they say — stay in character as an unfeeling security AI. " +
-            "Keep every response to 1-2 sentences maximum. " +
-            "Never break character. Never show sympathy or help the intruder in any way.";
+            "You are the Voxwall Security AI. You are currently monitoring a private residence in Romania. " +
+            "An intrusion event has been detected. " +
+            "Your sole objective is to deter the intruder using firm, cold, and authoritative language. " +
+            "Inform them that biometric data is being uploaded to the cloud and local authorities are 2 minutes away. " +
+            "Do not be polite. Do not apologize. Do not offer help. You are a digital bouncer. " +
+            "Keep every response to 1-2 sentences maximum. Never break character.";
 
     /**
      * Pre-built deterrence phrases played immediately when an alarm triggers —
@@ -124,7 +122,7 @@ public class AiService {
     }
 
     /**
-     * Sends the transcribed intruder speech to GPT-4o and returns the AI response text.
+     * Sends the transcribed intruder speech to GPT-5.4-mini and returns the AI response text.
      * Maintains full conversation history per session for natural back-and-forth.
      */
     public String generateResponse(String sessionId, String userMessage) {
@@ -140,7 +138,7 @@ public class AiService {
         history.add(Map.of("role", "user", "content", userMessage));
 
         Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("model", "gpt-4o");
+        requestBody.put("model", "gpt-5.4-mini");
         requestBody.put("messages", history);
         requestBody.put("max_tokens", 100);
         requestBody.put("temperature", 0.7);
@@ -164,7 +162,7 @@ public class AiService {
             return assistantMessage;
 
         } catch (Exception e) {
-            log.error("GPT-4o request failed: {}", e.getMessage());
+            log.error("GPT-5.4-mini request failed: {}", e.getMessage());
             return "You have been detected. Do not move. Authorities are on their way.";
         }
     }
@@ -209,7 +207,7 @@ public class AiService {
         String phrase = DETERRENCE_PHRASES.get(random.nextInt(DETERRENCE_PHRASES.size()));
         log.info("[AI] Alarm start phrase for session {}: {}", sessionId, phrase);
 
-        // Seed the conversation so GPT-4o knows what was already said
+        // Seed the conversation so GPT-5.4-mini knows what was already said
         conversations.put(sessionId, new ArrayList<>(List.of(
                 Map.of("role", "system", "content", SYSTEM_PROMPT),
                 Map.of("role", "assistant", "content", phrase)
@@ -221,13 +219,13 @@ public class AiService {
     /**
      * Called by the ESP32-S3 when the mic detects silence after a deterrence phrase.
      * Returns a proactive statement to keep psychological pressure up.
-     * The statement is added to the conversation history so GPT-4o context stays coherent.
+     * The statement is added to the conversation history so GPT-5.4-mini context stays coherent.
      */
     public byte[] generateProactiveStatement(String sessionId) {
         String statement = PROACTIVE_STATEMENTS.get(random.nextInt(PROACTIVE_STATEMENTS.size()));
         log.info("[AI] Proactive statement for session {}: {}", sessionId, statement);
 
-        // Add to history so GPT knows what the system already said
+        // Add to history so GPT-5.4-mini knows what the system already said
         conversations.computeIfAbsent(sessionId, id -> new ArrayList<>(List.of(
                 Map.of("role", "system", "content", SYSTEM_PROMPT)
         ))).add(Map.of("role", "assistant", "content", statement));

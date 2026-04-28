@@ -53,6 +53,7 @@ public class EspController {
     /**
      * Called when a sensor node detects a trigger.
      * The central unit relays the event here.
+     * Applies the security matrix to determine alerting action.
      * Response includes current system status so ESP32 can act on arm state changes.
      */
     @PostMapping("/event")
@@ -71,12 +72,16 @@ public class EspController {
         }
 
         try {
-            Event.EventType eventType = Event.EventType.valueOf(request.getEventType());
-            eventService.logEvent(request.getNodeId(), eventType, request.getNotes());
+            // Process event through security matrix (handles logging and alerting)
+            eventService.processIncomingEvent(
+                    request.getNodeId(),
+                    request.getEventType(),
+                    request.getNotes());
 
-            boolean isAlarmEvent = eventType == Event.EventType.MOTION_DETECTED
-                    || eventType == Event.EventType.VIBRATION_DETECTED
-                    || eventType == Event.EventType.DOOR_OPENED;
+            // Mark sensor status
+            boolean isAlarmEvent = request.getEventType().equals("MOTION_DETECTED")
+                    || request.getEventType().equals("VIBRATION_DETECTED")
+                    || request.getEventType().equals("DOOR_OPENED");
 
             if (isAlarmEvent) {
                 sensorService.markTriggered(request.getNodeId());

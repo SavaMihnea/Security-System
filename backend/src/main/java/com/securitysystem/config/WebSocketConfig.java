@@ -7,6 +7,7 @@ import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.web.socket.config.annotation.WebSocketTransportRegistration;
 
 @Configuration
 @EnableWebSocketMessageBroker
@@ -17,17 +18,31 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(@NonNull MessageBrokerRegistry config) {
-        // Clients subscribe to /topic/... destinations
         config.enableSimpleBroker("/topic");
-        // Messages from clients start with /app
         config.setApplicationDestinationPrefixes("/app");
     }
 
     @Override
     public void registerStompEndpoints(@NonNull StompEndpointRegistry registry) {
-        // SockJS fallback for browsers that don't support native WebSocket
         registry.addEndpoint("/ws")
                 .setAllowedOriginPatterns(allowedOrigin)
                 .withSockJS();
+    }
+
+    /**
+     * Raise STOMP transport limits to accommodate Base64-encoded MP3 audio
+     * in START_DETERRANCE messages.
+     *
+     * Sizing:
+     *   A 5-second deterrence phrase at 128 kbps ≈ 80 KB MP3
+     *   → ≈107 KB after Base64 encoding (+33% overhead)
+     *   → 256 KB message limit gives comfortable headroom for longer phrases
+     *      and the JSON envelope around the audio field.
+     */
+    @Override
+    public void configureWebSocketTransport(@NonNull WebSocketTransportRegistration registration) {
+        registration.setMessageSizeLimit(256 * 1024);     // 256 KB per STOMP frame
+        registration.setSendBufferSizeLimit(512 * 1024);  // 512 KB outbound buffer per session
+        registration.setSendTimeLimit(20 * 1000);         // 20 s send timeout (TTS latency headroom)
     }
 }
