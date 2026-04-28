@@ -369,3 +369,54 @@ body {
 .event-row-alert {
     background: rgba(255,23,68,0.06);
 }
+
+/* ---- Entry Delay Countdown Banner ---- */
+.trap-polygon-pending {
+    stroke: rgba(255,196,0,0.75);
+    animation: pendingStroke 1s ease-in-out infinite;
+}
+
+@keyframes pendingStroke {
+    0%, 100% { stroke: rgba(255,196,0,0.75); }
+    50%       { stroke: rgba(255,196,0,1.0);  }
+}
+
+.countdown-label {
+    font-family: 'Rajdhani', 'Segoe UI', sans-serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--voxwall-amber);
+    margin-bottom: 0.2rem;
+}
+
+.countdown-sensor {
+    font-family: 'Rajdhani', 'Segoe UI', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.08em;
+    color: #aaa;
+    margin-bottom: 0.4rem;
+}
+
+.countdown-number {
+    font-family: 'Rajdhani', 'Segoe UI', sans-serif;
+    font-size: 5rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--voxwall-amber);
+    letter-spacing: 0.02em;
+    transition: color 0.4s ease;
+}
+
+/* Last 10 seconds: switch to red + pulse */
+.countdown-number.urgent {
+    color: var(--voxwall-red);
+    animation: alarmPulse 0.75s ease-in-out infinite;
+}
+
+.countdown-sub {
+    font-size: 0.82rem;
+    color: #777;
+    letter-spacing: 0.05em;
+    margin-top: 0.2rem;
+}

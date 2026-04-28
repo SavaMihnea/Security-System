@@ -103,6 +103,26 @@
         </div>
     </div>
 
+    <!-- Entry Delay Countdown Banner (hidden until ALARM_PENDING received) -->
+    <div class="row mb-4 d-none" id="countdownRow">
+        <div class="col-12">
+            <div class="status-banner countdown-banner p-4 text-center">
+                <svg class="trap-svg" viewBox="0 0 1000 160" preserveAspectRatio="none" aria-hidden="true">
+                    <polygon class="trap-polygon trap-polygon-pending" points="214,2 786,2 738,158 262,158" fill="#000000" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
+                </svg>
+                <div class="trap-content">
+                    <div class="countdown-label">ENTRY DELAY — ALARM PENDING</div>
+                    <div class="countdown-sensor" id="countdownSensor"></div>
+                    <div class="countdown-number" id="countdownNumber">30</div>
+                    <div class="countdown-sub" id="countdownSub">seconds until AI deterrence activates</div>
+                    <div class="mt-3">
+                        <button class="btn btn-danger px-5 fw-bold" onclick="disarm()">🔓 DISARM NOW</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Stats row -->
     <div class="row g-3 mb-4">
         <div class="col-6 col-md-3">

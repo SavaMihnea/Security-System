@@ -43,6 +43,7 @@ function updateStatusBanner(status) {
         document.getElementById('btnArmHome').classList.remove('d-none');
         document.getElementById('btnArmHomeNight').classList.remove('d-none');
         document.getElementById('btnDisarm').classList.add('d-none');
+        CountdownTimer.clear();
     } else {
         banner.classList.add(isHome ? 'status-home' : 'status-armed');
         document.getElementById('btnArmAway').classList.add('d-none');
@@ -207,6 +208,64 @@ function showAlertToast(event) {
     bootstrap.Toast.getOrCreateInstance(toastEl, { delay: 6000 }).show();
 }
 
+// ---- Countdown Timer (Entry Delay) -----------------------
+/**
+ * Manages the ALARM_PENDING countdown banner.
+ *
+ * Shown when a DOOR sensor fires in ARMED_HOME or ARMED_AWAY — the
+ * backend broadcasts ALARM_PENDING with the configured entry-delay seconds.
+ * The user has until the counter reaches 0 to hit "DISARM NOW" before
+ * Stage 1 (AI deterrence) activates on the hub.
+ *
+ * Clears itself automatically when:
+ *   - User hits Disarm (backend sends ALARM_CANCELLED → WebSocket)
+ *   - System is disarmed via any path (updateStatusBanner detects !armed)
+ */
+const CountdownTimer = (() => {
+    let _interval = null;
+
+    function show(sensorName, totalSeconds) {
+        _stopInterval();
+
+        const row    = document.getElementById('countdownRow');
+        const numEl  = document.getElementById('countdownNumber');
+        const subEl  = document.getElementById('countdownSub');
+        const senEl  = document.getElementById('countdownSensor');
+
+        senEl.textContent = `Triggered by: ${sensorName}`;
+        numEl.textContent = totalSeconds;
+        numEl.classList.remove('urgent');
+        subEl.textContent = 'seconds until AI deterrence activates';
+        row.classList.remove('d-none');
+
+        let remaining = totalSeconds;
+        _interval = setInterval(() => {
+            remaining--;
+            numEl.textContent = remaining;
+
+            if (remaining <= 10) numEl.classList.add('urgent');
+
+            if (remaining <= 0) {
+                _stopInterval();
+                subEl.textContent = 'AI deterrence is now active';
+            }
+        }, 1000);
+    }
+
+    function clear() {
+        _stopInterval();
+        document.getElementById('countdownRow').classList.add('d-none');
+        const numEl = document.getElementById('countdownNumber');
+        if (numEl) numEl.classList.remove('urgent');
+    }
+
+    function _stopInterval() {
+        if (_interval) { clearInterval(_interval); _interval = null; }
+    }
+
+    return { show, clear };
+})();
+
 // ---- WebSocket (real-time) --------------------------------
 function connectWebSocket() {
     const client = new StompJs.Client({
@@ -231,6 +290,16 @@ function connectWebSocket() {
             client.subscribe('/topic/system-status', (message) => {
                 const status = JSON.parse(message.body);
                 updateStatusBanner(status);
+            });
+
+            // Entry-delay countdown control
+            client.subscribe('/topic/alarm-pending', (message) => {
+                const data = JSON.parse(message.body);
+                if (data.command === 'ALARM_PENDING') {
+                    CountdownTimer.show(data.sensorName, data.entryDelaySeconds);
+                } else if (data.command === 'ALARM_CANCELLED') {
+                    CountdownTimer.clear();
+                }
             });
         },
         onDisconnect: () => {

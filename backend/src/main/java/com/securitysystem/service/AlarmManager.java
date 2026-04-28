@@ -163,6 +163,10 @@ public class AlarmManager {
         log.info("[STAGE1] Deterrence triggered — node={} sensor={} delay={}s session={}",
                 nodeId, sensorName, entryDelaySeconds, sessionId);
 
+        if (entryDelaySeconds > 0) {
+            broadcastAlarmPending(nodeId, sensorName, entryDelaySeconds, sessionId);
+        }
+
         aiSecurityService.generateAndBroadcastInitialDeterrence(
                 sessionId, nodeId, sensorName, entryDelaySeconds, AI_SESSION_TIMEOUT_SECONDS);
     }
@@ -247,6 +251,46 @@ public class AlarmManager {
         }
     }
 
+    /**
+     * Notifies the dashboard that a door event is in its entry-delay window.
+     * The dashboard CountdownTimer subscribes to /topic/alarm-pending and
+     * starts a visual countdown so the user can disarm before AI triggers.
+     * Only sent when entryDelaySeconds > 0 (i.e. DOOR events in HOME/AWAY modes).
+     */
+    private void broadcastAlarmPending(String nodeId, String sensorName,
+                                       long entryDelaySeconds, String sessionId) {
+        Map<String, Object> msg = new HashMap<>();
+        msg.put("command", "ALARM_PENDING");
+        msg.put("nodeId", nodeId);
+        msg.put("sensorName", sensorName);
+        msg.put("entryDelaySeconds", entryDelaySeconds);
+        msg.put("sessionId", sessionId);
+        msg.put("timestamp", Instant.now().toString());
+        try {
+            messagingTemplate.convertAndSend("/topic/alarm-pending", msg);
+            log.info("[ALARM] ALARM_PENDING broadcast — sensor={} delay={}s", sensorName, entryDelaySeconds);
+        } catch (Exception e) {
+            log.error("[ALARM] Failed to broadcast ALARM_PENDING", e);
+        }
+    }
+
+    /**
+     * Tells the dashboard to dismiss the countdown banner.
+     * Sent when the user disarms during the entry-delay window.
+     */
+    private void broadcastAlarmCancelled(String nodeId) {
+        Map<String, Object> msg = new HashMap<>();
+        msg.put("command", "ALARM_CANCELLED");
+        msg.put("nodeId", nodeId);
+        msg.put("timestamp", Instant.now().toString());
+        try {
+            messagingTemplate.convertAndSend("/topic/alarm-pending", msg);
+            log.info("[ALARM] ALARM_CANCELLED broadcast for {}", nodeId);
+        } catch (Exception e) {
+            log.error("[ALARM] Failed to broadcast ALARM_CANCELLED", e);
+        }
+    }
+
     // ============================================================
     // State Queries & Cancellation
     // ============================================================
@@ -266,6 +310,7 @@ public class AlarmManager {
             aiSecurityService.clearSession(session.sessionId);
             log.info("[ENTRY_DELAY] Alarm cancelled for {} (session: {})", nodeId, session.sessionId);
         }
+        broadcastAlarmCancelled(nodeId);
         deactivateSiren();
     }
 
