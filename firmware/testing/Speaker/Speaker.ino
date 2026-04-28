@@ -53,10 +53,9 @@ void loop() {
   float phase_increment = (2.0 * PI * TONE_FREQ) / SAMPLE_RATE;
 
   for (int i = 0; i < 256; i += 2) {
-    // Generate sine wave. 
-    // "2000" is the volume (out of a max of 32767). 
-    // It will be a clear, pleasant hum, not deafening!
-    int16_t sample = (int16_t)(sin(phase) * 2000); 
+    // Generate sine wave.
+    // Amplitude 28000 / 32767 ≈ 85% of max — loud enough to actually test the speaker.
+    int16_t sample = (int16_t)(sin(phase) * 28000);
     
     sample_buffer[i] = sample;     // Left Channel
     sample_buffer[i+1] = sample;   // Right Channel

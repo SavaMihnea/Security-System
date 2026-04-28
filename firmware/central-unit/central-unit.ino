@@ -53,7 +53,7 @@ const char* ESP_API_KEY   = "pFTF3EJ3MEKx0NE5sO1tAGouPNNeYwJ5CsPAg2zVUXgjevad";
 
 // ---- Timing constants -------------------------------------------
 #define HEARTBEAT_INTERVAL_MS    30000UL  // Sync backend every 30 s
-#define ENTRY_DELAY_MS           10000UL  // 10 s entry delay for ARMED_AWAY
+#define ENTRY_DELAY_MS           30000UL  // 30 s entry delay — matches backend AlarmManager + dashboard countdown
 #define AI_SILENCE_TIMEOUT_MS     4000UL  // Proactive statement after 4 s silence
 #define MIC_RECORD_DURATION_MS    5000UL  // Record 5 s per AI interaction
 #define MIC_AMPLITUDE_THRESHOLD    2000   // Raw I2S peak above = "sound detected"
@@ -569,7 +569,7 @@ void setup() {
 
     // Init I2S speaker (MAX98357A, I2S_NUM_0 via ESP32-audioI2S)
     audio.setPinout(I2S_SPK_BCLK, I2S_SPK_LRC, I2S_SPK_DOUT);
-    audio.setVolume(17);    // 0-21
+    audio.setVolume(21);    // 0-21, max for loudest deterrence playback
     Serial.println("[I2S] Speaker ready on I2S_NUM_0");
 
     // Init ESP-NOW
