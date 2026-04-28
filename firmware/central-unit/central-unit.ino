@@ -70,6 +70,7 @@ enum ArmMode {
 
 // ---- Runtime state ----------------------------------------------
 ArmMode       currentArmMode    = DISARMED;
+static int32_t mic_dc           = 0;          // persistent DC offset for mic filter
 bool          alarmActive       = false;
 bool          entryDelayActive  = false;
 unsigned long entryDelayStartMs = 0;
@@ -126,22 +127,27 @@ void initMic() {
 void flushMicBuffer() {
     int32_t dummy;
     size_t  bytesRead;
-    unsigned long deadline = millis() + 800UL;   // discard ~800 ms of buffered audio
+    unsigned long deadline = millis() + 1500UL;  // 1.5 s — covers DMA backlog + room reverb
     while (millis() < deadline) {
         i2s_read(I2S_NUM_1, &dummy, sizeof(dummy), &bytesRead, pdMS_TO_TICKS(10));
     }
+    mic_dc = 0;   // reset DC filter so it re-converges on fresh audio
     Serial.println("[MIC] Buffer flushed");
 }
 
-// Sample 512 frames and return peak amplitude
+// Sample 800 frames (~50 ms) with DC filtering and return peak of centred signal.
+// 800 samples matches Microphone.ino so the same threshold values apply.
+// DC filtering prevents mic bias from inflating the reading.
 int32_t measureMicAmplitude() {
     int32_t sample;
     size_t  bytesRead;
     int32_t peak = 0;
-    for (int i = 0; i < 512; i++) {
+    for (int i = 0; i < 800; i++) {
         i2s_read(I2S_NUM_1, &sample, sizeof(sample), &bytesRead, portMAX_DELAY);
-        sample >>= 8;   // 24-bit value in upper 24 bits of 32-bit slot
-        if (abs(sample) > peak) peak = abs(sample);
+        int32_t val = sample >> 8;
+        mic_dc = (mic_dc * 99 + val) / 100;    // slow DC filter, same as Microphone.ino
+        int32_t centred = val - mic_dc;
+        if (abs(centred) > peak) peak = abs(centred);
     }
     return peak;
 }
@@ -466,13 +472,20 @@ void runAiConversation() {
         Serial.printf("[MIC] Amplitude: %d\n", amplitude);
 
         if (amplitude > MIC_AMPLITUDE_THRESHOLD) {
-            Serial.printf("[MIC] Sound detected (amp=%d) — recording 5 s\n", amplitude);
-
-            if (recordToSpiffs() > 0 && postWavAndSaveMp3(aiSessionId)) {
-                playMp3("/response.mp3");
-                flushMicBuffer();   // prevent speaker audio from triggering another recording
+            // Second reading (~50 ms later) to confirm the sound is sustained.
+            // A single electrical spike or click passes the first check but fails
+            // the second; real speech stays above threshold for hundreds of ms.
+            int32_t confirm = measureMicAmplitude();
+            if (confirm > MIC_AMPLITUDE_THRESHOLD) {
+                Serial.printf("[MIC] Confirmed sound (amp=%d confirm=%d) — recording 5 s\n", amplitude, confirm);
+                if (recordToSpiffs() > 0 && postWavAndSaveMp3(aiSessionId)) {
+                    playMp3("/response.mp3");
+                    flushMicBuffer();
+                }
+            } else {
+                Serial.printf("[MIC] Spike filtered (amp=%d confirm=%d)\n", amplitude, confirm);
             }
-            // Reset timers AFTER flush so they count from the end of this interaction
+            // Reset timers regardless — even a filtered spike counts as recent activity
             lastSoundMs     = millis();
             lastProactiveMs = millis();
 
@@ -487,8 +500,7 @@ void runAiConversation() {
             }
             lastProactiveMs = millis();
         }
-
-        delay(100);   // 100 ms between amplitude checks
+        // No extra delay — measureMicAmplitude() already takes ~50 ms per call
     }
     // ---------------------------
 
