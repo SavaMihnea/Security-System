@@ -35,6 +35,9 @@ public class AiController {
         }
 
         byte[] audio = aiService.generateAlarmStartSpeech(sessionId);
+        if (audio == null || audio.length == 0) {
+            return ResponseEntity.status(503).build();
+        }
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType("audio/mpeg"))
                 .body(audio);
@@ -54,6 +57,9 @@ public class AiController {
         }
 
         byte[] audio = aiService.generateProactiveStatement(sessionId);
+        if (audio == null || audio.length == 0) {
+            return ResponseEntity.status(503).build();
+        }
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType("audio/mpeg"))
                 .body(audio);

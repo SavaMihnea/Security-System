@@ -192,10 +192,23 @@ size_t recordToSpiffs() {
 
 // Play an MP3 file from SPIFFS (blocks until playback finishes)
 void playMp3(const char* path) {
+    File f = SPIFFS.open(path, "r");
+    if (!f) {
+        Serial.printf("[AUDIO] File not found: %s\n", path);
+        return;
+    }
+    size_t sz = f.size();
+    f.close();
+    if (sz < 512) {
+        Serial.printf("[AUDIO] File too small (%u bytes), skipping: %s\n", sz, path);
+        return;
+    }
+    Serial.printf("[AUDIO] Playing %s (%u bytes)\n", path, sz);
     audio.connecttoFS(SPIFFS, path);
     while (audio.isRunning()) {
         audio.loop();
     }
+    Serial.println("[AUDIO] Playback complete");
 }
 
 // =================================================================
@@ -389,17 +402,29 @@ void runAiConversation() {
         snprintf(aiSessionId, sizeof(aiSessionId), "alarm_%lu", millis());
     }
 
+    // Check pre-fetched file is valid (non-empty); fetch now if not
     if (audioPreloaded) {
-        // Audio was fetched during the entry delay countdown — play immediately.
+        File chk = SPIFFS.open("/deterrence.mp3", "r");
+        size_t preloadedSize = chk ? chk.size() : 0;
+        if (chk) chk.close();
+        Serial.printf("[AI] Pre-fetched file size: %u bytes\n", preloadedSize);
+        if (preloadedSize < 512) {
+            Serial.println("[AI] Pre-fetched file empty/invalid — re-fetching");
+            audioPreloaded = false;
+        }
+    }
+
+    if (audioPreloaded) {
         Serial.println("[AI] Playing pre-fetched deterrence audio");
         playMp3("/deterrence.mp3");
         audioPreloaded = false;
     } else {
-        // No pre-fetch (ARMED_HOME_NIGHT or motion/vibration path) — fetch now.
         Serial.println("[AI] Fetching deterrence audio...");
         String url = String(BACKEND_URL) + "/api/ai/alarm-start";
         if (postAndSaveMp3(url, "{}", aiSessionId, "/deterrence.mp3")) {
             playMp3("/deterrence.mp3");
+        } else {
+            Serial.println("[AI] WARNING: deterrence audio fetch failed (check backend logs)");
         }
     }
 
@@ -628,7 +653,7 @@ void setup() {
 
     // Init I2S speaker (MAX98357A, I2S_NUM_0 via ESP32-audioI2S)
     audio.setPinout(I2S_SPK_BCLK, I2S_SPK_LRC, I2S_SPK_DOUT);
-    audio.setVolume(16);    // 0-21; scaled to keep output peaks ≤ 18000 raw (USB supply limit)
+    audio.setVolume(21);    // 0-21, max — TTS voice audio well within USB supply limits
     Serial.println("[I2S] Speaker ready on I2S_NUM_0");
 
     // Init ESP-NOW

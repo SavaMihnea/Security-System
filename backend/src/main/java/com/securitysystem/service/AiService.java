@@ -42,7 +42,7 @@ public class AiService {
     private final ObjectMapper objectMapper;
     private final RestClient restClient;
 
-    // sessionId → list of {role, content} messages for GPT-5.4-mini
+    // sessionId → list of {role, content} messages for GPT-4o-mini
     private final Map<String, List<Map<String, String>>> conversations = new ConcurrentHashMap<>();
 
     private static final String SYSTEM_PROMPT =
@@ -138,7 +138,7 @@ public class AiService {
         history.add(Map.of("role", "user", "content", userMessage));
 
         Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("model", "gpt-5.4-mini");
+        requestBody.put("model", "gpt-4o-mini");
         requestBody.put("messages", history);
         requestBody.put("max_tokens", 100);
         requestBody.put("temperature", 0.7);
