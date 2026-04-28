@@ -40,7 +40,7 @@ public class AlarmManager {
     private final Map<String, Instant> activeEntryDelays = new ConcurrentHashMap<>();
     private final Map<String, Stage1Session> activeStage1Sessions = new ConcurrentHashMap<>();
 
-    private static final long ENTRY_DELAY_SECONDS = 30;
+    private static final long ENTRY_DELAY_SECONDS = 20;
     private static final long AI_SESSION_TIMEOUT_SECONDS = 120;
 
     // ============================================================

@@ -53,7 +53,7 @@ const char* ESP_API_KEY   = "pFTF3EJ3MEKx0NE5sO1tAGouPNNeYwJ5CsPAg2zVUXgjevad";
 
 // ---- Timing constants -------------------------------------------
 #define HEARTBEAT_INTERVAL_MS    30000UL  // Sync backend every 30 s
-#define ENTRY_DELAY_MS           30000UL  // 30 s entry delay — matches backend AlarmManager + dashboard countdown
+#define ENTRY_DELAY_MS           20000UL  // 20 s entry delay — matches backend AlarmManager + dashboard countdown
 #define AI_SILENCE_TIMEOUT_MS     4000UL  // Proactive statement after 4 s silence
 #define MIC_RECORD_DURATION_MS    5000UL  // Record 5 s per AI interaction
 #define MIC_AMPLITUDE_THRESHOLD   20000   // Raw I2S peak above = "sound detected"
@@ -125,13 +125,16 @@ void initMic() {
 // it into the DMA ring buffer. Without flushing, the next measureMicAmplitude()
 // reads that stale speaker audio → false trigger → infinite response loop.
 void flushMicBuffer() {
-    int32_t dummy;
+    int32_t sample;
     size_t  bytesRead;
     unsigned long deadline = millis() + 1500UL;  // 1.5 s — covers DMA backlog + room reverb
     while (millis() < deadline) {
-        i2s_read(I2S_NUM_1, &dummy, sizeof(dummy), &bytesRead, pdMS_TO_TICKS(10));
+        i2s_read(I2S_NUM_1, &sample, sizeof(sample), &bytesRead, pdMS_TO_TICKS(10));
+        int32_t val = sample >> 8;
+        mic_dc = (mic_dc * 99 + val) / 100;    // keep DC filter tracking during flush
     }
-    mic_dc = 0;   // reset DC filter so it re-converges on fresh audio
+    // DO NOT reset mic_dc — the filter must stay converged so the first
+    // measureMicAmplitude() after the flush reads centred samples, not raw DC offset.
     Serial.println("[MIC] Buffer flushed");
 }
 
