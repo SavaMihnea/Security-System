@@ -5,23 +5,32 @@
 #define I2S_MIC_WS   4   // INMP441 WS   → GPIO 4
 #define I2S_MIC_SD   6   // INMP441 SD   → GPIO 6
 
-// Must use I2S_NUM_1 — same port as central-unit.ino.
-// I2S_NUM_0 is reserved for the MAX98357A speaker.
-#define MIC_I2S_PORT I2S_NUM_1
+#define MIC_I2S_PORT    I2S_NUM_1
+#define SAMPLE_RATE     16000
 
-int32_t dc_offset = 0;
+// One amplitude reading per 50 ms window (800 samples at 16 kHz).
+// At 50 ms per print the Serial port handles it easily and the
+// Serial Plotter shows a clean loudness-meter envelope instead of
+// a wall of noise.
+#define SAMPLES_PER_WINDOW 800
+
+// Running DC offset — removes the mic's slow bias so the peak
+// measurement reflects real audio content, not the baseline drift.
+static int32_t g_dc = 0;
 
 void setup() {
   Serial.begin(115200);
   delay(1000);
-  Serial.println("=== INMP441 Microphone Test ===");
-  Serial.println("Open Serial Plotter to see the waveform.");
-  Serial.println("Talk or clap — you should see the wave spike.");
 
-  i2s_config_t i2s_config = {
+  Serial.println("=== INMP441 Amplitude Meter ===");
+  Serial.println("Open Serial Plotter.");
+  Serial.println("Silence = flat low line.  Clap or speak = clear spike.");
+  Serial.println("If nothing moves at all, check SCK/WS/SD wiring and L/R pin (must be tied to GND).");
+
+  i2s_config_t config = {
     .mode                 = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX),
-    .sample_rate          = 16000,
-    .bits_per_sample      = I2S_BITS_PER_SAMPLE_32BIT,  // INMP441: 24-bit in 32-bit slot
+    .sample_rate          = SAMPLE_RATE,
+    .bits_per_sample      = I2S_BITS_PER_SAMPLE_32BIT,
     .channel_format       = I2S_CHANNEL_FMT_ONLY_LEFT,
     .communication_format = I2S_COMM_FORMAT_STAND_I2S,
     .intr_alloc_flags     = ESP_INTR_FLAG_LEVEL1,
@@ -30,42 +39,53 @@ void setup() {
     .use_apll             = false
   };
 
-  i2s_pin_config_t pin_config = {
+  i2s_pin_config_t pins = {
     .bck_io_num   = I2S_MIC_SCK,
     .ws_io_num    = I2S_MIC_WS,
     .data_out_num = I2S_PIN_NO_CHANGE,
     .data_in_num  = I2S_MIC_SD
   };
 
-  if (i2s_driver_install(MIC_I2S_PORT, &i2s_config, 0, NULL) != ESP_OK) {
-    Serial.println("ERROR: Failed to install I2S driver!");
+  if (i2s_driver_install(MIC_I2S_PORT, &config, 0, NULL) != ESP_OK) {
+    Serial.println("ERROR: i2s_driver_install failed!");
+    while (true) delay(1000);
+  }
+  if (i2s_set_pin(MIC_I2S_PORT, &pins) != ESP_OK) {
+    Serial.println("ERROR: i2s_set_pin failed!");
     while (true) delay(1000);
   }
 
-  if (i2s_set_pin(MIC_I2S_PORT, &pin_config) != ESP_OK) {
-    Serial.println("ERROR: Failed to set I2S pins!");
-    while (true) delay(1000);
-  }
-
-  Serial.println("Microphone ready.");
+  Serial.println("Mic ready. Waiting for sound...");
 }
 
 void loop() {
-  int32_t raw_sample = 0;
-  size_t  bytes_read = 0;
+  int32_t peak = 0;
+  int32_t sample;
+  size_t  bytes_read;
 
-  esp_err_t result = i2s_read(MIC_I2S_PORT, &raw_sample, sizeof(raw_sample), &bytes_read, portMAX_DELAY);
+  // Read one 50 ms window, track DC, find peak of centred signal
+  for (int i = 0; i < SAMPLES_PER_WINDOW; i++) {
+    i2s_read(MIC_I2S_PORT, &sample, sizeof(sample), &bytes_read, portMAX_DELAY);
 
-  if (result == ESP_OK && bytes_read > 0) {
-    // INMP441 puts data in the upper 24 bits of the 32-bit I2S slot.
-    // Shift right by 8 to get a centred 24-bit value.
-    int32_t sample = raw_sample >> 8;
+    // INMP441 data is left-justified (audio in upper 24 bits of 32-bit slot)
+    int32_t val = sample >> 8;
 
-    // Remove DC offset with a slow-moving average (same technique as production code)
-    dc_offset = (dc_offset * 99 + sample) / 100;
-    int32_t centered = sample - dc_offset;
+    // Slow DC filter — converges in ~100 ms, then tracks any long-term drift
+    g_dc = (g_dc * 99 + val) / 100;
+    int32_t centred = val - g_dc;
 
-    // Print for Serial Plotter
-    Serial.println(centered);
+    if (abs(centred) > peak) peak = abs(centred);
   }
+
+  // One value per 50 ms → Serial Plotter shows a smooth amplitude envelope.
+  // Also print a text bar to Serial Monitor for quick threshold calibration.
+  int bars = peak / 500;
+  if (bars > 40) bars = 40;
+  char bar[42];
+  memset(bar, '|', bars);
+  bar[bars] = '\0';
+  Serial.printf("amp=%6d  %s\n", peak, bar);
+
+  // Uncomment this line instead if you only want the clean Serial Plotter graph:
+  // Serial.println(peak);
 }

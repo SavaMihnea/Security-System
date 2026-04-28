@@ -389,16 +389,51 @@ void runAiConversation() {
         playMp3("/deterrence.mp3");
     }
 
-    // --- TEMPORARY BYPASS FOR DEAD MIC ---
-    // We are skipping the while(alarmActive) microphone reading loop 
-    // so the ESP32 doesn't record static and crash. 
-    // It will just wait here peacefully until you disarm via the dashboard.
-    
+    // --- Mic monitoring loop ---
+    // Continuously samples mic amplitude.
+    //   Sound detected  → record 5 s WAV → Whisper + GPT + TTS → play response
+    //   4 s of silence  → play a proactive deterrence statement
+    //   Disarm via dashboard → sendHeartbeat() detects DISARMED → alarmActive = false → exit
+    unsigned long lastSoundMs     = millis();
+    unsigned long lastProactiveMs = millis();
+
+    Serial.println("[AI] Mic monitoring loop started");
+
     while (alarmActive) {
-         sendHeartbeat(); // Keep checking if you clicked "Disarm" on the website
-         delay(5000);     // Wait 5 seconds between checks
+        // Sync arm state with backend every HEARTBEAT_INTERVAL_MS
+        if (millis() - lastHeartbeatMs >= HEARTBEAT_INTERVAL_MS) {
+            lastHeartbeatMs = millis();
+            sendHeartbeat();
+            if (!alarmActive) break;
+        }
+
+        int32_t amplitude = measureMicAmplitude();
+        Serial.printf("[MIC] Amplitude: %d\n", amplitude);
+
+        if (amplitude > MIC_AMPLITUDE_THRESHOLD) {
+            // Sound detected — record and respond
+            lastSoundMs = millis();
+            Serial.printf("[MIC] Sound detected (amp=%d) — recording 5 s\n", amplitude);
+
+            if (recordToSpiffs() > 0 && postWavAndSaveMp3(aiSessionId)) {
+                playMp3("/response.mp3");
+            }
+            lastProactiveMs = millis();   // Reset proactive timer after we responded
+
+        } else if ((millis() - lastSoundMs     >= AI_SILENCE_TIMEOUT_MS) &&
+                   (millis() - lastProactiveMs >= AI_SILENCE_TIMEOUT_MS)) {
+            // Silence for AI_SILENCE_TIMEOUT_MS — say something unprompted
+            Serial.println("[MIC] Silence — playing proactive deterrence");
+            String url = String(BACKEND_URL) + "/api/ai/proactive";
+            if (postAndSaveMp3(url, "{}", aiSessionId, "/proactive.mp3")) {
+                playMp3("/proactive.mp3");
+            }
+            lastProactiveMs = millis();
+        }
+
+        delay(100);   // 100 ms between amplitude checks
     }
-    // -------------------------------------
+    // ---------------------------
 
     aiSessionId[0] = '\0';
     Serial.println("[AI] Conversation ended");
