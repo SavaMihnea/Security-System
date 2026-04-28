@@ -399,6 +399,7 @@ body {
 }
 
 .countdown-number {
+    display: inline-block;
     font-family: 'Rajdhani', 'Segoe UI', sans-serif;
     font-size: 5rem;
     font-weight: 700;
@@ -408,10 +409,23 @@ body {
     transition: color 0.4s ease;
 }
 
-/* Last 10 seconds: switch to red + pulse */
+@keyframes countdownUrgentGlow {
+    0%, 100% { text-shadow: 0 0 8px rgba(255,23,68,0.7), 0 0 18px rgba(255,23,68,0.3); }
+    50%       { text-shadow: 0 0 22px rgba(255,23,68,1.0), 0 0 44px rgba(255,23,68,0.6); }
+}
+
+/* Last 10 seconds: switch to red + text glow only */
 .countdown-number.urgent {
     color: var(--voxwall-red);
-    animation: alarmPulse 0.75s ease-in-out infinite;
+    animation: countdownUrgentGlow 0.75s ease-in-out infinite;
+}
+
+/* Countdown reached 0: THREAT IMMINENT label */
+.countdown-number.threat {
+    font-size: 2.8rem;
+    letter-spacing: 0.12em;
+    color: var(--voxwall-red);
+    animation: countdownUrgentGlow 0.5s ease-in-out infinite;
 }
 
 .countdown-sub {

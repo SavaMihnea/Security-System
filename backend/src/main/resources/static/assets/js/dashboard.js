@@ -247,7 +247,10 @@ const CountdownTimer = (() => {
 
             if (remaining <= 0) {
                 _stopInterval();
-                subEl.textContent = 'AI deterrence is now active';
+                numEl.textContent = 'THREAT IMMINENT';
+                numEl.classList.remove('urgent');
+                numEl.classList.add('threat');
+                subEl.textContent = '';
             }
         }, 1000);
     }
@@ -256,7 +259,10 @@ const CountdownTimer = (() => {
         _stopInterval();
         document.getElementById('countdownRow').classList.add('d-none');
         const numEl = document.getElementById('countdownNumber');
-        if (numEl) numEl.classList.remove('urgent');
+        if (numEl) {
+            numEl.classList.remove('urgent');
+            numEl.classList.remove('threat');
+        }
     }
 
     function _stopInterval() {

@@ -56,7 +56,7 @@ const char* ESP_API_KEY   = "pFTF3EJ3MEKx0NE5sO1tAGouPNNeYwJ5CsPAg2zVUXgjevad";
 #define ENTRY_DELAY_MS           30000UL  // 30 s entry delay — matches backend AlarmManager + dashboard countdown
 #define AI_SILENCE_TIMEOUT_MS     4000UL  // Proactive statement after 4 s silence
 #define MIC_RECORD_DURATION_MS    5000UL  // Record 5 s per AI interaction
-#define MIC_AMPLITUDE_THRESHOLD    2000   // Raw I2S peak above = "sound detected"
+#define MIC_AMPLITUDE_THRESHOLD   20000   // Raw I2S peak above = "sound detected"
 #define MIC_SAMPLE_RATE           16000   // Hz (Whisper requirement)
 // -----------------------------------------------------------------
 
@@ -76,6 +76,7 @@ unsigned long entryDelayStartMs = 0;
 char          nodeId[30]        = "CENTRAL_S3";
 unsigned long lastHeartbeatMs   = 0;
 char          aiSessionId[40]   = "";
+bool          audioPreloaded    = false;  // Set when /deterrence.mp3 pre-fetched during entry delay
 
 // Non-blocking ESP-NOW event queue (processing heavy HTTP in loop, not in callback)
 volatile bool pendingEvent  = false;
@@ -328,6 +329,8 @@ void parseStatusResponse(const String& json) {
     if (currentArmMode == DISARMED && (alarmActive || entryDelayActive)) {
         alarmActive      = false;
         entryDelayActive = false;
+        audioPreloaded   = false;
+        aiSessionId[0]   = '\0';
         digitalWrite(RELAY_SIREN_PIN, LOW);
         Serial.println("[SYNC] Alarm/delay cancelled by remote disarm");
     }
@@ -379,14 +382,25 @@ void registerWithBackend() {
 // =================================================================
 void runAiConversation() {
     Serial.println("[AI] Starting conversation...");
-    snprintf(aiSessionId, sizeof(aiSessionId), "alarm_%lu", millis());
 
-    String url = String(BACKEND_URL) + "/api/ai/alarm-start";
-    String emptyBody = "{}";
-    
-    // Play the warning over the speaker
-    if (postAndSaveMp3(url, emptyBody, aiSessionId, "/deterrence.mp3")) {
+    // Session ID may already be set when audio was pre-fetched during entry delay.
+    // Generate a new one only on the immediate-alarm path (no entry delay).
+    if (aiSessionId[0] == '\0') {
+        snprintf(aiSessionId, sizeof(aiSessionId), "alarm_%lu", millis());
+    }
+
+    if (audioPreloaded) {
+        // Audio was fetched during the entry delay countdown — play immediately.
+        Serial.println("[AI] Playing pre-fetched deterrence audio");
         playMp3("/deterrence.mp3");
+        audioPreloaded = false;
+    } else {
+        // No pre-fetch (ARMED_HOME_NIGHT or motion/vibration path) — fetch now.
+        Serial.println("[AI] Fetching deterrence audio...");
+        String url = String(BACKEND_URL) + "/api/ai/alarm-start";
+        if (postAndSaveMp3(url, "{}", aiSessionId, "/deterrence.mp3")) {
+            playMp3("/deterrence.mp3");
+        }
     }
 
     // --- Mic monitoring loop ---
@@ -523,15 +537,25 @@ void handleSensorEvent(const char* fromNodeId, const char* eventType) {
         case ARMED_AWAY:
             if (alarmActive) break;  // Already alarmed
 
-            if (isDoorEvent(eventType) && !entryDelayActive) { //
-                // Door opened: start 10-second entry delay countdown
+            if (isDoorEvent(eventType) && !entryDelayActive) {
+                // Door opened: start 30-second entry delay countdown
                 entryDelayActive  = true;
-                entryDelayStartMs = millis(); //
-                Serial.println("[ENTRY DELAY] 10 seconds to disarm...");
-                sendEventToBackend(nodeId, "ALARM_TRIGGERED", "Entry delay started"); //
+                entryDelayStartMs = millis();
+                Serial.println("[ENTRY DELAY] 30 seconds to disarm...");
+                sendEventToBackend(nodeId, "ALARM_TRIGGERED", "Entry delay started");
+
+                // Pre-fetch TTS audio now so it plays the instant the countdown ends.
+                // The HTTP call blocks ~3-5 s, which is fine — we have 30 s to spare.
+                snprintf(aiSessionId, sizeof(aiSessionId), "alarm_%lu", millis());
+                Serial.println("[AI] Pre-fetching alarm audio during entry delay...");
+                String aiUrl = String(BACKEND_URL) + "/api/ai/alarm-start";
+                audioPreloaded = postAndSaveMp3(aiUrl, "{}", aiSessionId, "/deterrence.mp3");
+                if (audioPreloaded) Serial.println("[AI] Alarm audio ready.");
+                else                Serial.println("[AI] Pre-fetch failed, will retry at alarm start.");
+
             } else if (!isDoorEvent(eventType)) {
                 // Motion or vibration during AWAY: immediate alarm
-                triggerAlarm(fromNodeId, eventType); //
+                triggerAlarm(fromNodeId, eventType);
             }
             break;
     }
