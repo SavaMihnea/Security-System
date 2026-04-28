@@ -119,6 +119,20 @@ void initMic() {
     i2s_set_pin(I2S_NUM_1, &pins);
 }
 
+// Drain the I2S mic DMA buffer after speaker playback.
+// During playMp3() the speaker fills the room with sound; the INMP441 captures
+// it into the DMA ring buffer. Without flushing, the next measureMicAmplitude()
+// reads that stale speaker audio → false trigger → infinite response loop.
+void flushMicBuffer() {
+    int32_t dummy;
+    size_t  bytesRead;
+    unsigned long deadline = millis() + 800UL;   // discard ~800 ms of buffered audio
+    while (millis() < deadline) {
+        i2s_read(I2S_NUM_1, &dummy, sizeof(dummy), &bytesRead, pdMS_TO_TICKS(10));
+    }
+    Serial.println("[MIC] Buffer flushed");
+}
+
 // Sample 512 frames and return peak amplitude
 int32_t measureMicAmplitude() {
     int32_t sample;
@@ -417,12 +431,14 @@ void runAiConversation() {
     if (audioPreloaded) {
         Serial.println("[AI] Playing pre-fetched deterrence audio");
         playMp3("/deterrence.mp3");
+        flushMicBuffer();   // drain DMA of speaker audio before mic monitoring begins
         audioPreloaded = false;
     } else {
         Serial.println("[AI] Fetching deterrence audio...");
         String url = String(BACKEND_URL) + "/api/ai/alarm-start";
         if (postAndSaveMp3(url, "{}", aiSessionId, "/deterrence.mp3")) {
             playMp3("/deterrence.mp3");
+            flushMicBuffer();
         } else {
             Serial.println("[AI] WARNING: deterrence audio fetch failed (check backend logs)");
         }
@@ -450,22 +466,24 @@ void runAiConversation() {
         Serial.printf("[MIC] Amplitude: %d\n", amplitude);
 
         if (amplitude > MIC_AMPLITUDE_THRESHOLD) {
-            // Sound detected — record and respond
-            lastSoundMs = millis();
             Serial.printf("[MIC] Sound detected (amp=%d) — recording 5 s\n", amplitude);
 
             if (recordToSpiffs() > 0 && postWavAndSaveMp3(aiSessionId)) {
                 playMp3("/response.mp3");
+                flushMicBuffer();   // prevent speaker audio from triggering another recording
             }
-            lastProactiveMs = millis();   // Reset proactive timer after we responded
+            // Reset timers AFTER flush so they count from the end of this interaction
+            lastSoundMs     = millis();
+            lastProactiveMs = millis();
 
         } else if ((millis() - lastSoundMs     >= AI_SILENCE_TIMEOUT_MS) &&
                    (millis() - lastProactiveMs >= AI_SILENCE_TIMEOUT_MS)) {
             // Silence for AI_SILENCE_TIMEOUT_MS — say something unprompted
             Serial.println("[MIC] Silence — playing proactive deterrence");
-            String url = String(BACKEND_URL) + "/api/ai/proactive";
-            if (postAndSaveMp3(url, "{}", aiSessionId, "/proactive.mp3")) {
+            String proactiveUrl = String(BACKEND_URL) + "/api/ai/proactive";
+            if (postAndSaveMp3(proactiveUrl, "{}", aiSessionId, "/proactive.mp3")) {
                 playMp3("/proactive.mp3");
+                flushMicBuffer();
             }
             lastProactiveMs = millis();
         }

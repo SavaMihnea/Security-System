@@ -239,6 +239,13 @@ public class AiService {
         log.info("AI conversation session cleared: {}", sessionId);
     }
 
+    /** Clears ALL active sessions. Called on system disarm to ensure READY status. */
+    public void clearAllSessions() {
+        int count = conversations.size();
+        conversations.clear();
+        log.info("All AI sessions cleared ({} removed)", count);
+    }
+
     public int getActiveSessionCount() {
         return conversations.size();
     }

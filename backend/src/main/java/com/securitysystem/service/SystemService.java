@@ -20,6 +20,7 @@ public class SystemService {
     private final SystemConfigRepository systemConfigRepository;
     private final EventRepository eventRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final AiService aiService;
 
     public SystemStatusDto getStatus() {
         return SystemStatusDto.from(getConfig());
@@ -35,6 +36,10 @@ public class SystemService {
 
         SystemConfig saved = systemConfigRepository.save(config);
         SystemStatusDto dto = SystemStatusDto.from(saved);
+
+        if (mode == SystemConfig.ArmMode.DISARMED) {
+            aiService.clearAllSessions();
+        }
 
         // Log arm/disarm as an Event for the audit trail
         Event event = new Event();
