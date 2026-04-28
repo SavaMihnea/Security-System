@@ -628,7 +628,7 @@ void setup() {
 
     // Init I2S speaker (MAX98357A, I2S_NUM_0 via ESP32-audioI2S)
     audio.setPinout(I2S_SPK_BCLK, I2S_SPK_LRC, I2S_SPK_DOUT);
-    audio.setVolume(21);    // 0-21, max for loudest deterrence playback
+    audio.setVolume(16);    // 0-21; scaled to keep output peaks ≤ 18000 raw (USB supply limit)
     Serial.println("[I2S] Speaker ready on I2S_NUM_0");
 
     // Init ESP-NOW
