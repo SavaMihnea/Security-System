@@ -143,13 +143,3 @@ firmware/
 See **WIRING_GUIDE.txt** for full wiring instructions including all sensor node types.
 
 ---
-
-## Default Credentials ⚠️
-
-| What | Value |
-|---|---|
-| Dashboard login | `admin` / `admin123` |
-| ESP API Key | set in `application.properties` |
-| JWT Secret | set in `application.properties` |
-
-**Change all of these before deploying.**
