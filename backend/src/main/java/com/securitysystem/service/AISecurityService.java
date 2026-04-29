@@ -80,6 +80,13 @@ public class AISecurityService {
         }
 
         boolean hasAudio = mp3Bytes != null && mp3Bytes.length > 0;
+
+        // Store in AiService cache so the firmware's /api/ai/alarm-start call returns instantly
+        // instead of triggering a duplicate OpenAI round-trip.
+        if (hasAudio) {
+            aiService.storePreGenerated(sessionId, mp3Bytes);
+        }
+
         String audioBase64 = hasAudio ? Base64.getEncoder().encodeToString(mp3Bytes) : null;
 
         Map<String, Object> payload = new LinkedHashMap<>();

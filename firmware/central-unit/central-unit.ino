@@ -55,7 +55,7 @@ const char* ESP_API_KEY   = "pFTF3EJ3MEKx0NE5sO1tAGouPNNeYwJ5CsPAg2zVUXgjevad";
 #define HEARTBEAT_INTERVAL_MS    30000UL  // Sync backend every 30 s
 #define ENTRY_DELAY_MS           20000UL  // 20 s entry delay — matches backend AlarmManager + dashboard countdown
 #define PROACTIVE_INTERVAL_MS    12000UL  // Proactive statement every 12 s regardless of mic
-#define MIC_RECORD_DURATION_MS    5000UL  // Record 5 s per AI interaction
+#define MIC_RECORD_DURATION_MS    2500UL  // Record 2.5 s per AI interaction (faster response cycle)
 #define MIC_AMPLITUDE_THRESHOLD   20000   // Raw I2S peak above = "sound detected"
 #define MIC_SAMPLE_RATE           16000   // Hz (Whisper requirement)
 // -----------------------------------------------------------------

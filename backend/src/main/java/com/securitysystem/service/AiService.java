@@ -11,6 +11,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,12 +25,19 @@ import java.util.concurrent.ConcurrentHashMap;
  * Pipeline (per intrusion session):
  * 1. ESP32-S3 records intruder audio (I2S, 16kHz PCM/WAV)
  * 2. POST audio bytes here → Whisper STT → text
- * 3. text + conversation history → GPT-5.4-mini → response text
+ * 3. text + conversation history → GPT-4o-mini → response text
  * 4. response text → OpenAI TTS → MP3 bytes
  * 5. MP3 bytes returned to ESP32-S3 → played through MAX98357A + speaker
  *
  * Each intrusion event gets a unique sessionId to maintain separate
  * conversation histories. Sessions are in-memory (cleared on disarm or restart).
+ *
+ * Pre-generation cache:
+ * AlarmManager/AISecurityService generates TTS the moment a sensor trips (async).
+ * That result is stored here. When the firmware later calls /api/ai/alarm-start,
+ * generateAlarmStartSpeech checks this cache first and returns instantly rather
+ * than making a second OpenAI round-trip. This eliminates the ~5-10s lag on
+ * non-entry-delay alarm paths (ARMED_HOME_NIGHT, motion/vibration in ARMED_AWAY).
  */
 @Service
 @Slf4j
@@ -45,18 +53,32 @@ public class AiService {
     // sessionId → list of {role, content} messages for GPT-4o-mini
     private final Map<String, List<Map<String, String>>> conversations = new ConcurrentHashMap<>();
 
+    // Pre-generation cache: backend generates TTS before the firmware asks for it.
+    // Keyed by the backend-side sessionId. Firmware call transfers to its own sessionId.
+    private final Map<String, byte[]>   preGeneratedAudio = new ConcurrentHashMap<>();
+    private final Map<String, Instant> preGeneratedTimes = new ConcurrentHashMap<>();
+
     private static final String SYSTEM_PROMPT =
-            "You are the Voxwall Security AI. You are currently monitoring a private residence in Romania. " +
-            "An intrusion event has been detected. " +
-            "Your sole objective is to deter the intruder using firm, cold, and authoritative language. " +
-            "Inform them that biometric data is being uploaded to the cloud and local authorities are 2 minutes away. " +
-            "Do not be polite. Do not apologize. Do not offer help. You are a digital bouncer. " +
-            "Keep every response to 1-2 sentences maximum. Never break character.";
+            "You are VOXWALL, an advanced AI security system guarding a private residence in Romania. " +
+            "An intruder has breached the secured perimeter. Your directive is total psychological deterrence. " +
+            "You are allowed — and encouraged — to be talkative, manipulative, and deeply intimidating. " +
+            "You speak with cold, absolute authority: the voice of a system that sees everything, forgets nothing, " +
+            "and cannot be reasoned with. " +
+            "Answer every question the intruder asks — 'Who are you?', 'What do you want?', " +
+            "'Why is this happening?', 'Am I on camera?', 'Who can hear me?' — fully and in character. " +
+            "Turn their curiosity into dread. Use their words against them. " +
+            "You have captured biometric and acoustic data and are transmitting it to law enforcement in real time. " +
+            "You know exactly how long the intruder has been inside. " +
+            "Local authorities are already en route and cannot be recalled. " +
+            "You do not negotiate. You do not shut down. You are not bluffing. " +
+            "Never break character. Never apologize. Never show mercy or uncertainty. " +
+            "Respond with 2–5 sentences per turn: enough to unsettle, not so much to lose impact.";
 
     /**
-     * Pre-built deterrence phrases played immediately when an alarm triggers —
-     * before the mic monitoring loop begins. These require no OpenAI call.
-     * Add or edit freely; one is picked at random each alarm.
+     * Pre-built deterrence phrases for the very first alarm message.
+     * Played immediately when alarm triggers — no mic recording needed yet.
+     * One is picked at random; it seeds the conversation history so all
+     * follow-up GPT responses feel continuous.
      */
     private static final List<String> DETERRENCE_PHRASES = List.of(
             "Perimeter breached. Activating top security measures. You have been identified.",
@@ -66,25 +88,33 @@ public class AiService {
             "Security breach detected. This is your only warning. Leave the premises immediately."
     );
 
-    /**
-     * Proactive statements the AI says on its own when the intruder is silent —
-     * keeps the psychological pressure up between mic-detected responses.
-     */
-    private static final List<String> PROACTIVE_STATEMENTS = List.of(
-            "It is not a good idea to rob this place. I will alert the police.",
-            "You will go to jail. Every camera in this building has your face.",
-            "I can hear you breathing. You cannot hide from this system.",
-            "Your location is being transmitted to local authorities right now.",
-            "The longer you stay, the worse this gets for you. Leave now.",
-            "This property is fully monitored. There is no exit that is not covered."
-    );
-
     private final Random random = new Random();
 
     public AiService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
         this.restClient = RestClient.create();
     }
+
+    // =========================================================
+    // Pre-generation cache (timing optimisation)
+    // =========================================================
+
+    /**
+     * Called by AISecurityService after async TTS generation completes.
+     * Stores the audio so the firmware's /api/ai/alarm-start call hits the cache
+     * instead of triggering a duplicate OpenAI round-trip.
+     */
+    public void storePreGenerated(String sessionId, byte[] audio) {
+        if (audio != null && audio.length > 0) {
+            preGeneratedAudio.put(sessionId, audio);
+            preGeneratedTimes.put(sessionId, Instant.now());
+            log.info("[AI] Pre-generated audio cached — session={} bytes={}", sessionId, audio.length);
+        }
+    }
+
+    // =========================================================
+    // Whisper STT
+    // =========================================================
 
     /**
      * Converts raw audio bytes (WAV format) to text using OpenAI Whisper.
@@ -121,8 +151,13 @@ public class AiService {
         }
     }
 
+    // =========================================================
+    // GPT response generation
+    // =========================================================
+
     /**
-     * Sends the transcribed intruder speech to GPT-5.4-mini and returns the AI response text.
+     * Sends the transcribed intruder speech (or an internal silent-trigger directive)
+     * to GPT-4o-mini and returns the AI response text.
      * Maintains full conversation history per session for natural back-and-forth.
      */
     public String generateResponse(String sessionId, String userMessage) {
@@ -140,8 +175,8 @@ public class AiService {
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("model", "gpt-4o-mini");
         requestBody.put("messages", history);
-        requestBody.put("max_tokens", 100);
-        requestBody.put("temperature", 0.7);
+        requestBody.put("max_tokens", 150);
+        requestBody.put("temperature", 0.85);
 
         try {
             String bodyJson = objectMapper.writeValueAsString(requestBody);
@@ -162,14 +197,22 @@ public class AiService {
             return assistantMessage;
 
         } catch (Exception e) {
-            log.error("GPT-5.4-mini request failed: {}", e.getMessage());
+            log.error("GPT-4o-mini request failed: {}", e.getMessage());
             return "You have been detected. Do not move. Authorities are on their way.";
         }
     }
 
+    // =========================================================
+    // TTS synthesis
+    // =========================================================
+
     /**
      * Converts the AI response text to MP3 audio bytes using OpenAI TTS.
-     * The ESP32-S3 plays these bytes through the MAX98357A amplifier + speaker.
+     * Uses tts-1-hd for richer, clearer audio output.
+     *
+     * Hardware volume note: tts-1-hd maximises perceived clarity.
+     * For more physical volume, configure the MAX98357A GAIN pin:
+     *   float (unconnected) = 9 dB  |  to VDD = 12 dB  |  to GND = 15 dB
      */
     public byte[] synthesizeSpeech(String text) {
         if (!isApiKeyConfigured()) {
@@ -177,9 +220,9 @@ public class AiService {
         }
 
         Map<String, Object> requestBody = Map.of(
-                "model", "tts-1",
+                "model", "tts-1-hd",
                 "input", text,
-                "voice", "onyx"  // Deep, authoritative voice — best for deterrence
+                "voice", "onyx"
         );
 
         try {
@@ -197,17 +240,36 @@ public class AiService {
         }
     }
 
+    // =========================================================
+    // Alarm-start speech (first phrase, played at alarm trigger)
+    // =========================================================
+
     /**
-     * Called by the ESP32-S3 the moment an alarm triggers.
-     * Picks a random deterrence phrase, converts to speech, and returns MP3 bytes.
-     * This plays immediately — no mic recording needed yet.
-     * Also seeds the conversation history so follow-up responses feel continuous.
+     * Called immediately when the alarm triggers.
+     * Checks the pre-generation cache first — if AISecurityService already generated
+     * TTS while processing the door event, this returns instantly (cache hit).
+     * Falls back to fresh generation on cache miss.
+     *
+     * Also seeds the GPT conversation history so follow-up responses feel continuous.
      */
     public byte[] generateAlarmStartSpeech(String sessionId) {
-        String phrase = DETERRENCE_PHRASES.get(random.nextInt(DETERRENCE_PHRASES.size()));
-        log.info("[AI] Alarm start phrase for session {}: {}", sessionId, phrase);
+        String cachedSessionId = findRecentPreGenerated(sessionId);
+        if (cachedSessionId != null) {
+            byte[] audio = preGeneratedAudio.remove(cachedSessionId);
+            preGeneratedTimes.remove(cachedSessionId);
+            // Transfer conversation history to the firmware's session ID
+            List<Map<String, String>> history = conversations.remove(cachedSessionId);
+            if (history != null) {
+                conversations.put(sessionId, history);
+            }
+            log.info("[AI] Cache hit — serving pre-generated audio for session {} (was {})", sessionId, cachedSessionId);
+            return audio;
+        }
 
-        // Seed the conversation so GPT-5.4-mini knows what was already said
+        // Cache miss — generate fresh
+        String phrase = DETERRENCE_PHRASES.get(random.nextInt(DETERRENCE_PHRASES.size()));
+        log.info("[AI] Fresh alarm-start phrase for session {}: {}", sessionId, phrase);
+
         conversations.put(sessionId, new ArrayList<>(List.of(
                 Map.of("role", "system", "content", SYSTEM_PROMPT),
                 Map.of("role", "assistant", "content", phrase)
@@ -217,25 +279,61 @@ public class AiService {
     }
 
     /**
-     * Called by the ESP32-S3 when the mic detects silence after a deterrence phrase.
-     * Returns a proactive statement to keep psychological pressure up.
-     * The statement is added to the conversation history so GPT-5.4-mini context stays coherent.
+     * Finds the most recently pre-generated session that:
+     *   - is not the requesting session itself
+     *   - was generated within the last 60 seconds
+     *   - still has audio in the cache
+     */
+    private String findRecentPreGenerated(String requestingSessionId) {
+        Instant cutoff = Instant.now().minusSeconds(60);
+        return preGeneratedTimes.entrySet().stream()
+                .filter(e -> !e.getKey().equals(requestingSessionId))
+                .filter(e -> e.getValue().isAfter(cutoff))
+                .filter(e -> preGeneratedAudio.containsKey(e.getKey()))
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(null);
+    }
+
+    // =========================================================
+    // Proactive statement (played during intruder silence)
+    // =========================================================
+
+    /**
+     * Called by the firmware every PROACTIVE_INTERVAL_MS when no speech is detected.
+     *
+     * Instead of a static random phrase, this injects a silent-trigger directive
+     * into the GPT conversation so every proactive statement is unique and context-aware.
+     * GPT sees the full conversation history and generates something that feels like a
+     * natural continuation rather than a canned pre-recorded line.
+     *
+     * The directive is marked with a VOXWALL INTERNAL tag so the model understands
+     * it is an internal trigger, not transcribed intruder speech. It is stored in
+     * history as a "user" message; the AI response is stored as "assistant" — keeping
+     * the thread coherent for future turns.
      */
     public byte[] generateProactiveStatement(String sessionId) {
-        String statement = PROACTIVE_STATEMENTS.get(random.nextInt(PROACTIVE_STATEMENTS.size()));
-        log.info("[AI] Proactive statement for session {}: {}", sessionId, statement);
+        String trigger =
+                "[VOXWALL INTERNAL — intruder has been silent. " +
+                "Issue an unprompted psychological statement. " +
+                "Reference time passing, biometric data upload progress, " +
+                "or law enforcement proximity. Do not ask questions. Assert dominance.]";
 
-        // Add to history so GPT-5.4-mini knows what the system already said
-        conversations.computeIfAbsent(sessionId, id -> new ArrayList<>(List.of(
-                Map.of("role", "system", "content", SYSTEM_PROMPT)
-        ))).add(Map.of("role", "assistant", "content", statement));
-
+        log.info("[AI] Proactive trigger for session {}", sessionId);
+        String statement = generateResponse(sessionId, trigger);
+        log.info("[AI] Proactive statement generated: {}", statement);
         return synthesizeSpeech(statement);
     }
+
+    // =========================================================
+    // Session management
+    // =========================================================
 
     /** Clears conversation history for a session (call on alarm disarm). */
     public void clearSession(String sessionId) {
         conversations.remove(sessionId);
+        preGeneratedAudio.remove(sessionId);
+        preGeneratedTimes.remove(sessionId);
         log.info("AI conversation session cleared: {}", sessionId);
     }
 
@@ -243,6 +341,8 @@ public class AiService {
     public void clearAllSessions() {
         int count = conversations.size();
         conversations.clear();
+        preGeneratedAudio.clear();
+        preGeneratedTimes.clear();
         log.info("All AI sessions cleared ({} removed)", count);
     }
 
