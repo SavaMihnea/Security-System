@@ -36,8 +36,10 @@ const char* ESP_API_KEY   = "pFTF3EJ3MEKx0NE5sO1tAGouPNNeYwJ5CsPAg2zVUXgjevad";
 // -----------------------------------------------------------------
 
 // ---- GPIO pins --------------------------------------------------
-#define RELAY_SIREN_PIN   10    // Active-HIGH relay -> siren
+#define RELAY_SIREN_PIN   10    // Active-LOW relay -> siren
 #define RELAY_AUX_PIN     11    // Spare relay
+#define RELAY_ON  LOW           // Most relay modules trigger on LOW
+#define RELAY_OFF HIGH          // HIGH = relay released (siren off)
 #define STATUS_LED_PIN     2    // Status LED
 
 // I2S - MAX98357A amplifier (speaker output, used by ESP32-audioI2S - I2S_NUM_0)
@@ -388,7 +390,7 @@ void parseStatusResponse(const String& json) {
         sirenActive      = false;
         audioPreloaded   = false;
         aiSessionId[0]   = '\0';
-        digitalWrite(RELAY_SIREN_PIN, LOW);
+        digitalWrite(RELAY_SIREN_PIN, RELAY_OFF);
         Serial.println("[SYNC] Alarm/delay cancelled by remote disarm");
     }
 }
@@ -541,7 +543,7 @@ void runAiConversation() {
                 if (!alarmActive) break;
                 if (!sirenActive && aiDialogueCount >= DIALOGUES_BEFORE_SIREN) {
                     sirenActive = true;
-                    digitalWrite(RELAY_SIREN_PIN, HIGH);
+                    digitalWrite(RELAY_SIREN_PIN, RELAY_ON);
                     Serial.printf("[ALARM] Stage 2: Siren ON after %d dialogues — exiting AI loop\n", aiDialogueCount);
                     break;  // Stop AI — Stage 2 takes over
                 }
@@ -571,7 +573,7 @@ void runAiConversation() {
             if (!alarmActive) break;
             if (!sirenActive && aiDialogueCount >= DIALOGUES_BEFORE_SIREN) {
                 sirenActive = true;
-                digitalWrite(RELAY_SIREN_PIN, HIGH);
+                digitalWrite(RELAY_SIREN_PIN, RELAY_ON);
                 Serial.printf("[ALARM] Stage 2: Siren ON after %d dialogues — exiting AI loop\n", aiDialogueCount);
                 break;  // Stop AI — Stage 2 takes over
             }
@@ -622,13 +624,13 @@ void triggerAlarm(const char* sourceNodeId, const char* eventType) {
 
     // Cleanup — relay off, state reset
     sirenActive = false;
-    digitalWrite(RELAY_SIREN_PIN, LOW);
+    digitalWrite(RELAY_SIREN_PIN, RELAY_OFF);
 }
 
 void stopAlarm() {
     alarmActive      = false;
     entryDelayActive = false;
-    digitalWrite(RELAY_SIREN_PIN, LOW);
+    digitalWrite(RELAY_SIREN_PIN, RELAY_OFF);
     Serial.println("[ALARM] Stopped");
     sendEventToBackend(nodeId, "ALARM_DISARMED", "Remote disarm");
 }
@@ -750,11 +752,12 @@ void setup() {
     Serial.begin(115200);
     delay(500);
 
+    // Pre-load output registers before switching to OUTPUT to prevent boot glitch
+    digitalWrite(RELAY_SIREN_PIN, RELAY_OFF);
+    digitalWrite(RELAY_AUX_PIN,   RELAY_OFF);
     pinMode(RELAY_SIREN_PIN, OUTPUT);
     pinMode(RELAY_AUX_PIN,   OUTPUT);
     pinMode(STATUS_LED_PIN,  OUTPUT);
-    digitalWrite(RELAY_SIREN_PIN, LOW);
-    digitalWrite(RELAY_AUX_PIN,   LOW);
 
     // Init SPIFFS for WAV/MP3 temporary files
     if (!SPIFFS.begin(true)) {
