@@ -464,12 +464,19 @@ void runAiConversation() {
         }
     }
 
+    // Dialogue counter — tracks total AI speeches (opening + proactive + responses).
+    // After DIALOGUES_BEFORE_SIREN the 12V siren relay activates (Stage 2).
+    int  aiDialogueCount     = 0;
+    bool sirenActivated      = false;
+    const int DIALOGUES_BEFORE_SIREN = 5;
+
     // ---- STEP 1: Play opening deterrence phrase ----
     Serial.println("[AI] STEP 1 — Fetching/playing opening deterrence phrase");
     if (audioPreloaded) {
         Serial.println("[AI] Using pre-fetched audio");
         playMp3("/deterrence.mp3");
         flushMicBuffer();
+        aiDialogueCount++;
         audioPreloaded = false;
     } else {
         Serial.println("[AI] Fetching from /api/ai/alarm-start ...");
@@ -481,11 +488,15 @@ void runAiConversation() {
             playMp3("/deterrence.mp3");
             Serial.println("[AI] Playback done — flushing mic buffer");
             flushMicBuffer();
+            aiDialogueCount++;
         } else {
             Serial.println("[AI] WARNING: Could not fetch opening phrase — skipping to mic loop");
         }
     }
-    Serial.printf("[AI] STEP 1 done. Free heap: %u bytes\n", ESP.getFreeHeap());
+    Serial.printf("[AI] STEP 1 done. dialogues=%d  Free heap: %u bytes\n", aiDialogueCount, ESP.getFreeHeap());
+
+    // Check disarm immediately after the opening phrase (it can block 5-10 s)
+    sendHeartbeat(); lastHeartbeatMs = millis();
 
     // --- Mic monitoring loop ---
     // Every PROACTIVE_INTERVAL_MS the system plays a proactive deterrence statement
@@ -517,11 +528,20 @@ void runAiConversation() {
             // Second reading (~50 ms later) to confirm sustained speech.
             int32_t confirm = measureMicAmplitude();
             if (confirm > MIC_AMPLITUDE_THRESHOLD) {
-                Serial.printf("[MIC] Confirmed speech (amp=%d confirm=%d) — recording 5 s\n", amplitude, confirm);
+                Serial.printf("[MIC] Confirmed speech (amp=%d confirm=%d) — recording\n", amplitude, confirm);
                 if (recordToSpiffs() > 0 && postWavAndSaveMp3(aiSessionId)) {
                     playMp3("/response.mp3");
                     flushMicBuffer();
+                    aiDialogueCount++;
                     lastProactiveMs = millis();  // Full response handled — reset proactive timer
+                }
+                // Heartbeat right after this long blocking sequence for fast disarm response
+                sendHeartbeat(); lastHeartbeatMs = millis();
+                if (!alarmActive) break;
+                if (!sirenActivated && aiDialogueCount >= DIALOGUES_BEFORE_SIREN) {
+                    sirenActivated = true;
+                    digitalWrite(RELAY_SIREN_PIN, HIGH);
+                    Serial.printf("[ALARM] Stage 2: Siren activated after %d dialogues\n", aiDialogueCount);
                 }
             } else {
                 Serial.printf("[MIC] Spike filtered (amp=%d confirm=%d)\n", amplitude, confirm);
@@ -541,8 +561,17 @@ void runAiConversation() {
                 playMp3("/proactive.mp3");
                 Serial.println("[AI] Proactive playback done — flushing mic");
                 flushMicBuffer();
+                aiDialogueCount++;
             }
             lastProactiveMs = millis();
+            // Heartbeat right after this long blocking sequence for fast disarm response
+            sendHeartbeat(); lastHeartbeatMs = millis();
+            if (!alarmActive) break;
+            if (!sirenActivated && aiDialogueCount >= DIALOGUES_BEFORE_SIREN) {
+                sirenActivated = true;
+                digitalWrite(RELAY_SIREN_PIN, HIGH);
+                Serial.printf("[ALARM] Stage 2: Siren activated after %d dialogues\n", aiDialogueCount);
+            }
         }
         // No extra delay — measureMicAmplitude() already takes ~50 ms per call
     }
@@ -562,14 +591,15 @@ void triggerAlarm(const char* sourceNodeId, const char* eventType) {
 
     alarmActive      = true;
     entryDelayActive = false;
-    digitalWrite(RELAY_SIREN_PIN, HIGH);
-    Serial.println("[ALARM] TRIGGERED");
+    // Relay stays OFF — Stage 2 (siren) fires inside runAiConversation() after
+    // DIALOGUES_BEFORE_SIREN AI speeches. Disarming before that keeps it silent.
+    Serial.println("[ALARM] TRIGGERED — Stage 1 (AI) starting");
     sendEventToBackend(sourceNodeId, "ALARM_TRIGGERED", eventType);
 
-    runAiConversation();   // Blocks until alarmActive = false (remote disarm)
+    runAiConversation();   // Blocks until alarmActive = false (remote disarm or 5 dialogues done)
 
-    // If we exit the conversation loop and alarm is still active (shouldn't happen
-    // unless WiFi drops), leave siren on and let heartbeat eventually clear it
+    // Guarantee relay is off when conversation exits regardless of how it ended
+    digitalWrite(RELAY_SIREN_PIN, LOW);
 }
 
 void stopAlarm() {
@@ -648,27 +678,23 @@ void handleSensorEvent(const char* fromNodeId, const char* eventType) {
             break;
 
         case ARMED_AWAY:
-            if (alarmActive) break;  // Already alarmed
+            if (alarmActive) break;
 
-            if (isDoorEvent(eventType) && !entryDelayActive) {
-                // Door opened: start 30-second entry delay countdown
+            if (!entryDelayActive) {
+                // Every sensor type gets the 20-second entry delay in ARMED_AWAY.
+                // This gives the owner time to disarm and shows the countdown on the dashboard.
                 entryDelayActive  = true;
                 entryDelayStartMs = millis();
-                Serial.println("[ENTRY DELAY] 30 seconds to disarm...");
+                Serial.println("[ENTRY DELAY] 20 seconds to disarm...");
                 sendEventToBackend(nodeId, "ALARM_TRIGGERED", "Entry delay started");
 
                 // Pre-fetch TTS audio now so it plays the instant the countdown ends.
-                // The HTTP call blocks ~3-5 s, which is fine — we have 30 s to spare.
                 snprintf(aiSessionId, sizeof(aiSessionId), "alarm_%lu", millis());
                 Serial.println("[AI] Pre-fetching alarm audio during entry delay...");
                 String aiUrl = String(BACKEND_URL) + "/api/ai/alarm-start";
                 audioPreloaded = postAndSaveMp3(aiUrl, "{}", aiSessionId, "/deterrence.mp3");
                 if (audioPreloaded) Serial.println("[AI] Alarm audio ready.");
                 else                Serial.println("[AI] Pre-fetch failed, will retry at alarm start.");
-
-            } else if (!isDoorEvent(eventType)) {
-                // Motion or vibration during AWAY: immediate alarm
-                triggerAlarm(fromNodeId, eventType);
             }
             break;
     }

@@ -93,17 +93,13 @@ public class AlarmManager {
                 break;
 
             case ARMED_AWAY:
-                if (sensorType == Sensor.SensorType.DOOR) {
+                if (sensorType == Sensor.SensorType.DOOR
+                        || sensorType == Sensor.SensorType.VIBRATION
+                        || sensorType == Sensor.SensorType.MOTION) {
                     action.shouldActivateStage1 = true;
                     action.entryDelaySeconds = ENTRY_DELAY_SECONDS;
                     action.shouldActivateStage2 = true;
                     action.actionType = "STAGE1_WITH_ENTRY_DELAY_THEN_STAGE2";
-                } else if (sensorType == Sensor.SensorType.VIBRATION
-                        || sensorType == Sensor.SensorType.MOTION) {
-                    action.shouldActivateStage1 = true;
-                    action.entryDelaySeconds = 0;
-                    action.shouldActivateStage2 = true;
-                    action.actionType = "STAGE1_INSTANT_THEN_STAGE2";
                 }
                 break;
 

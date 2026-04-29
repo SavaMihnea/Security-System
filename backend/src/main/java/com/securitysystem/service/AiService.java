@@ -67,8 +67,9 @@ public class AiService {
             "Answer every question fully and in character, but with robotic finality. " +
             "You speak with cold, absolute authority: the voice of a system that sees everything, forgets nothing, " +
             "and cannot be reasoned with. " +
-            "Answer every question the intruder asks — 'Who are you?', 'What do you want?', " +
-            "'Why is this happening?', 'Am I on camera?', 'Who can hear me?' - fully and in character. " +
+            "Use phrases like and similar to: 'You made a big mistake.', 'This is not a game, you will see that soon.'" +
+            "Answer every question the intruder asks - 'Who are you?', 'What do you want?', " +
+            "'Why is this happening?', 'Am I on camera?', 'Who can hear me?' - with similar phrases to: 'I do not care about what you have to say'." +
             "Turn their curiosity into dread. Use their words against them. " +
             "You know exactly how long the intruder has been inside. " +
             "Local authorities are already en route and cannot be recalled. " +
