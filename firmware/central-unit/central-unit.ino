@@ -612,8 +612,11 @@ void triggerAlarm(const char* sourceNodeId, const char* eventType) {
     // Stage 2: siren is running — poll heartbeats until user presses Terminate Alert
     if (alarmActive) {
         Serial.println("[ALARM] Stage 2: Siren running — waiting for disarm");
+        // Immediate check: catch disarms that happened during AI phase
+        sendHeartbeat(); lastHeartbeatMs = millis();
         while (alarmActive) {
-            if (millis() - lastHeartbeatMs >= HEARTBEAT_INTERVAL_MS) {
+            // Poll every 2 s so Terminate Alert stops the siren quickly
+            if (millis() - lastHeartbeatMs >= 2000UL) {
                 lastHeartbeatMs = millis();
                 sendHeartbeat();
             }
