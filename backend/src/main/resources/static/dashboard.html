@@ -82,20 +82,20 @@
                     <polygon class="trap-polygon" points="214,2 786,2 738,158 262,158" fill="#000000" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
                 </svg>
                 <div class="trap-content">
-                    <div class="status-icon mb-2" id="statusIcon">🔓</div>
+                    <!--<div class="status-icon mb-2" id="statusIcon">🔓</div>-->
                     <h1 class="fs-2 fw-bold mb-2" id="statusText">DISARMED</h1>
                     <div class="d-flex gap-4 justify-content-center flex-wrap mt-4">
                         <button id="btnArmAway" class="btn btn-sentinel px-4" onclick="arm('ARMED_AWAY')">
-                            🔒 Arm Away
+                            <!--🔒--> Arm Away
                         </button>
                         <button id="btnArmHome" class="btn btn-outline-light px-4" onclick="arm('ARMED_HOME')">
-                            🏠 Arm Home
+                            <!--🏠--> Arm Home
                         </button>
                         <button id="btnArmHomeNight" class="btn btn-outline-warning px-4" onclick="arm('ARMED_HOME_NIGHT')">
-                            🌙 Arm Night
+                            <!--🌙--> Arm Night
                         </button>
                         <button id="btnDisarm" class="btn btn-danger px-4 d-none" onclick="disarm()">
-                            🔓 Disarm
+                            <!--🔓--> Disarm
                         </button>
                     </div>
                 </div>
@@ -111,12 +111,12 @@
                     <polygon class="trap-polygon trap-polygon-pending" points="214,2 786,2 738,158 262,158" fill="#000000" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
                 </svg>
                 <div class="trap-content">
-                    <div class="countdown-label">ENTRY DELAY — ALARM PENDING</div>
+                    <div class="countdown-label">ENTRY DELAY - ALARM PENDING</div>
                     <div class="countdown-sensor" id="countdownSensor"></div>
-                    <div class="countdown-number" id="countdownNumber">30</div>
+                    <div class="countdown-number" id="countdownNumber">20</div>
                     <div class="countdown-sub" id="countdownSub">seconds until AI deterrence activates</div>
                     <div class="mt-3">
-                        <button class="btn btn-danger px-5 fw-bold" onclick="disarm()">🔓 DISARM NOW</button>
+                        <button class="btn btn-danger px-5 fw-bold" onclick="disarm()"> <!--🔓--> Terminate Alert </button>
                     </div>
                 </div>
             </div>

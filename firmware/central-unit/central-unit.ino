@@ -242,9 +242,11 @@ WiFiClientSecure secureClient;
 // POST jsonBody to url; stream MP3 response into SPIFFS destPath
 bool postAndSaveMp3(const String& url, const String& jsonBody,
                     const char* sessionId, const char* destPath) {
+    Serial.printf("[HTTP] POST %s  session=%s\n", url.c_str(), sessionId ? sessionId : "(none)");
     WiFiClientSecure client;
     client.setInsecure();
     HTTPClient http;
+    http.setTimeout(15000);
     http.begin(client, url);
     http.addHeader("Content-Type", "application/json");
     http.addHeader("X-ESP-Key", ESP_API_KEY);
@@ -253,31 +255,40 @@ bool postAndSaveMp3(const String& url, const String& jsonBody,
     }
 
     int code = http.POST(jsonBody);
+    Serial.printf("[HTTP] Response code: %d  content-length: %d\n", code, http.getSize());
     if (code != 200) {
-        Serial.printf("[HTTP] POST %s -> %d\n", url.c_str(), code);
+        String body = http.getString();
+        Serial.printf("[HTTP] Error body: %s\n", body.c_str());
         http.end();
         return false;
     }
 
     File f = SPIFFS.open(destPath, "w");
-    if (!f) { http.end(); return false; }
+    if (!f) {
+        Serial.printf("[SPIFFS] Failed to open %s for write\n", destPath);
+        http.end();
+        return false;
+    }
 
     WiFiClient* stream    = http.getStreamPtr();
     int         remaining = http.getSize();
     uint8_t     buf[512];
+    size_t      totalWritten = 0;
 
     while (http.connected() && (remaining > 0 || remaining == -1)) {
         int avail = stream->available();
         if (avail > 0) {
             int n = stream->readBytes(buf, min(avail, (int)sizeof(buf)));
             f.write(buf, n);
+            totalWritten += n;
             if (remaining > 0) remaining -= n;
         }
         delay(1);
     }
     f.close();
     http.end();
-    return true;
+    Serial.printf("[HTTP] Saved %u bytes to %s\n", totalWritten, destPath);
+    return totalWritten > 0;
 }
 
 // POST WAV from SPIFFS to /api/ai/respond, save MP3 response
@@ -295,6 +306,8 @@ bool postWavAndSaveMp3(const char* sessionId) {
     client.setInsecure();
     HTTPClient http;
     String url = String(BACKEND_URL) + "/api/ai/respond";
+    Serial.printf("[HTTP] POST %s  wav=%u bytes  session=%s\n", url.c_str(), wavSize, sessionId);
+    http.setTimeout(20000);
     http.begin(client, url);
     http.addHeader("Content-Type", "application/octet-stream");
     http.addHeader("X-ESP-Key", ESP_API_KEY);
@@ -302,9 +315,11 @@ bool postWavAndSaveMp3(const char* sessionId) {
 
     int code = http.POST(wavBuf, wavSize);
     free(wavBuf);
+    Serial.printf("[HTTP] /respond response code: %d  content-length: %d\n", code, http.getSize());
 
     if (code != 200) {
-        Serial.printf("[AI] /respond -> %d\n", code);
+        String body = http.getString();
+        Serial.printf("[HTTP] /respond error body: %s\n", body.c_str());
         http.end();
         return false;
     }
@@ -421,12 +436,20 @@ void registerWithBackend() {
 // AI deterrence conversation
 // =================================================================
 void runAiConversation() {
-    Serial.println("[AI] Starting conversation...");
+    Serial.println("============================================================");
+    Serial.println("[AI] ===== runAiConversation() ENTERED =====");
+    Serial.printf( "[AI] alarmActive=%d  audioPreloaded=%d  sessionId='%s'\n",
+                   alarmActive, audioPreloaded, aiSessionId);
+    Serial.printf( "[AI] Free heap: %u bytes\n", ESP.getFreeHeap());
+    Serial.println("============================================================");
 
     // Session ID may already be set when audio was pre-fetched during entry delay.
     // Generate a new one only on the immediate-alarm path (no entry delay).
     if (aiSessionId[0] == '\0') {
         snprintf(aiSessionId, sizeof(aiSessionId), "alarm_%lu", millis());
+        Serial.printf("[AI] Generated new session ID: %s\n", aiSessionId);
+    } else {
+        Serial.printf("[AI] Reusing existing session ID: %s\n", aiSessionId);
     }
 
     // Check pre-fetched file is valid (non-empty); fetch now if not
@@ -434,28 +457,35 @@ void runAiConversation() {
         File chk = SPIFFS.open("/deterrence.mp3", "r");
         size_t preloadedSize = chk ? chk.size() : 0;
         if (chk) chk.close();
-        Serial.printf("[AI] Pre-fetched file size: %u bytes\n", preloadedSize);
+        Serial.printf("[AI] Pre-fetched /deterrence.mp3 size: %u bytes\n", preloadedSize);
         if (preloadedSize < 512) {
-            Serial.println("[AI] Pre-fetched file empty/invalid — re-fetching");
+            Serial.println("[AI] Pre-fetched file too small — will re-fetch");
             audioPreloaded = false;
         }
     }
 
+    // ---- STEP 1: Play opening deterrence phrase ----
+    Serial.println("[AI] STEP 1 — Fetching/playing opening deterrence phrase");
     if (audioPreloaded) {
-        Serial.println("[AI] Playing pre-fetched deterrence audio");
+        Serial.println("[AI] Using pre-fetched audio");
         playMp3("/deterrence.mp3");
-        flushMicBuffer();   // drain DMA of speaker audio before mic monitoring begins
+        flushMicBuffer();
         audioPreloaded = false;
     } else {
-        Serial.println("[AI] Fetching deterrence audio...");
+        Serial.println("[AI] Fetching from /api/ai/alarm-start ...");
         String url = String(BACKEND_URL) + "/api/ai/alarm-start";
-        if (postAndSaveMp3(url, "{}", aiSessionId, "/deterrence.mp3")) {
+        bool ok = postAndSaveMp3(url, "{}", aiSessionId, "/deterrence.mp3");
+        Serial.printf("[AI] alarm-start fetch result: %s\n", ok ? "OK" : "FAILED");
+        if (ok) {
+            Serial.println("[AI] Playing deterrence.mp3...");
             playMp3("/deterrence.mp3");
+            Serial.println("[AI] Playback done — flushing mic buffer");
             flushMicBuffer();
         } else {
-            Serial.println("[AI] WARNING: deterrence audio fetch failed (check backend logs)");
+            Serial.println("[AI] WARNING: Could not fetch opening phrase — skipping to mic loop");
         }
     }
+    Serial.printf("[AI] STEP 1 done. Free heap: %u bytes\n", ESP.getFreeHeap());
 
     // --- Mic monitoring loop ---
     // Every PROACTIVE_INTERVAL_MS the system plays a proactive deterrence statement
@@ -468,7 +498,9 @@ void runAiConversation() {
     // suppress proactive statements indefinitely.
     unsigned long lastProactiveMs = millis();
 
-    Serial.println("[AI] Mic monitoring loop started");
+    Serial.println("[AI] ===== STEP 2 — Mic monitoring loop started =====");
+    Serial.printf("[AI] alarmActive=%d  PROACTIVE_INTERVAL_MS=%lu  THRESHOLD=%d\n",
+                  alarmActive, PROACTIVE_INTERVAL_MS, MIC_AMPLITUDE_THRESHOLD);
 
     while (alarmActive) {
         // Sync arm state with backend every HEARTBEAT_INTERVAL_MS
@@ -499,17 +531,24 @@ void runAiConversation() {
 
         // Fixed-interval proactive — fires every PROACTIVE_INTERVAL_MS unconditionally
         if (millis() - lastProactiveMs >= PROACTIVE_INTERVAL_MS) {
-            Serial.println("[AI] Proactive interval — fetching deterrence statement");
+            Serial.println("[AI] ===== Proactive interval reached — fetching statement =====");
+            Serial.printf("[AI] Free heap before fetch: %u bytes\n", ESP.getFreeHeap());
             String proactiveUrl = String(BACKEND_URL) + "/api/ai/proactive";
-            if (postAndSaveMp3(proactiveUrl, "{}", aiSessionId, "/proactive.mp3")) {
+            bool ok = postAndSaveMp3(proactiveUrl, "{}", aiSessionId, "/proactive.mp3");
+            Serial.printf("[AI] Proactive fetch result: %s\n", ok ? "OK" : "FAILED");
+            if (ok) {
+                Serial.println("[AI] Playing proactive.mp3...");
                 playMp3("/proactive.mp3");
+                Serial.println("[AI] Proactive playback done — flushing mic");
                 flushMicBuffer();
             }
-            lastProactiveMs = millis();  // Always reset so interval stays consistent
+            lastProactiveMs = millis();
         }
         // No extra delay — measureMicAmplitude() already takes ~50 ms per call
     }
     // ---------------------------
+    Serial.println("[AI] ===== Mic monitoring loop EXITED =====");
+    Serial.printf("[AI] alarmActive=%d\n", alarmActive);
 
     aiSessionId[0] = '\0';
     Serial.println("[AI] Conversation ended");

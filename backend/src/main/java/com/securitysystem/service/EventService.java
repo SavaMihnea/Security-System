@@ -68,6 +68,17 @@ public class EventService {
         });
     }
 
+    public int resolveAllActive() {
+        List<Event> active = eventRepository.findByResolvedFalseOrderByTimestampDesc();
+        Instant now = Instant.now();
+        active.forEach(e -> {
+            e.setResolved(true);
+            e.setResolvedAt(now);
+        });
+        eventRepository.saveAll(active);
+        return active.size();
+    }
+
     /**
      * Process incoming sensor event through security matrix.
      * This is called when a sensor node sends an event (DOOR_OPENED, MOTION_DETECTED, etc.).

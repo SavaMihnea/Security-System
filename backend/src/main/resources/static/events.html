@@ -25,7 +25,10 @@
 <div class="container-fluid px-4 py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="mb-0">Event Log</h4>
-        <button class="btn btn-sm btn-outline-light" onclick="loadEvents()">↺ Refresh</button>
+        <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-danger" onclick="resolveAll()">✓ Resolve All Active</button>
+            <button class="btn btn-sm btn-outline-light" onclick="loadEvents()">↺ Refresh</button>
+        </div>
     </div>
 
     <!-- Filters + Search -->
@@ -197,6 +200,18 @@
         await apiFetch(`/api/events/${resolveTargetId}/resolve`, { method: 'PUT' });
         bootstrap.Modal.getInstance(document.getElementById('resolveModal')).hide();
         resolveTargetId = null;
+        loadEvents();
+    }
+
+    async function resolveAll() {
+        const activeCount = allEvents.filter(e => !e.resolved).length;
+        if (activeCount === 0) { alert('No active alerts to resolve.'); return; }
+        if (!confirm(`Resolve all ${activeCount} active alert(s)?`)) return;
+        const res = await apiFetch('/api/events/resolve-all', { method: 'PUT' });
+        if (res && res.ok) {
+            const data = await res.json();
+            alert(`Resolved ${data.resolved} alert(s).`);
+        }
         loadEvents();
     }
 
