@@ -78,12 +78,13 @@ public class EspController {
                     request.getEventType(),
                     request.getNotes());
 
-            // Mark sensor status
+            // Mark sensor status — only TRIGGERED when the system is actually armed;
+            // unarmed triggers (test fires, accidental bumps) stay ONLINE in the UI.
             boolean isAlarmEvent = request.getEventType().equals("MOTION_DETECTED")
                     || request.getEventType().equals("VIBRATION_DETECTED")
                     || request.getEventType().equals("DOOR_OPENED");
 
-            if (isAlarmEvent) {
+            if (isAlarmEvent && systemService.getStatus().isArmed()) {
                 sensorService.markTriggered(request.getNodeId());
             } else {
                 sensorService.markOnline(request.getNodeId());

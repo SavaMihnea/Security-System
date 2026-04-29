@@ -33,8 +33,14 @@ public class SensorHealthCheckScheduler {
 
             long secondsSinceLastSeen = (now.getEpochSecond() - sensor.getLastSeen().getEpochSecond());
 
-            // Mark as OFFLINE if no heartbeat for 90+ seconds and currently not OFFLINE
-            if (secondsSinceLastSeen >= HEARTBEAT_TIMEOUT_SECONDS 
+            // Only the CENTRAL gateway sends regular heartbeats (every 10s).
+            // Door/vibration/motion nodes are event-driven — they go silent between triggers
+            // and must not be auto-offlined after 90s.  Use a 24h timeout for those.
+            long timeout = sensor.getType() == Sensor.SensorType.CENTRAL
+                    ? HEARTBEAT_TIMEOUT_SECONDS
+                    : 86400L;
+
+            if (secondsSinceLastSeen >= timeout
                     && sensor.getStatus() != Sensor.SensorStatus.OFFLINE) {
                 sensor.setStatus(Sensor.SensorStatus.OFFLINE);
                 sensorRepository.save(sensor);

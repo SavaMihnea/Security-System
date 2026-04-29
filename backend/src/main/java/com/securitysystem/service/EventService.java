@@ -65,6 +65,13 @@ public class EventService {
             event.setResolved(true);
             event.setResolvedAt(Instant.now());
             eventRepository.save(event);
+            // Reset sensor back to ONLINE so it doesn't stay red in the dashboard
+            if (event.getSensor() != null) {
+                sensorRepository.findByNodeId(event.getSensor().getNodeId()).ifPresent(sensor -> {
+                    sensor.setStatus(Sensor.SensorStatus.ONLINE);
+                    sensorRepository.save(sensor);
+                });
+            }
         });
     }
 
@@ -76,6 +83,16 @@ public class EventService {
             e.setResolvedAt(now);
         });
         eventRepository.saveAll(active);
+        // Reset all affected sensors back to ONLINE
+        active.stream()
+                .map(Event::getSensor)
+                .filter(s -> s != null)
+                .map(s -> s.getNodeId())
+                .distinct()
+                .forEach(nodeId -> sensorRepository.findByNodeId(nodeId).ifPresent(sensor -> {
+                    sensor.setStatus(Sensor.SensorStatus.ONLINE);
+                    sensorRepository.save(sensor);
+                }));
         return active.size();
     }
 
@@ -110,14 +127,7 @@ public class EventService {
             return null;
         }
 
-        // Always log the event to database
-        Event event = new Event();
-        event.setSensor(sensor);
-        event.setEventType(eventType);
-        event.setNotes(notes);
-        Event saved = eventRepository.save(event);
-
-        // Get current system state
+        // Get current system state before saving the event so we can set resolved correctly
         SystemConfig config = systemConfigRepository.findById(1L).orElse(new SystemConfig());
         SystemConfig.ArmMode armMode = config.getArmMode();
 
@@ -126,18 +136,28 @@ public class EventService {
                 || eventType == Event.EventType.VIBRATION_DETECTED
                 || eventType == Event.EventType.DOOR_OPENED;
 
+        AlarmManager.SecurityAction action = null;
+        boolean triggersAlarm = false;
         if (isAlarmEvent) {
-            // Evaluate security matrix
-            AlarmManager.SecurityAction action = alarmManager.evaluateSecurityMatrix(
-                armMode,
-                sensor.getType(),
-                sensor.getName()
-            );
-
+            action = alarmManager.evaluateSecurityMatrix(armMode, sensor.getType(), sensor.getName());
+            triggersAlarm = action.shouldActivateStage1 || action.shouldActivateStage2;
             log.info("[SECURITY] Action: {} | Arm: {} | Sensor: {} ({})",
                     action.actionType, armMode, sensor.getName(), sensor.getType());
+        }
 
-            // Execute the action
+        // Log the event — auto-resolve immediately when no alarm action was triggered
+        // (DISARMED state, LOG_ONLY modes) so unarmed events don't show as active alerts.
+        Event event = new Event();
+        event.setSensor(sensor);
+        event.setEventType(eventType);
+        event.setNotes(notes);
+        if (isAlarmEvent && !triggersAlarm) {
+            event.setResolved(true);
+            event.setResolvedAt(Instant.now());
+        }
+        Event saved = eventRepository.save(event);
+
+        if (action != null) {
             alarmManager.executeSecurityAction(action, nodeId, sensor.getName());
         }
 

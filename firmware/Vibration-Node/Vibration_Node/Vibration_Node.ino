@@ -30,8 +30,8 @@
 #define NODE_NAME         "Window Vibration"
 #define NODE_LOCATION     "Living Room"
 
-// S3 CENTRAL UNIT MAC ADDRESS (update this!)
-uint8_t centralUnitMac[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+// S3 CENTRAL UNIT MAC ADDRESS
+uint8_t centralUnitMac[] = {0x10, 0xB4, 0x1D, 0xE8, 0xE8, 0xC0};
 
 // ESP-NOW Channel (must match S3 central unit)
 #define WIFI_CHANNEL 13
@@ -122,8 +122,8 @@ void setup() {
         return;
     }
 
-    // Notify central unit that this node is online
-    sendEvent("NODE_ONLINE", 1);
+    // Notify central unit that this node is online (type suffix lets the gateway register correctly)
+    sendEvent("NODE_ONLINE_VIBRATION", 1);
     Serial.println("[SYSTEM] Vibration sensor ready.\n");
 }
 

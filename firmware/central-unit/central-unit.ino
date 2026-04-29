@@ -612,16 +612,28 @@ void registerOtherNode(const char* targetNodeId, const char* name, const char* l
 }
 
 void handleSensorEvent(const char* fromNodeId, const char* eventType) {
-    // --- NEW: AUTO-REGISTRATION LOGIC ---
-    // If we hear a registration/online event from a node, tell the backend its name.
-    if (strcmp(eventType, "NODE_ONLINE") == 0) {
-        // This is where you set the Name and Location for the website
-        registerOtherNode(fromNodeId, "Front Door Sensor", "Entrance", "DOOR");
+    // NODE_ONLINE_<TYPE> is sent by each sensor on boot so the gateway can register it
+    // with the correct name, location, and type.  The type suffix was added so multiple
+    // sensor types are not all registered as "Front Door Sensor / DOOR".
+    if (strncmp(eventType, "NODE_ONLINE", 11) == 0) {
+        const char* suffix   = eventType + 11;   // "" or "_DOOR" or "_VIBRATION" or "_MOTION"
+        const char* regName;
+        const char* regLoc;
+        const char* regType;
+        if (strcmp(suffix, "_VIBRATION") == 0) {
+            regName = "Window Vibration"; regLoc = "Living Room"; regType = "VIBRATION";
+        } else if (strcmp(suffix, "_MOTION") == 0) {
+            regName = "Front Door Motion"; regLoc = "Entrance"; regType = "MOTION";
+        } else {
+            regName = "Front Door Sensor"; regLoc = "Entrance"; regType = "DOOR";
+        }
+        registerOtherNode(fromNodeId, regName, regLoc, regType);
+        sendEventToBackend(fromNodeId, "NODE_ONLINE", "");  // normalised — backend enum has NODE_ONLINE
+        return;
     }
-    // ------------------------------------
 
     // Always log the raw event for dashboard history
-    sendEventToBackend(fromNodeId, eventType, ""); //
+    sendEventToBackend(fromNodeId, eventType, "");
 
     switch (currentArmMode) { //
 

@@ -122,8 +122,8 @@ void setup() {
         return;
     }
 
-    // Notify central unit that this node is online
-    sendEvent("NODE_ONLINE", 1);
+    // Notify central unit that this node is online (type suffix lets the gateway register correctly)
+    sendEvent("NODE_ONLINE_DOOR", 1);
     Serial.println("[SYSTEM] Door sensor ready.\n");
 }
 
