@@ -231,6 +231,9 @@ void playMp3(const char* path) {
     }
     Serial.printf("[AUDIO] Playing %s (%u bytes)\n", path, sz);
     audio.connecttoFS(SPIFFS, path);
+    // Pump several cycles before checking isRunning — the library needs a
+    // moment to start decoding or isRunning() returns false immediately
+    for (int i = 0; i < 50; i++) { audio.loop(); delay(2); }
     while (audio.isRunning()) {
         audio.loop();
     }
@@ -471,7 +474,7 @@ void runAiConversation() {
     // Dialogue counter — tracks total AI speeches (opening + proactive + responses).
     // After DIALOGUES_BEFORE_SIREN the loop exits, Stage 2 (12V siren) fires.
     int  aiDialogueCount     = 0;
-    const int DIALOGUES_BEFORE_SIREN = 3;
+    const int DIALOGUES_BEFORE_SIREN = 4;
 
     // ---- STEP 1: Play opening deterrence phrase ----
     Serial.println("[AI] STEP 1 — Fetching/playing opening deterrence phrase");
