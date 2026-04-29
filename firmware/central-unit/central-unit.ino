@@ -54,7 +54,7 @@ const char* ESP_API_KEY   = "pFTF3EJ3MEKx0NE5sO1tAGouPNNeYwJ5CsPAg2zVUXgjevad";
 // ---- Timing constants -------------------------------------------
 #define HEARTBEAT_INTERVAL_MS    30000UL  // Sync backend every 30 s
 #define ENTRY_DELAY_MS           20000UL  // 20 s entry delay — matches backend AlarmManager + dashboard countdown
-#define AI_SILENCE_TIMEOUT_MS     4000UL  // Proactive statement after 4 s silence
+#define PROACTIVE_INTERVAL_MS    12000UL  // Proactive statement every 12 s regardless of mic
 #define MIC_RECORD_DURATION_MS    5000UL  // Record 5 s per AI interaction
 #define MIC_AMPLITUDE_THRESHOLD   20000   // Raw I2S peak above = "sound detected"
 #define MIC_SAMPLE_RATE           16000   // Hz (Whisper requirement)
@@ -242,8 +242,10 @@ WiFiClientSecure secureClient;
 // POST jsonBody to url; stream MP3 response into SPIFFS destPath
 bool postAndSaveMp3(const String& url, const String& jsonBody,
                     const char* sessionId, const char* destPath) {
+    WiFiClientSecure client;
+    client.setInsecure();
     HTTPClient http;
-    http.begin(secureClient, url);
+    http.begin(client, url);
     http.addHeader("Content-Type", "application/json");
     http.addHeader("X-ESP-Key", ESP_API_KEY);
     if (sessionId && sessionId[0] != '\0') {
@@ -289,10 +291,12 @@ bool postWavAndSaveMp3(const char* sessionId) {
     wavFile.read(wavBuf, wavSize);
     wavFile.close();
 
+    WiFiClientSecure client;
+    client.setInsecure();
     HTTPClient http;
     String url = String(BACKEND_URL) + "/api/ai/respond";
-    http.begin(secureClient, url);
-    http.addHeader("Content-Type", "audio/wav");
+    http.begin(client, url);
+    http.addHeader("Content-Type", "application/octet-stream");
     http.addHeader("X-ESP-Key", ESP_API_KEY);
     http.addHeader("X-Session-Id", sessionId);
 
@@ -454,11 +458,14 @@ void runAiConversation() {
     }
 
     // --- Mic monitoring loop ---
-    // Continuously samples mic amplitude.
-    //   Sound detected  → record 5 s WAV → Whisper + GPT + TTS → play response
-    //   4 s of silence  → play a proactive deterrence statement
-    //   Disarm via dashboard → sendHeartbeat() detects DISARMED → alarmActive = false → exit
-    unsigned long lastSoundMs     = millis();
+    // Every PROACTIVE_INTERVAL_MS the system plays a proactive deterrence statement
+    // unconditionally — this fires regardless of ambient noise and eliminates the
+    // silence-detection race condition that caused the "first phrase only" bug.
+    //
+    // In parallel, the mic is still checked: confirmed sustained speech above
+    // threshold triggers a record → Whisper → GPT → TTS response cycle.
+    // Filtered spikes do NOT reset the proactive timer so spurious noise cannot
+    // suppress proactive statements indefinitely.
     unsigned long lastProactiveMs = millis();
 
     Serial.println("[AI] Mic monitoring loop started");
@@ -475,33 +482,30 @@ void runAiConversation() {
         Serial.printf("[MIC] Amplitude: %d\n", amplitude);
 
         if (amplitude > MIC_AMPLITUDE_THRESHOLD) {
-            // Second reading (~50 ms later) to confirm the sound is sustained.
-            // A single electrical spike or click passes the first check but fails
-            // the second; real speech stays above threshold for hundreds of ms.
+            // Second reading (~50 ms later) to confirm sustained speech.
             int32_t confirm = measureMicAmplitude();
             if (confirm > MIC_AMPLITUDE_THRESHOLD) {
-                Serial.printf("[MIC] Confirmed sound (amp=%d confirm=%d) — recording 5 s\n", amplitude, confirm);
+                Serial.printf("[MIC] Confirmed speech (amp=%d confirm=%d) — recording 5 s\n", amplitude, confirm);
                 if (recordToSpiffs() > 0 && postWavAndSaveMp3(aiSessionId)) {
                     playMp3("/response.mp3");
                     flushMicBuffer();
+                    lastProactiveMs = millis();  // Full response handled — reset proactive timer
                 }
             } else {
                 Serial.printf("[MIC] Spike filtered (amp=%d confirm=%d)\n", amplitude, confirm);
+                // Filtered spikes do NOT reset lastProactiveMs
             }
-            // Reset timers regardless — even a filtered spike counts as recent activity
-            lastSoundMs     = millis();
-            lastProactiveMs = millis();
+        }
 
-        } else if ((millis() - lastSoundMs     >= AI_SILENCE_TIMEOUT_MS) &&
-                   (millis() - lastProactiveMs >= AI_SILENCE_TIMEOUT_MS)) {
-            // Silence for AI_SILENCE_TIMEOUT_MS — say something unprompted
-            Serial.println("[MIC] Silence — playing proactive deterrence");
+        // Fixed-interval proactive — fires every PROACTIVE_INTERVAL_MS unconditionally
+        if (millis() - lastProactiveMs >= PROACTIVE_INTERVAL_MS) {
+            Serial.println("[AI] Proactive interval — fetching deterrence statement");
             String proactiveUrl = String(BACKEND_URL) + "/api/ai/proactive";
             if (postAndSaveMp3(proactiveUrl, "{}", aiSessionId, "/proactive.mp3")) {
                 playMp3("/proactive.mp3");
                 flushMicBuffer();
             }
-            lastProactiveMs = millis();
+            lastProactiveMs = millis();  // Always reset so interval stays consistent
         }
         // No extra delay — measureMicAmplitude() already takes ~50 ms per call
     }
