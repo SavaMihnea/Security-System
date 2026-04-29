@@ -96,6 +96,7 @@
 
     const EVENT_BADGE = {
         ALARM_TRIGGERED:    'bg-danger',
+        SIREN_ACTIVE:       'bg-danger',
         MOTION_DETECTED:    'bg-warning text-dark',
         VIBRATION_DETECTED: 'bg-warning text-dark',
         DOOR_OPENED:        'bg-info text-dark',
@@ -109,9 +110,9 @@
         ALARM_DISARMED:     'bg-primary'
     };
 
-    const ALERT_TYPES  = new Set(['ALARM_TRIGGERED','MOTION_DETECTED','VIBRATION_DETECTED','DOOR_OPENED']);
+    const ALERT_TYPES  = new Set(['ALARM_TRIGGERED','SIREN_ACTIVE','MOTION_DETECTED','VIBRATION_DETECTED','DOOR_OPENED']);
     const SYSTEM_TYPES = new Set(['SYSTEM_ARMED','SYSTEM_DISARMED','NODE_ONLINE','NODE_OFFLINE','HEARTBEAT']);
-    const ERROR_TYPES  = new Set(['ALARM_TRIGGERED']);
+    const ERROR_TYPES  = new Set(['ALARM_TRIGGERED','SIREN_ACTIVE']);
 
     let allEvents = [];
     let filteredEvents = [];

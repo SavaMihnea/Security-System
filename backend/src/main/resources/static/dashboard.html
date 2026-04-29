@@ -111,12 +111,16 @@
                     <polygon class="trap-polygon trap-polygon-pending" points="214,2 786,2 738,158 262,158" fill="#000000" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
                 </svg>
                 <div class="trap-content">
-                    <div class="countdown-label">ENTRY DELAY - ALARM PENDING</div>
+                    <div class="countdown-label" id="countdownLabel">ENTRY DELAY - ALARM PENDING</div>
                     <div class="countdown-sensor" id="countdownSensor"></div>
                     <div class="countdown-number" id="countdownNumber">20</div>
                     <div class="countdown-sub" id="countdownSub">seconds until AI deterrence activates</div>
                     <div class="mt-3">
                         <button class="btn btn-danger px-5 fw-bold" onclick="disarm()"> 🔓 Terminate Alert </button>
+                    </div>
+                    <div id="sirenActiveMsg" class="d-none mt-3"
+                         style="font-size:1rem; font-weight:700; letter-spacing:0.12em; color:#ff4444; text-shadow:0 0 10px rgba(255,68,68,0.7);">
+                        ⚡ ALARM ACTIVE — SIREN ENGAGED ⚡
                     </div>
                 </div>
             </div>

@@ -138,6 +138,7 @@ async function loadSensors() {
 // ---- Recent events ----------------------------------------
 const EVENT_BADGE = {
     ALARM_TRIGGERED:    'bg-danger',
+    SIREN_ACTIVE:       'bg-danger',
     MOTION_DETECTED:    'bg-warning text-dark',
     VIBRATION_DETECTED: 'bg-warning text-dark',
     DOOR_OPENED:        'bg-info text-dark',
@@ -197,6 +198,18 @@ function addEventToList(event) {
         const current = parseInt(alEl.textContent) || 0;
         const next = current + 1;
         alEl.innerHTML = `<span class="text-danger">${next}</span>`;
+    }
+
+    // When Stage 2 fires: AI stopped, siren is running — update the banner
+    if (event.eventType === 'SIREN_ACTIVE') {
+        const row = document.getElementById('countdownRow');
+        if (!row.classList.contains('d-none')) {
+            document.getElementById('countdownLabel').textContent = 'ALARM ACTIVE';
+            document.getElementById('countdownNumber').textContent = '🚨';
+            document.getElementById('countdownNumber').classList.remove('urgent', 'threat');
+            document.getElementById('countdownSub').textContent = 'AI deterrence complete — siren is active';
+            document.getElementById('sirenActiveMsg').classList.remove('d-none');
+        }
     }
 }
 
@@ -260,9 +273,11 @@ const CountdownTimer = (() => {
         document.getElementById('countdownRow').classList.add('d-none');
         const numEl = document.getElementById('countdownNumber');
         if (numEl) {
-            numEl.classList.remove('urgent');
-            numEl.classList.remove('threat');
+            numEl.classList.remove('urgent', 'threat');
         }
+        // Reset all banner text and hide siren message for next use
+        document.getElementById('countdownLabel').textContent = 'ENTRY DELAY - ALARM PENDING';
+        document.getElementById('sirenActiveMsg').classList.add('d-none');
     }
 
     function _stopInterval() {

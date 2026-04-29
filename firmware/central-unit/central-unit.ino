@@ -73,6 +73,7 @@ ArmMode       currentArmMode    = DISARMED;
 static int32_t mic_dc           = 0;          // persistent DC offset for mic filter
 bool          alarmActive       = false;
 bool          entryDelayActive  = false;
+bool          sirenActive       = false;  // true when Stage 2 (12V relay) is running
 unsigned long entryDelayStartMs = 0;
 char          nodeId[30]        = "CENTRAL_S3";
 unsigned long lastHeartbeatMs   = 0;
@@ -384,6 +385,7 @@ void parseStatusResponse(const String& json) {
     if (currentArmMode == DISARMED && (alarmActive || entryDelayActive)) {
         alarmActive      = false;
         entryDelayActive = false;
+        sirenActive      = false;
         audioPreloaded   = false;
         aiSessionId[0]   = '\0';
         digitalWrite(RELAY_SIREN_PIN, LOW);
@@ -465,9 +467,8 @@ void runAiConversation() {
     }
 
     // Dialogue counter — tracks total AI speeches (opening + proactive + responses).
-    // After DIALOGUES_BEFORE_SIREN the 12V siren relay activates (Stage 2).
+    // After DIALOGUES_BEFORE_SIREN the loop exits, Stage 2 (12V siren) fires.
     int  aiDialogueCount     = 0;
-    bool sirenActivated      = false;
     const int DIALOGUES_BEFORE_SIREN = 5;
 
     // ---- STEP 1: Play opening deterrence phrase ----
@@ -538,10 +539,11 @@ void runAiConversation() {
                 // Heartbeat right after this long blocking sequence for fast disarm response
                 sendHeartbeat(); lastHeartbeatMs = millis();
                 if (!alarmActive) break;
-                if (!sirenActivated && aiDialogueCount >= DIALOGUES_BEFORE_SIREN) {
-                    sirenActivated = true;
+                if (!sirenActive && aiDialogueCount >= DIALOGUES_BEFORE_SIREN) {
+                    sirenActive = true;
                     digitalWrite(RELAY_SIREN_PIN, HIGH);
-                    Serial.printf("[ALARM] Stage 2: Siren activated after %d dialogues\n", aiDialogueCount);
+                    Serial.printf("[ALARM] Stage 2: Siren ON after %d dialogues — exiting AI loop\n", aiDialogueCount);
+                    break;  // Stop AI — Stage 2 takes over
                 }
             } else {
                 Serial.printf("[MIC] Spike filtered (amp=%d confirm=%d)\n", amplitude, confirm);
@@ -567,20 +569,27 @@ void runAiConversation() {
             // Heartbeat right after this long blocking sequence for fast disarm response
             sendHeartbeat(); lastHeartbeatMs = millis();
             if (!alarmActive) break;
-            if (!sirenActivated && aiDialogueCount >= DIALOGUES_BEFORE_SIREN) {
-                sirenActivated = true;
+            if (!sirenActive && aiDialogueCount >= DIALOGUES_BEFORE_SIREN) {
+                sirenActive = true;
                 digitalWrite(RELAY_SIREN_PIN, HIGH);
-                Serial.printf("[ALARM] Stage 2: Siren activated after %d dialogues\n", aiDialogueCount);
+                Serial.printf("[ALARM] Stage 2: Siren ON after %d dialogues — exiting AI loop\n", aiDialogueCount);
+                break;  // Stop AI — Stage 2 takes over
             }
         }
         // No extra delay — measureMicAmplitude() already takes ~50 ms per call
     }
     // ---------------------------
     Serial.println("[AI] ===== Mic monitoring loop EXITED =====");
-    Serial.printf("[AI] alarmActive=%d\n", alarmActive);
+    Serial.printf("[AI] alarmActive=%d  sirenActive=%d  dialogues=%d\n",
+                  alarmActive, sirenActive, aiDialogueCount);
+
+    // Notify backend so the dashboard switches the banner to "ALARM ACTIVE"
+    if (sirenActive && alarmActive) {
+        sendEventToBackend(nodeId, "SIREN_ACTIVE", "Stage 2 siren started");
+    }
 
     aiSessionId[0] = '\0';
-    Serial.println("[AI] Conversation ended");
+    Serial.println("[AI] Conversation ended — Stage 2 running");
 }
 
 // =================================================================
@@ -596,9 +605,23 @@ void triggerAlarm(const char* sourceNodeId, const char* eventType) {
     Serial.println("[ALARM] TRIGGERED — Stage 1 (AI) starting");
     sendEventToBackend(sourceNodeId, "ALARM_TRIGGERED", eventType);
 
-    runAiConversation();   // Blocks until alarmActive = false (remote disarm or 5 dialogues done)
+    runAiConversation();  // Stage 1: AI talks, exits after 5 dialogues OR disarm
 
-    // Guarantee relay is off when conversation exits regardless of how it ended
+    // Stage 2: siren is running — poll heartbeats until user presses Terminate Alert
+    if (alarmActive) {
+        Serial.println("[ALARM] Stage 2: Siren running — waiting for disarm");
+        while (alarmActive) {
+            if (millis() - lastHeartbeatMs >= HEARTBEAT_INTERVAL_MS) {
+                lastHeartbeatMs = millis();
+                sendHeartbeat();
+            }
+            delay(100);
+        }
+        Serial.println("[ALARM] Stage 2: Disarmed — stopping siren");
+    }
+
+    // Cleanup — relay off, state reset
+    sirenActive = false;
     digitalWrite(RELAY_SIREN_PIN, LOW);
 }
 

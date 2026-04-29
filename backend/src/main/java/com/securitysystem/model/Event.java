@@ -43,6 +43,7 @@ public class Event {
         DOOR_CLOSED,
         ALARM_TRIGGERED,
         ALARM_DISARMED,
+        SIREN_ACTIVE,
         SYSTEM_ARMED,
         SYSTEM_DISARMED,
         NODE_ONLINE,
