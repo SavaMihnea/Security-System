@@ -55,7 +55,7 @@ const char* ESP_API_KEY   = "pFTF3EJ3MEKx0NE5sO1tAGouPNNeYwJ5CsPAg2zVUXgjevad";
 
 // ---- Timing constants -------------------------------------------
 #define HEARTBEAT_INTERVAL_MS    10000UL  // Sync backend every 10 s (arm mode changes reflect quickly)
-#define ENTRY_DELAY_MS           20000UL  // 20 s entry delay — matches backend AlarmManager + dashboard countdown
+#define ENTRY_DELAY_MS           10000UL  // 10 s entry delay — matches backend AlarmManager + dashboard countdown
 #define PROACTIVE_INTERVAL_MS    12000UL  // Proactive statement every 12 s regardless of mic
 #define MIC_RECORD_DURATION_MS    2500UL  // Record 2.5 s per AI interaction (faster response cycle)
 #define MIC_AMPLITUDE_THRESHOLD   20000   // Raw I2S peak above = "sound detected"
@@ -471,7 +471,7 @@ void runAiConversation() {
     // Dialogue counter — tracks total AI speeches (opening + proactive + responses).
     // After DIALOGUES_BEFORE_SIREN the loop exits, Stage 2 (12V siren) fires.
     int  aiDialogueCount     = 0;
-    const int DIALOGUES_BEFORE_SIREN = 5;
+    const int DIALOGUES_BEFORE_SIREN = 3;
 
     // ---- STEP 1: Play opening deterrence phrase ----
     Serial.println("[AI] STEP 1 — Fetching/playing opening deterrence phrase");
