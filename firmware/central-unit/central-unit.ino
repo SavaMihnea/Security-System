@@ -52,7 +52,7 @@ const char* ESP_API_KEY   = "pFTF3EJ3MEKx0NE5sO1tAGouPNNeYwJ5CsPAg2zVUXgjevad";
 // -----------------------------------------------------------------
 
 // ---- Timing constants -------------------------------------------
-#define HEARTBEAT_INTERVAL_MS    30000UL  // Sync backend every 30 s
+#define HEARTBEAT_INTERVAL_MS    10000UL  // Sync backend every 10 s (arm mode changes reflect quickly)
 #define ENTRY_DELAY_MS           20000UL  // 20 s entry delay — matches backend AlarmManager + dashboard countdown
 #define PROACTIVE_INTERVAL_MS    12000UL  // Proactive statement every 12 s regardless of mic
 #define MIC_RECORD_DURATION_MS    2500UL  // Record 2.5 s per AI interaction (faster response cycle)
