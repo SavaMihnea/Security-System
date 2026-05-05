@@ -17,4 +17,10 @@ public class PageController {
 
     @GetMapping("/events")
     public String events() { return "forward:/events.html"; }
+
+    @GetMapping("/about")
+    public String about() { return "forward:/about.html"; }
+
+    @GetMapping("/help")
+    public String help() { return "forward:/help.html"; }
 }

@@ -6,11 +6,17 @@
 
 requireAuth();
 
+const _SVG = {
+    lockOpen: `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><rect x="3" y="11" width="18" height="11"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>`,
+    lockClosed:`<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><rect x="3" y="11" width="18" height="11"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
+    home:      `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
+    moon:      `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
+};
 const STATUS_ICON = {
-    DISARMED:         '🔓',
-    ARMED_HOME:       '🏠',
-    ARMED_HOME_NIGHT: '🌙',
-    ARMED_AWAY:       '🔒'
+    DISARMED:         _SVG.lockOpen,
+    ARMED_HOME:       _SVG.home,
+    ARMED_HOME_NIGHT: _SVG.moon,
+    ARMED_AWAY:       _SVG.lockClosed
 };
 
 const ALARM_EVENT_TYPES = new Set([
@@ -30,12 +36,20 @@ function updateStatusBanner(status) {
     const icon    = document.getElementById('statusIcon');
     const text    = document.getElementById('statusText');
 
-    icon.textContent = STATUS_ICON[status.armMode] || '🔓';
-    text.textContent = status.armMode.replaceAll('_', ' ');
+    const ARM_LABEL = {
+        DISARMED:         'DISARMED',
+        ARMED_AWAY:       'ARMED AWAY',
+        ARMED_HOME:       'ARMED HOME',
+        ARMED_HOME_NIGHT: 'ARMED NIGHT'
+    };
 
-    banner.className = 'status-banner p-4 text-center';
+    icon.innerHTML = STATUS_ICON[status.armMode] || _SVG.lockOpen;
+    text.textContent = ARM_LABEL[status.armMode] || status.armMode.replaceAll('_', ' ');
+
+    banner.className = 'command-core status-banner tac';
     const isArmed = status.armed;
     const isHome  = status.armMode === 'ARMED_HOME';
+    const isNight = status.armMode === 'ARMED_HOME_NIGHT';
 
     if (!isArmed) {
         banner.classList.add('status-disarmed');
@@ -45,7 +59,7 @@ function updateStatusBanner(status) {
         document.getElementById('btnDisarm').classList.add('d-none');
         CountdownTimer.clear();
     } else {
-        banner.classList.add(isHome ? 'status-home' : 'status-armed');
+        banner.classList.add(isNight ? 'status-night' : isHome ? 'status-home' : 'status-armed');
         document.getElementById('btnArmAway').classList.add('d-none');
         document.getElementById('btnArmHome').classList.add('d-none');
         document.getElementById('btnArmHomeNight').classList.add('d-none');
@@ -65,7 +79,12 @@ async function disarm() {
 
 // ---- Sensors grid -----------------------------------------
 const STATUS_DOT = { ONLINE: 'online', TRIGGERED: 'triggered', OFFLINE: 'offline', FAULT: 'offline' };
-const TYPE_ICON  = { MOTION: '👁', VIBRATION: '📳', DOOR: '🚪', CENTRAL: '🖥' };
+const TYPE_ICON  = {
+    MOTION:    `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
+    VIBRATION: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`,
+    DOOR:      `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><circle cx="15" cy="13" r="1" fill="currentColor"/></svg>`,
+    CENTRAL:   `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><rect x="2" y="3" width="20" height="14"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`
+};
 
 // Helper function to check if a sensor is online based on last heartbeat
 const isOnline = (lastHeartbeatISO) => {
@@ -291,7 +310,7 @@ function connectWebSocket() {
         reconnectDelay: 5000,
         onConnect: () => {
             document.getElementById('statWs').innerHTML =
-                '<span class="text-success">Live</span>';
+                '<span class="ws-live">Live</span>';
 
             // New events from sensors
             client.subscribe('/topic/events', (message) => {

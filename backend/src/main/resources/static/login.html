@@ -6,78 +6,97 @@
     <title>VOXWALL - Login</title>
     <link rel="icon" type="image/png" href="/assets/keylogo.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
-    <link rel="preload" as="image" href="/assets/keylogo.png">
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
-<body class="bg-dark d-flex align-items-center justify-content-center min-vh-100" style="position:relative; z-index:0;">
+<body class="login-body">
 
-<!-- Video background -->
 <video class="login-video-bg" autoplay muted loop playsinline preload="auto">
     <source src="/assets/earth.mp4" type="video/mp4">
 </video>
 
-<!-- Decorative background trapezoids -->
-<svg class="login-trapezoids" viewBox="0 0 1000 900" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
-    <!-- Outer large dark grey trapezoid -->
-    <polygon points="10, 60 990, 60 700, 790 300, 790" fill="rgba(17,17,17,0.7)" stroke="rgba(120,120,140,0.4)" stroke-width="2.5"/>
-    <!-- Inner smaller black trapezoid -->
-    <polygon points="190, 106 810, 106 670, 460 330, 460" fill="#000000" stroke="rgba(120,120,140,0.4)" stroke-width="2.5"/>
-</svg>
 
-<div class="login-card">
-    <div class="text-center mb-3">
-        <h1 class="login-brand mb-2" style="font-size: 2.3rem;">VOXWALL SECURITY</h1>
-        <img src="/assets/keylogo.png" alt="VOXWALL" class="my-2" fetchpriority="high" style="width:80%; max-width:440px; height:auto; display:block; margin-left: 40px; margin-right:auto; view-transition-name: main-logo;">
-        <p class="login-motto mt-3" style="font-size: 1.3rem;">Control the unseen.</p>
+<div class="login-center">
+
+  <!-- Label above card -->
+  <div class="login-terminal-id">
+    <span class="login-terminal-dot"></span>
+    VXW-AUTH-01 &nbsp;/&nbsp; SECURE CHANNEL ESTABLISHED
+  </div>
+
+  <div class="login-card">
+    <!-- Status bar -->
+    <div class="login-status-row">
+      <span class="login-status-dot"></span>
+      <span class="login-status-text">ENCRYPTED CHANNEL ACTIVE</span>
+      <span class="login-status-tag">AES-256</span>
+    </div>
+
+    <!-- Brand -->
+    <div class="login-brand">VOXWALL<br>SECURITY</div>
+    <div class="login-motto">Control the unseen.</div>
+
+    <!-- Decorative rule -->
+    <div class="login-rule">
+      <div class="login-rule-line"></div>
+      <div class="login-rule-diamond"></div>
+      <div class="login-rule-line"></div>
     </div>
 
     <form id="loginForm">
-        <div class="mb-3 mx-auto" style="margin-top: 40px; max-width: 260px;">
-            <label for="username" class="form-label login-label">Username</label>
-            <input type="text" class="form-control form-control-dark" id="username"
-                   autocomplete="username" required>
+      <div class="login-field">
+        <label for="username" class="login-label">Operator ID</label>
+        <input type="text" class="form-control form-control-dark" id="username"
+               autocomplete="username" required>
+      </div>
+      <div class="login-field">
+        <label for="password" class="login-label">Access Code</label>
+        <div class="position-relative">
+          <input type="password" class="form-control form-control-dark pe-5" id="password"
+                 autocomplete="current-password" required>
+          <button type="button" class="login-pw-toggle" onclick="togglePassword()"
+                  tabindex="-1" aria-label="Toggle visibility">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
         </div>
-        <div class="mb-4 mx-auto" style="max-width: 260px;">
-            <label for="password" class="form-label login-label">Password</label>
-            <div class="position-relative">
-                <input type="password" class="form-control form-control-dark pe-5" id="password"
-                       autocomplete="current-password" required>
-                <button type="button" class="btn btn-link position-absolute top-50 end-0 translate-middle-y text-muted px-3 py-0"
-                        onclick="togglePassword()" tabindex="-1" style="text-decoration:none; font-size:1.1rem;" aria-label="Toggle password visibility" id="togglePwBtn">👁</button>
-            </div>
-        </div>
-        <div class="mx-auto" style="max-width: 260px;">
-            <button type="submit" class="btn btn-signin w-100" id="loginBtn">
-                Proceed
-            </button>
-        </div>
-        <div class="mx-auto" style="max-width: 260px; min-height: 2.2rem; display: flex; align-items: center; justify-content: center;">
-            <div id="errorMsg" class="login-error-msg d-none" role="alert"></div>
-        </div>
+      </div>
+      <button type="submit" class="btn-signin" id="loginBtn">
+        <span id="loginBtnText">PROCEED</span>
+        <svg class="btn-signin-arrow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+      <div id="errorMsg" class="login-error-msg d-none" role="alert"></div>
     </form>
+  </div>
+
+  <!-- Label below card -->
+  <div class="login-node-id">VOXWALL SECURITY SYSTEM &nbsp;&#8226;&nbsp; v2.1.0 &nbsp;&#8226;&nbsp; RAILWAY CLOUD</div>
+
+</div>
+
+<!-- Footer -->
+<div class="login-footer">
+  <span>&#169; VOXWALL SECURITY 2025 &nbsp;&nbsp; All rights reserved</span>
 </div>
 
 <script>
-    // Redirect if already logged in
     if (localStorage.getItem('jwt_token')) {
         window.location.href = '/dashboard';
     }
 
     function togglePassword() {
         const pw = document.getElementById('password');
-        const btn = document.getElementById('togglePwBtn');
-        if (pw.type === 'password') { pw.type = 'text'; btn.textContent = '👁'; }
-        else { pw.type = 'password'; btn.textContent = '👁'; }
+        pw.type = pw.type === 'password' ? 'text' : 'password';
     }
 
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const btn = document.getElementById('loginBtn');
+        const btn    = document.getElementById('loginBtn');
+        const btnTxt = document.getElementById('loginBtnText');
         const errMsg = document.getElementById('errorMsg');
+        const arrow  = btn.querySelector('.btn-signin-arrow');
 
         btn.disabled = true;
-        btn.textContent = 'Loading assets...';
+        btnTxt.textContent = 'AUTHENTICATING';
+        if (arrow) arrow.style.display = 'none';
         errMsg.classList.add('d-none');
 
         const username = document.getElementById('username').value.trim();
@@ -99,19 +118,16 @@
                 const data = await res.json();
                 errMsg.textContent = data.error || 'Account locked. Too many failed attempts.';
                 errMsg.classList.remove('d-none');
-                btn.disabled = false;
-                btn.textContent = 'Proceed';
+                btn.disabled = false; btnTxt.textContent = 'PROCEED'; if (arrow) arrow.style.display = '';
             } else {
-                errMsg.textContent = 'Invalid username or password.';
+                errMsg.textContent = 'Invalid operator ID or access code.';
                 errMsg.classList.remove('d-none');
-                btn.disabled = false;
-                btn.textContent = 'Proceed';
+                btn.disabled = false; btnTxt.textContent = 'PROCEED'; if (arrow) arrow.style.display = '';
             }
         } catch {
             errMsg.textContent = 'Cannot reach the server. Check your connection.';
             errMsg.classList.remove('d-none');
-            btn.disabled = false;
-            btn.textContent = 'Proceed';
+            btn.disabled = false; btnTxt.textContent = 'PROCEED'; if (arrow) arrow.style.display = '';
         }
     });
 </script>

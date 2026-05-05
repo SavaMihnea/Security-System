@@ -49,8 +49,9 @@ public class SecurityConfig {
                 .requestMatchers("/ws/**").permitAll()
                 // Static frontend files served by Spring Boot
                 .requestMatchers("/", "/index.html", "/login.html", "/dashboard.html",
-                                 "/sensors.html", "/events.html", "/assets/**", "/logo.png", "/favicon.ico",
-                                 "/login", "/dashboard", "/sensors", "/events").permitAll()
+                                 "/sensors.html", "/events.html", "/about.html", "/help.html",
+                                 "/assets/**", "/logo.png", "/favicon.ico",
+                                 "/login", "/dashboard", "/sensors", "/events", "/about", "/help").permitAll()
                 // Everything else requires a valid JWT
                 .anyRequest().authenticated()
             )

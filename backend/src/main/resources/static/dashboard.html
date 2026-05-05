@@ -1,232 +1,194 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VOXWALL - Dashboard</title>
-    <link rel="icon" type="image/png" href="/assets/keylogo.png">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
-    <link rel="preload" as="image" href="/assets/keylogo.png">
-    <link rel="stylesheet" href="assets/css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VOXWALL - Dashboard</title>
+  <link rel="icon" type="image/png" href="/assets/keylogo.png">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="preload" as="image" href="/assets/keylogo.png">
+  <link rel="stylesheet" href="assets/css/style.css">
 </head>
-<body class="bg-dark text-white" style="visibility:hidden;">
-<nav class="navbar navbar-dark bg-black border-bottom border-secondary px-4">
-    <a class="navbar-brand" href="/dashboard" style="font-family:'Rajdhani','Segoe UI',sans-serif; font-weight:700; font-size:1.2rem; letter-spacing:0.15em; text-transform:uppercase; color:#fff; text-shadow:0 0 12px rgba(180,0,20,0.6);">VOXWALL SECURITY</a>
-    <div class="d-flex gap-3 align-items-center">
-        <a href="/dashboard" class="nav-link text-white fw-semibold active">Dashboard</a>
-        <a href="/sensors"   class="nav-link text-secondary">Sensors</a>
-        <a href="/events"    class="nav-link text-secondary">Events</a>
-        <button class="btn btn-sm btn-outline-secondary" onclick="logout()">Logout</button>
-    </div>
+<body style="visibility:hidden;">
+
+<nav class="vox-nav">
+  <a class="vox-nav-brand" href="/dashboard">
+    <span class="brand-dot"></span>VOXWALL SECURITY
+  </a>
+  <div class="vox-nav-links">
+    <a href="/dashboard" class="vox-nav-link active">Dashboard</a>
+    <a href="/sensors"   class="vox-nav-link">Sensors</a>
+    <a href="/events"    class="vox-nav-link">Events</a>
+    <a href="/help"      class="vox-nav-link">Help</a>
+    <a href="/about"     class="vox-nav-link">About</a>
+    <button class="vox-nav-logout" onclick="logout()">Logout</button>
+  </div>
 </nav>
 
-<div class="container-fluid px-4 py-4">
+<div class="page-wrap">
 
-    <!-- Logo + diagnostic panels -->
-    <div class="hero-trap-wrapper mb-4">
-        <svg class="trap-svg" viewBox="0 0 1000 900" preserveAspectRatio="none" aria-hidden="true">
-            <polygon points="156,10 844,10 793,880 207,880" fill="#000000" stroke="rgba(120,120,140,0.4)" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
-        </svg>
-        <div class="row align-items-center g-0" style="position:relative; z-index:1;">
-        <div class="col-4">
-            <div class="diag-panel text-end pe-3 pe-md-5">
-                <div class="diag-row">
-                    <span class="diag-label">LAST HEARTBEAT</span>
-                    <span class="diag-value" id="diagHeartbeat">—</span>
-                </div>
-                <div class="diag-row">
-                    <span class="diag-label">LAST DISARMED</span>
-                    <span class="diag-value" id="diagLastDisarmed">—</span>
-                </div>
-                <div class="diag-row">
-                    <span class="diag-label">LAST ARMED</span>
-                    <span class="diag-value" id="diagLastArmed">—</span>
-                </div>
-            </div>
-        </div>
-        <div class="col-4 text-center">
-            <div class="logo-trap-wrapper">
-                <video class="logo-trap-video" autoplay muted loop playsinline preload="auto">
-                    <source src="/assets/earth.mp4" type="video/mp4">
-                </video>
-                <div style="position:relative; z-index:3;">
-                    <img src="/assets/keylogo.png" alt="VOXWALL" fetchpriority="high" style="width: clamp(90px, 18vw, 220px); height: auto; view-transition-name: main-logo;">
-                </div>
-            </div>
-        </div>
-        <div class="col-4">
-            <div class="diag-panel text-start ps-3 ps-md-5">
-                <div class="diag-row">
-                    <span class="diag-label">ACTIVE ALARMS</span>
-                    <span class="diag-value" id="diagAlarms">—</span>
-                </div>
-                <div class="diag-row">
-                    <span class="diag-label">FAULT NODES</span>
-                    <span class="diag-value" id="diagFaultNodes">—</span>
-                </div>
-                <div class="diag-row">
-                    <span class="diag-label">AI MODULE</span>
-                    <span class="diag-value" id="diagAiStatus">—</span>
-                </div>
-            </div>
-        </div>
-        </div>
+  <!-- DIAGNOSTICS STRIP -->
+  <div class="diag-strip tac">
+    <span class="tc-tr"></span><span class="tc-bl"></span>
+    <div class="diag-cell">
+      <div class="diag-label">Last Heartbeat</div>
+      <div class="diag-value" id="diagHeartbeat">-</div>
+    </div>
+    <div class="diag-cell">
+      <div class="diag-label">Last Armed</div>
+      <div class="diag-value" id="diagLastArmed">-</div>
+    </div>
+    <div class="diag-cell">
+      <div class="diag-label">Last Disarmed</div>
+      <div class="diag-value" id="diagLastDisarmed">-</div>
+    </div>
+    <div class="diag-cell">
+      <div class="diag-label">Active Alarms</div>
+      <div class="diag-value" id="diagAlarms">-</div>
+    </div>
+    <div class="diag-cell">
+      <div class="diag-label">Fault Nodes</div>
+      <div class="diag-value" id="diagFaultNodes">-</div>
+    </div>
+    <div class="diag-cell">
+      <div class="diag-label">AI Module</div>
+      <div class="diag-value" id="diagAiStatus">-</div>
+    </div>
+  </div>
+
+  <!-- COMMAND CORE -->
+  <div id="statusBanner" class="command-core status-banner status-disarmed tac">
+    <span class="tc-tr"></span><span class="tc-bl"></span>
+
+    <!-- earth.mp4 background -->
+    <video class="core-video" autoplay muted loop playsinline preload="auto">
+      <source src="/assets/earth.mp4" type="video/mp4">
+    </video>
+
+    <!-- Scan rings -->
+    <div class="core-rings">
+      <div class="core-ring core-ring-1"></div>
+      <div class="core-ring core-ring-2"></div>
+      <div class="core-ring core-ring-3"></div>
     </div>
 
-    <!-- System status banner -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div id="statusBanner" class="status-banner status-disarmed p-4 text-center">
-                <svg class="trap-svg" viewBox="0 0 1000 160" preserveAspectRatio="none" aria-hidden="true">
-                    <polygon class="trap-polygon" points="214,2 786,2 738,158 262,158" fill="#000000" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
-                </svg>
-                <div class="trap-content">
-                    <div class="status-icon mb-2" id="statusIcon">🔓</div>
-                    <h1 class="fs-2 fw-bold mb-2" id="statusText">DISARMED</h1>
-                    <div class="d-flex gap-4 justify-content-center flex-wrap mt-4">
-                        <button id="btnArmAway" class="btn btn-sentinel px-4" onclick="arm('ARMED_AWAY')">
-                            🔒 Arm Away
-                        </button>
-                        <button id="btnArmHome" class="btn btn-outline-light px-4" onclick="arm('ARMED_HOME')">
-                            🏠 Arm Home
-                        </button>
-                        <button id="btnArmHomeNight" class="btn btn-outline-warning px-4" onclick="arm('ARMED_HOME_NIGHT')">
-                            🌙 Arm Night
-                        </button>
-                        <button id="btnDisarm" class="btn btn-danger px-4 d-none" onclick="disarm()">
-                            🔓 Disarm
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="core-content">
+      <!-- Status -->
+      <div class="core-state-label">SYSTEM STATE</div>
+      <div class="core-icon" id="statusIcon"></div>
+      <div id="statusText">DISARMED</div>
+
+      <!-- Arm buttons -->
+      <div class="arm-buttons">
+        <button id="btnArmAway"      class="btn-arm btn-arm-away"  onclick="arm('ARMED_AWAY')">ARM AWAY</button>
+        <button id="btnArmHome"      class="btn-arm btn-arm-home"  onclick="arm('ARMED_HOME')">ARM HOME</button>
+        <button id="btnArmHomeNight" class="btn-arm btn-arm-night" onclick="arm('ARMED_HOME_NIGHT')">ARM NIGHT</button>
+        <button id="btnDisarm"       class="btn-arm btn-disarm d-none" onclick="disarm()">DISARM</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- THREAT ASSESSMENT -->
+  <div class="threat-banner tac" id="countdownRow">
+    <span class="tc-tr"></span><span class="tc-bl"></span>
+
+    <!-- Normal: no active alarm -->
+    <div id="normalStateView" class="threat-ok">
+      <div class="threat-ok-dot"></div>
+      <div>
+        <div class="threat-ok-label">Threat Assessment</div>
+        <div class="threat-ok-value">No immediate threats detected</div>
+      </div>
     </div>
 
-    <!-- Threat Status Banner (always visible) -->
-    <div class="row mb-4" id="countdownRow">
-        <div class="col-12">
-            <div class="status-banner countdown-banner p-4 text-center">
-                <svg class="trap-svg" viewBox="0 0 1000 160" preserveAspectRatio="none" aria-hidden="true">
-                    <polygon class="trap-polygon trap-polygon-pending" points="214,2 786,2 738,158 262,158" fill="#000000" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
-                </svg>
-                <div class="trap-content">
-
-                    <!-- Normal state: no active alarm -->
-                    <div id="normalStateView">
-                        <div class="countdown-label" style="color:rgba(180,180,200,0.6);">THREAT ASSESSMENT</div>
-                        <div style="font-size:2.8rem; margin:0.4rem 0; color:#00e676; text-shadow:0 0 14px rgba(0,230,118,0.5);">✓</div>
-                        <div class="countdown-sub" style="color:#00e676; font-weight:600; letter-spacing:0.08em;">No immediate threats detected</div>
-                    </div>
-
-                    <!-- Alarm state: countdown / AI active / siren active -->
-                    <div id="alarmStateView" class="d-none">
-                        <div class="countdown-label" id="countdownLabel">ENTRY DELAY - ALARM PENDING</div>
-                        <div class="countdown-sensor" id="countdownSensor"></div>
-                        <div class="countdown-number" id="countdownNumber">10</div>
-                        <div class="countdown-sub" id="countdownSub">seconds until AI deterrence activates</div>
-                        <div class="mt-3">
-                            <button class="btn btn-danger px-5 fw-bold" onclick="disarm()"> 🔓 Terminate Alert </button>
-                        </div>
-                        <div id="sirenActiveMsg" class="d-none mt-3"
-                             style="font-size:1rem; font-weight:700; letter-spacing:0.12em; color:#ff4444; text-shadow:0 0 10px rgba(255,68,68,0.7);">
-                            ⚡ ALARM ACTIVE — SIREN ENGAGED ⚡
-                        </div>
-                    </div>
-
-                </div>
-            </div>
+    <!-- Alarm: countdown / siren -->
+    <div id="alarmStateView" class="d-none">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:20px;">
+        <div>
+          <div class="countdown-label" id="countdownLabel">ENTRY DELAY - ALARM PENDING</div>
+          <div class="countdown-sensor" id="countdownSensor"></div>
+          <div class="countdown-number" id="countdownNumber">10</div>
+          <div class="countdown-sub" id="countdownSub">seconds until AI deterrence activates</div>
+          <div id="sirenActiveMsg" class="d-none" style="margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:0.82rem;font-weight:700;letter-spacing:0.16em;color:var(--red);text-shadow:var(--ts-glow-r);">
+            ALARM ACTIVE - SIREN ENGAGED
+          </div>
         </div>
+        <button class="btn-arm btn-disarm" style="align-self:center;" onclick="disarm()">TERMINATE ALERT</button>
+      </div>
     </div>
+  </div>
 
-    <!-- Stats row -->
-    <div class="row g-3 mb-4">
-        <div class="col-6 col-md-3">
-            <div class="stat-card">
-                <svg class="trap-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-                    <polygon class="trap-polygon trap-polygon-stat" points="6,2 94,2 86,98 14,98" fill="#000000" stroke="rgba(120,120,140,0.4)" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
-                </svg>
-                <div class="trap-content">
-                    <div class="stat-label">Total Sensors</div>
-                    <div class="stat-value" id="statTotalSensors">—</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="stat-card">
-                <svg class="trap-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-                    <polygon class="trap-polygon trap-polygon-stat" points="6,2 94,2 86,98 14,98" fill="#000000" stroke="rgba(120,120,140,0.4)" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
-                </svg>
-                <div class="trap-content">
-                    <div class="stat-label">Online Sensors</div>
-                    <div class="stat-value text-success" id="statOnline">—</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="stat-card">
-                <svg class="trap-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-                    <polygon class="trap-polygon trap-polygon-stat" points="6,2 94,2 86,98 14,98" fill="#000000" stroke="rgba(120,120,140,0.4)" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
-                </svg>
-                <div class="trap-content">
-                    <div class="stat-label">Gateway ESP32-S3</div>
-                    <div class="stat-value" id="statGateway">—</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="stat-card">
-                <svg class="trap-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-                    <polygon class="trap-polygon trap-polygon-stat" points="6,2 94,2 86,98 14,98" fill="#000000" stroke="rgba(120,120,140,0.4)" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
-                </svg>
-                <div class="trap-content">
-                    <div class="stat-label">WS Connection</div>
-                    <div class="stat-value" id="statWs">—</div>
-                </div>
-            </div>
-        </div>
+  <!-- STAT CARDS -->
+  <div class="row g-3 mb-3">
+    <div class="col-6 col-md-3">
+      <div class="stat-card tac">
+        <span class="tc-tr"></span><span class="tc-bl"></span>
+        <div class="stat-label">Total Sensors</div>
+        <div class="stat-value" id="statTotalSensors">-</div>
+      </div>
     </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card tac">
+        <span class="tc-tr"></span><span class="tc-bl"></span>
+        <div class="stat-label">Online</div>
+        <div class="stat-value text-success" id="statOnline">-</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card tac">
+        <span class="tc-tr"></span><span class="tc-bl"></span>
+        <div class="stat-label">Gateway ESP32-S3</div>
+        <div class="stat-value" id="statGateway">-</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card tac">
+        <span class="tc-tr"></span><span class="tc-bl"></span>
+        <div class="stat-label">WS Connection</div>
+        <div class="stat-value" id="statWs">-</div>
+      </div>
+    </div>
+  </div>
 
-    <!-- Sensors grid + Recent events -->
-    <div class="row g-4">
-        <div class="col-lg-6">
-            <div class="card bg-black border-secondary">
-                <div class="card-header border-secondary d-flex justify-content-between align-items-center">
-                    <span class="fw-semibold">Sensor Status</span>
-                    <a href="/sensors" class="text-muted small">View all →</a>
-                </div>
-                <div class="card-body p-0">
-                    <div id="sensorGrid" class="p-3">
-                        <p class="text-muted small text-center py-3">Loading sensors...</p>
-                    </div>
-                </div>
-            </div>
+  <!-- SENSOR GRID + RECENT EVENTS -->
+  <div class="row g-3">
+    <div class="col-lg-6">
+      <div class="vox-card tac h-100">
+        <span class="tc-tr"></span><span class="tc-bl"></span>
+        <div class="vox-card-header">
+          <span class="vox-card-title">Sensor Status</span>
+          <a href="/sensors" class="vox-card-link">View all →</a>
         </div>
-        <div class="col-lg-6">
-            <div class="card bg-black border-secondary">
-                <div class="card-header border-secondary d-flex justify-content-between align-items-center">
-                    <span class="fw-semibold">Recent Events</span>
-                    <a href="/events" class="text-muted small">View all →</a>
-                </div>
-                <div class="card-body p-0">
-                    <div id="recentEvents">
-                        <p class="text-muted small text-center py-3">Loading events...</p>
-                    </div>
-                </div>
-            </div>
+        <div style="padding:14px;" id="sensorGrid">
+          <p style="text-align:center;color:var(--text-3);font-size:0.8rem;padding:24px 0;">Loading sensors…</p>
         </div>
+      </div>
     </div>
+    <div class="col-lg-6">
+      <div class="vox-card tac h-100">
+        <span class="tc-tr"></span><span class="tc-bl"></span>
+        <div class="vox-card-header">
+          <span class="vox-card-title">Recent Events</span>
+          <a href="/events" class="vox-card-link">View all →</a>
+        </div>
+        <div id="recentEvents">
+          <p style="text-align:center;color:var(--text-3);font-size:0.8rem;padding:24px 0;">Loading events…</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
-<!-- Toast notification for real-time alerts -->
+<!-- Toast -->
 <div class="toast-container position-fixed bottom-0 end-0 p-3">
-    <div id="alertToast" class="toast text-bg-danger" role="alert">
-        <div class="toast-header text-bg-danger">
-            <strong class="me-auto">⚠ ALERT</strong>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
-        </div>
-        <div class="toast-body" id="alertToastBody"></div>
+  <div id="alertToast" class="toast text-bg-danger" role="alert">
+    <div class="toast-header text-bg-danger">
+      <strong class="me-auto">ALERT</strong>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
     </div>
+    <div class="toast-body" id="alertToastBody"></div>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
