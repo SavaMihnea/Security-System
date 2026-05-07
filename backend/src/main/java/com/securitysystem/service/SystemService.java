@@ -1,5 +1,6 @@
 package com.securitysystem.service;
 
+import com.securitysystem.dto.EventDto;
 import com.securitysystem.dto.SystemStatusDto;
 import com.securitysystem.model.Event;
 import com.securitysystem.model.SystemConfig;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 @RequiredArgsConstructor
@@ -22,8 +24,48 @@ public class SystemService {
     private final SimpMessagingTemplate messagingTemplate;
     private final AiService aiService;
 
+    private final AtomicBoolean panicPending = new AtomicBoolean(false);
+
     public SystemStatusDto getStatus() {
-        return SystemStatusDto.from(getConfig());
+        SystemStatusDto dto = SystemStatusDto.from(getConfig());
+        dto.setPanicActive(panicPending.get());
+        return dto;
+    }
+
+    public SystemStatusDto triggerPanic(String username) {
+        panicPending.set(true);
+
+        Event event = new Event();
+        event.setEventType(Event.EventType.ALARM_TRIGGERED);
+        event.setNotes("PANIC triggered by " + username);
+        eventRepository.save(event);
+
+        try {
+            messagingTemplate.convertAndSend("/topic/events",
+                    com.securitysystem.dto.EventDto.from(event));
+        } catch (Exception ignored) {}
+
+        return getStatus();
+    }
+
+    public void clearPanic() {
+        panicPending.set(false);
+    }
+
+    @Transactional
+    public SystemStatusDto setSchedule(boolean enabled, String armTime,
+                                       String disarmTime, String armMode) {
+        SystemConfig config = getConfig();
+        config.setScheduleEnabled(enabled);
+        config.setScheduleArmTime(armTime);
+        config.setScheduleDisarmTime(disarmTime);
+        if (armMode != null) {
+            config.setScheduleArmMode(SystemConfig.ArmMode.valueOf(armMode));
+        }
+        SystemConfig saved = systemConfigRepository.save(config);
+        SystemStatusDto dto = SystemStatusDto.from(saved);
+        dto.setPanicActive(panicPending.get());
+        return dto;
     }
 
     @Transactional
@@ -37,8 +79,15 @@ public class SystemService {
         SystemConfig saved = systemConfigRepository.save(config);
         SystemStatusDto dto = SystemStatusDto.from(saved);
 
+        boolean alarmWasActive = false;
         if (mode == SystemConfig.ArmMode.DISARMED) {
+            // Check before clearing panicPending
+            alarmWasActive = panicPending.get() ||
+                eventRepository.findByResolvedFalseOrderByTimestampDesc().stream()
+                    .anyMatch(e -> e.getEventType() == Event.EventType.ALARM_TRIGGERED
+                               || e.getEventType() == Event.EventType.SIREN_ACTIVE);
             aiService.clearAllSessions();
+            panicPending.set(false);
         }
 
         // Log arm/disarm as an Event for the audit trail
@@ -48,6 +97,17 @@ public class SystemService {
                 : Event.EventType.SYSTEM_ARMED);
         event.setNotes(mode.name() + " by " + updatedBy);
         eventRepository.save(event);
+
+        // Log ALARM_DISARMED after SYSTEM_DISARMED so it appears first (newest) in the events list
+        if (alarmWasActive) {
+            Event stopEvent = new Event();
+            stopEvent.setEventType(Event.EventType.ALARM_DISARMED);
+            stopEvent.setNotes("Alarm stopped by " + updatedBy);
+            eventRepository.save(stopEvent);
+            try {
+                messagingTemplate.convertAndSend("/topic/events", EventDto.from(stopEvent));
+            } catch (Exception ignored) {}
+        }
 
         // Push status change to dashboard
         try {

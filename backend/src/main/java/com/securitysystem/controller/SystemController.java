@@ -44,6 +44,27 @@ public class SystemController {
         return ResponseEntity.ok(systemService.setArmMode(SystemConfig.ArmMode.DISARMED, username));
     }
 
+    @PostMapping("/schedule")
+    public ResponseEntity<?> setSchedule(
+            @RequestBody Map<String, String> body) {
+        try {
+            String armMode = body.get("scheduleArmMode");
+            if (armMode != null) SystemConfig.ArmMode.valueOf(armMode); // validate
+            return ResponseEntity.ok(systemService.setSchedule(
+                    Boolean.parseBoolean(body.getOrDefault("scheduleEnabled", "false")),
+                    body.get("scheduleArmTime"),
+                    body.get("scheduleDisarmTime"),
+                    armMode));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Invalid arm mode"));
+        }
+    }
+
+    @PostMapping("/panic")
+    public ResponseEntity<SystemStatusDto> panic(@AuthenticationPrincipal String username) {
+        return ResponseEntity.ok(systemService.triggerPanic(username));
+    }
+
     @GetMapping("/diagnostics")
     public ResponseEntity<Map<String, Object>> getDiagnostics() {
         Map<String, Object> result = new HashMap<>();

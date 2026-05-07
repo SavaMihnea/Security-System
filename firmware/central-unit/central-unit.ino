@@ -55,7 +55,8 @@ const char* ESP_API_KEY   = "pFTF3EJ3MEKx0NE5sO1tAGouPNNeYwJ5CsPAg2zVUXgjevad";
 
 // ---- Timing constants -------------------------------------------
 #define HEARTBEAT_INTERVAL_MS    10000UL  // Sync backend every 10 s (arm mode changes reflect quickly)
-#define ENTRY_DELAY_MS           10000UL  // 10 s entry delay — matches backend AlarmManager + dashboard countdown
+#define ENTRY_DELAY_MS           10000UL  // 10 s entry delay for ARMED_AWAY
+#define HOME_ENTRY_DELAY_MS       5000UL  // 5 s entry delay for ARMED_HOME (awake, can react faster)
 #define PROACTIVE_INTERVAL_MS    12000UL  // Proactive statement every 12 s regardless of mic
 #define MIC_RECORD_DURATION_MS    2500UL  // Record 2.5 s per AI interaction (faster response cycle)
 #define MIC_AMPLITUDE_THRESHOLD   20000   // Raw I2S peak above = "sound detected"
@@ -76,7 +77,8 @@ static int32_t mic_dc           = 0;          // persistent DC offset for mic fi
 bool          alarmActive       = false;
 bool          entryDelayActive  = false;
 bool          sirenActive       = false;  // true when Stage 2 (12V relay) is running
-unsigned long entryDelayStartMs = 0;
+unsigned long entryDelayStartMs    = 0;
+unsigned long entryDelayDurationMs = ENTRY_DELAY_MS;  // set per-mode when delay starts
 char          nodeId[30]        = "CENTRAL_S3";
 unsigned long lastHeartbeatMs   = 0;
 char          aiSessionId[40]   = "";
@@ -386,13 +388,20 @@ void parseStatusResponse(const String& json) {
         currentArmMode = newMode;
         Serial.printf("[SYNC] Arm mode -> %s\n", modeStr);
     }
+    // Panic button pressed on dashboard — fire siren immediately
+    bool panicActive = doc["panicActive"] | false;
+    if (panicActive && !alarmActive && !entryDelayActive) {
+        Serial.println("[PANIC] Remote panic received — triggering immediate siren");
+        triggerNightAlarm(nodeId, "PANIC");
+    }
     // Remote disarm cancels alarm and entry delay
     if (currentArmMode == DISARMED && (alarmActive || entryDelayActive)) {
-        alarmActive      = false;
-        entryDelayActive = false;
-        sirenActive      = false;
-        audioPreloaded   = false;
-        aiSessionId[0]   = '\0';
+        alarmActive          = false;
+        entryDelayActive     = false;
+        entryDelayDurationMs = ENTRY_DELAY_MS;
+        sirenActive          = false;
+        audioPreloaded       = false;
+        aiSessionId[0]       = '\0';
         digitalWrite(RELAY_SIREN_PIN, RELAY_OFF);
         Serial.println("[SYNC] Alarm/delay cancelled by remote disarm");
     }
@@ -633,6 +642,30 @@ void triggerAlarm(const char* sourceNodeId, const char* eventType) {
     digitalWrite(RELAY_SIREN_PIN, RELAY_OFF);
 }
 
+void triggerNightAlarm(const char* sourceNodeId, const char* eventType) {
+    if (alarmActive) return;
+
+    alarmActive      = true;
+    entryDelayActive = false;
+    Serial.println("[ALARM] NIGHT MODE — immediate siren (no AI)");
+    sendEventToBackend(sourceNodeId, "ALARM_TRIGGERED", eventType);
+    digitalWrite(RELAY_SIREN_PIN, RELAY_ON);
+    sirenActive = true;
+    sendEventToBackend(nodeId, "SIREN_ACTIVE", "Night mode: immediate siren");
+
+    sendHeartbeat(); lastHeartbeatMs = millis();
+    while (alarmActive) {
+        if (millis() - lastHeartbeatMs >= 2000UL) {
+            lastHeartbeatMs = millis();
+            sendHeartbeat();
+        }
+        delay(100);
+    }
+
+    sirenActive = false;
+    digitalWrite(RELAY_SIREN_PIN, RELAY_OFF);
+}
+
 void stopAlarm() {
     alarmActive      = false;
     entryDelayActive = false;
@@ -699,24 +732,38 @@ void handleSensorEvent(const char* fromNodeId, const char* eventType) {
     switch (currentArmMode) { //
 
         case DISARMED:
+            break;
+
         case ARMED_HOME:
-            // Silent log only - no action (you're home)
+            // Motion ignored — family moving around inside
+            if (strcmp(eventType, "MOTION_DETECTED") == 0) break;
+            if (alarmActive) break;
+            if (!entryDelayActive) {
+                entryDelayActive     = true;
+                entryDelayStartMs    = millis();
+                entryDelayDurationMs = HOME_ENTRY_DELAY_MS;
+                Serial.println("[ENTRY DELAY] 5 seconds to disarm (Armed Home)...");
+                sendEventToBackend(nodeId, "ALARM_TRIGGERED", "Entry delay started");
+            }
             break;
 
         case ARMED_HOME_NIGHT:
-            // Immediate alarm, no grace period (you're sleeping)
-            if (!alarmActive) triggerAlarm(fromNodeId, eventType); //
+            // Motion is LOG_ONLY — occupants are asleep inside, not intruders
+            if (strcmp(eventType, "MOTION_DETECTED") == 0) break;
+            // Door or vibration: skip AI entirely, activate siren immediately
+            if (!alarmActive) triggerNightAlarm(fromNodeId, eventType);
             break;
 
         case ARMED_AWAY:
             if (alarmActive) break;
 
             if (!entryDelayActive) {
-                // Every sensor type gets the 20-second entry delay in ARMED_AWAY.
+                // Every sensor type gets the 10-second entry delay in ARMED_AWAY.
                 // This gives the owner time to disarm and shows the countdown on the dashboard.
-                entryDelayActive  = true;
-                entryDelayStartMs = millis();
-                Serial.println("[ENTRY DELAY] 20 seconds to disarm...");
+                entryDelayActive     = true;
+                entryDelayStartMs    = millis();
+                entryDelayDurationMs = ENTRY_DELAY_MS;
+                Serial.println("[ENTRY DELAY] 10 seconds to disarm...");
                 sendEventToBackend(nodeId, "ALARM_TRIGGERED", "Entry delay started");
 
                 // Pre-fetch TTS audio now so it plays the instant the countdown ends.
@@ -836,10 +883,14 @@ void loop() {
         // Fast LED blink during countdown
         digitalWrite(STATUS_LED_PIN, (now / 200) % 2);
 
-        if (now - entryDelayStartMs >= ENTRY_DELAY_MS) {
+        if (now - entryDelayStartMs >= entryDelayDurationMs) {
             Serial.println("[ENTRY DELAY] Expired - triggering alarm");
             entryDelayActive = false;
-            triggerAlarm(nodeId, "DOOR_OPENED");
+            if (currentArmMode == ARMED_HOME) {
+                triggerNightAlarm(nodeId, "DOOR_OPENED");
+            } else {
+                triggerAlarm(nodeId, "DOOR_OPENED");
+            }
         }
         return;     // Skip heartbeat while counting down (will resume after)
     }

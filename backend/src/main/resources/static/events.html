@@ -21,6 +21,7 @@
     <a href="/events"    class="vox-nav-link active">Events</a>
     <a href="/help"      class="vox-nav-link">Help</a>
     <a href="/about"     class="vox-nav-link">About</a>
+    <button id="btnSettings" class="vox-nav-logout" onclick="window.location.href='/dashboard?settings=open'" style="background:none;border:1px solid rgba(255,255,255,0.15);">&#9881;</button>
     <button class="vox-nav-logout" onclick="logout()">Logout</button>
   </div>
 </nav>
@@ -95,6 +96,7 @@
 <script src="assets/js/api.js"></script>
 <script>
   requireAuth();
+  if (!isAdmin()) { const g = document.getElementById('btnSettings'); if (g) g.style.display = 'none'; }
 
   const EVENT_BADGE = {
     ALARM_TRIGGERED:'bg-danger', SIREN_ACTIVE:'bg-danger',

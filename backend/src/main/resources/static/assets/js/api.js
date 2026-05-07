@@ -31,9 +31,18 @@ async function requireAuth() {
     document.body.style.visibility = 'visible';
 }
 
+function getRole() {
+    return localStorage.getItem('user_role') || 'USER';
+}
+
+function isAdmin() {
+    return getRole() === 'ADMIN';
+}
+
 function logout() {
     localStorage.removeItem('jwt_token');
     localStorage.removeItem('username');
+    localStorage.removeItem('user_role');
     window.location.href = '/login';
 }
 

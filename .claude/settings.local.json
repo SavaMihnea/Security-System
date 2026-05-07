@@ -5,7 +5,8 @@
       "Bash(grep -v '^\\\\s*$')",
       "Bash(mvn -v)",
       "PowerShell(mvn -v 2>&1)",
-      "PowerShell(Get-ChildItem \"C:\\\\Program Files\" -Directory | Where-Object { $_.Name -match \"java|jdk|jre|eclipse|adoptium|temurin|amazon\" } | Select-Object FullName)"
+      "PowerShell(Get-ChildItem \"C:\\\\Program Files\" -Directory | Where-Object { $_.Name -match \"java|jdk|jre|eclipse|adoptium|temurin|amazon\" } | Select-Object FullName)",
+      "WebSearch"
     ]
   }
 }

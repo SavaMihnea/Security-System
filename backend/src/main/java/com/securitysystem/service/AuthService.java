@@ -2,6 +2,7 @@ package com.securitysystem.service;
 
 import com.securitysystem.dto.LoginRequest;
 import com.securitysystem.dto.LoginResponse;
+import com.securitysystem.dto.UserDto;
 import com.securitysystem.model.User;
 import com.securitysystem.repository.UserRepository;
 import com.securitysystem.security.JwtUtil;
@@ -12,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -76,6 +78,54 @@ public class AuthService {
             lockedUntil.put(username, Instant.now().getEpochSecond() + LOCKOUT_SECONDS);
             failedAttempts.remove(username);
         }
+    }
+
+    public List<UserDto> getUsers() {
+        return userRepository.findAll().stream()
+                .sorted((a, b) -> a.getUsername().compareToIgnoreCase(b.getUsername()))
+                .map(UserDto::from)
+                .toList();
+    }
+
+    public void deleteUser(String usernameToDelete) {
+        if ("admin".equalsIgnoreCase(usernameToDelete)) {
+            throw new IllegalArgumentException("The admin account cannot be deleted");
+        }
+        User user = userRepository.findByUsername(usernameToDelete)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + usernameToDelete));
+        userRepository.deleteById(user.getId());
+    }
+
+    public void updateUser(String oldUsername, String newUsername, String newPassword) {
+        if ("admin".equalsIgnoreCase(oldUsername)) {
+            throw new IllegalArgumentException("The admin account cannot be modified via this endpoint");
+        }
+        User user = userRepository.findByUsername(oldUsername)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + oldUsername));
+        if (newUsername != null && !newUsername.isBlank() && !newUsername.equals(oldUsername)) {
+            String trimmed = newUsername.trim();
+            if (userRepository.existsByUsername(trimmed)) {
+                throw new IllegalArgumentException("Username already taken");
+            }
+            user.setUsername(trimmed);
+        }
+        if (newPassword != null && !newPassword.isBlank()) {
+            if (newPassword.length() < 8) {
+                throw new IllegalArgumentException("Password must be at least 8 characters");
+            }
+            user.setPasswordHash(passwordEncoder.encode(newPassword));
+        }
+        userRepository.save(user);
+    }
+
+    public void changePassword(String username, String currentPassword, String newPassword) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new BadCredentialsException("User not found"));
+        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+            throw new BadCredentialsException("Current password is incorrect");
+        }
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
     }
 
     public void register(String username, String rawPassword) {

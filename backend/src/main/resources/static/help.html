@@ -20,6 +20,7 @@
     <a href="/events"    class="vox-nav-link">Events</a>
     <a href="/help"      class="vox-nav-link active">Help</a>
     <a href="/about"     class="vox-nav-link">About</a>
+    <button id="btnSettings" class="vox-nav-logout" onclick="window.location.href='/dashboard?settings=open'" style="background:none;border:1px solid rgba(255,255,255,0.15);">&#9881;</button>
     <button class="vox-nav-logout" onclick="logout()">Logout</button>
   </div>
 </nav>
@@ -53,7 +54,7 @@
         <svg class="protocol-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
       <div class="protocol-body">
-        When a sensor triggers while the system is armed, VOXWALL enters a 10-second entry delay. During this window, a countdown is displayed on the dashboard. If the system is not disarmed within that window, the AI voice agent activates and issues a verbal warning to the intruder. The agent will engage up to 3 times. If the threat persists through all three dialogues, the 12V siren relay activates. At any point, pressing <strong>TERMINATE ALERT</strong> or disarming from the dashboard ends the sequence immediately.
+        AI deterrence is active in <strong>ARM AWAY</strong> mode only. After the 10-second entry delay expires, the AI voice agent activates and issues verbal warnings to the intruder through the external speaker. The agent engages up to 4 times - after which the 12V siren relay fires. In <strong>ARM HOME</strong> and <strong>ARM NIGHT</strong> modes the AI is bypassed entirely: the speakers are inside the property, engaging the AI would reveal family presence and waste critical seconds. In those modes the siren fires directly after the entry delay.
       </div>
     </div>
 
@@ -64,7 +65,10 @@
         <svg class="protocol-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
       <div class="protocol-body">
-        The entry delay is a 10-second grace period that activates when an alarm-triggering sensor fires while the system is armed. It is designed for authorized users re-entering the premises - navigate to the dashboard and press <strong>DISARM</strong> before the countdown reaches zero. If you miss the window, the AI deterrence phase will begin. You can still disarm the system during the AI phase or after the siren engages using the dashboard.
+        Entry delay duration depends on the active arm mode:<br><br>
+        <strong>ARM HOME</strong> - 5-second delay on door or vibration trigger. You are awake and can react quickly - open the dashboard and press <strong>DISARM</strong> before the countdown ends.<br><br>
+        <strong>ARM AWAY</strong> - 10-second delay on all sensor types. Designed for arriving home through the front door.<br><br>
+        <strong>ARM NIGHT</strong> - No delay. Any door or vibration breach fires the siren instantly. If you need to move through the home at night, disarm first.
       </div>
     </div>
 
@@ -75,7 +79,9 @@
         <svg class="protocol-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
       <div class="protocol-body">
-        The 12V siren activates only after the AI deterrence phase is exhausted - three unsuccessful verbal engagements with no disarm response. Once active, the siren drives the relay continuously until disarmed from the dashboard. The relay is wired active-LOW: the signal is held HIGH at rest to ensure the siren remains off even if the ESP32-S3 restarts unexpectedly. Siren events are logged automatically in the Event Log under <strong>SIREN_ACTIVE</strong>.
+        The 12V siren engages differently depending on mode:<br><br>
+        <strong>ARM HOME / ARM NIGHT</strong> - Siren fires immediately after the entry delay (5s or 0s respectively). No AI phase.<br><br>
+        <strong>ARM AWAY</strong> - Siren fires after the AI deterrence phase is exhausted (4 verbal exchanges). Once active, the relay drives continuously until disarmed from the dashboard. The relay is wired active-LOW: the signal is held HIGH at rest so the siren stays off even if the ESP32-S3 restarts unexpectedly. Siren events are logged automatically in the Event Log under <strong>SIREN_ACTIVE</strong>.
       </div>
     </div>
 
@@ -97,7 +103,7 @@
         <svg class="protocol-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
       <div class="protocol-body">
-        Sensor nodes (ESP32-C3) register automatically the first time they transmit over ESP-NOW to the central unit (ESP32-S3). The central unit forwards the node identity to the backend, which creates a sensor record with status <strong>ONLINE</strong>. Nodes appear in the Sensors page immediately after first contact. If a node goes offline (no heartbeat for 60 seconds), its status transitions to <strong>OFFLINE</strong> automatically. Re-powering the node triggers re-registration with no manual action required.
+        Sensor nodes (ESP32-C3) register automatically the first time they transmit over ESP-NOW to the central unit (ESP32-S3). The central unit forwards the node identity to the backend, which creates a sensor record with status <strong>ONLINE</strong>. Nodes appear in the Sensors page immediately after first contact. If a node goes offline (no heartbeat for 24 hours), its status transitions to <strong>OFFLINE</strong> automatically. The central gateway unit has a shorter 90-second timeout. Re-powering the node triggers re-registration with no manual action required.
       </div>
     </div>
 
@@ -108,9 +114,9 @@
         <svg class="protocol-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
       <div class="protocol-body">
-        <strong>ARM AWAY</strong> - Full perimeter active. All sensor types (motion, door, vibration) will trigger the alarm sequence. Use when the premises are unoccupied.<br><br>
-        <strong>ARM HOME</strong> - Interior-safe mode. Perimeter sensors remain active while interior motion sensors are suppressed. Use when occupants are present inside.<br><br>
-        <strong>ARM NIGHT</strong> - Night-profile perimeter mode. Similar to ARM HOME but optimised for nighttime sensitivity thresholds. Designed for sleeping hours when occupants are stationary.
+        <strong>ARM AWAY</strong> - Full perimeter active. All sensor types (motion, door, vibration) trigger the alarm with a 10-second entry delay, followed by AI voice deterrence, then the siren. Use when the premises are unoccupied.<br><br>
+        <strong>ARM HOME</strong> - Perimeter protection with interior motion suppressed. Door and window vibration sensors trigger a 5-second entry delay, then the siren fires directly - no AI phase. Motion sensors are silenced so family members can move freely. Use when occupants are awake inside.<br><br>
+        <strong>ARM NIGHT</strong> - Maximum immediate protection. Door and window vibration sensors fire the siren instantly with zero delay. Motion sensors are silenced so sleeping occupants can move freely. Use when everyone is in bed.
       </div>
     </div>
 
@@ -120,6 +126,8 @@
 
 <script src="assets/js/api.js"></script>
 <script>
+  if (!isAdmin()) { const g = document.getElementById('btnSettings'); if (g) g.style.display = 'none'; }
+
   function toggleProtocol(item) {
     const isOpen = item.classList.contains('open');
     document.querySelectorAll('.protocol-item.open').forEach(i => i.classList.remove('open'));

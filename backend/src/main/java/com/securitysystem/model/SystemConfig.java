@@ -33,6 +33,20 @@ public class SystemConfig {
     @Column(length = 50)
     private String updatedBy;
 
+    // Schedule: optional daily arm/disarm times (stored as "HH:mm" strings, null = disabled)
+    @Column(length = 5)
+    private String scheduleArmTime;      // e.g. "22:30" — arm at this time daily
+
+    @Column(length = 5)
+    private String scheduleDisarmTime;   // e.g. "07:00" — disarm at this time daily
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private ArmMode scheduleArmMode = ArmMode.ARMED_HOME_NIGHT; // mode to use when auto-arming
+
+    @Column(nullable = false)
+    private boolean scheduleEnabled = false;
+
     public enum ArmMode {
         /** System off — no sensors processed. */
         DISARMED,

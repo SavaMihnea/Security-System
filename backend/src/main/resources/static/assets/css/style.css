@@ -450,6 +450,55 @@ body {
 .btn-disarm    { color: #fff; border-color: rgba(204,17,34,0.6); background: rgba(204,17,34,0.15); }
 .btn-disarm:hover    { background: rgba(204,17,34,0.3); box-shadow: 0 0 24px var(--red-glow); }
 
+.btn-panic-nav {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 5px 13px;
+  background: rgba(204,17,34,0.12);
+  border: 1px solid rgba(204,17,34,0.55);
+  color: #ff4455;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+.btn-panic-nav:hover {
+  background: rgba(204,17,34,0.28);
+  border-color: var(--red);
+  box-shadow: 0 0 14px rgba(204,17,34,0.35);
+}
+.btn-panic-nav.siren-active {
+  border-color: var(--red);
+  background: rgba(204,17,34,0.28);
+  color: #ff4455;
+  animation: panic-pulse 1s ease-in-out infinite;
+}
+
+@keyframes panic-pulse {
+  0%, 100% { box-shadow: 0 0 6px rgba(204,17,34,0.3); }
+  50%       { box-shadow: 0 0 22px rgba(204,17,34,0.7), 0 0 44px rgba(204,17,34,0.2); }
+}
+
+.btn-panic {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 7px 22px;
+  border: 1px solid rgba(204,17,34,0.7);
+  background: rgba(204,17,34,0.18);
+  color: #ff4455;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.btn-panic:hover:not(:disabled) {
+  background: rgba(204,17,34,0.35);
+  box-shadow: 0 0 28px rgba(204,17,34,0.4);
+}
+.btn-panic:disabled { opacity: 0.5; cursor: not-allowed; }
+
 /* ================================================================
    THREAT ASSESSMENT BANNER
    ================================================================ */
@@ -1518,6 +1567,17 @@ body {
   .login-card { padding: 28px 24px; }
   .login-brand { font-size: 2rem; }
   .login-motto { font-size: 0.85rem; }
+}
+
+/* ================================================================
+   SETTINGS MODAL OVERRIDES
+   ================================================================ */
+
+/* Hide the bottom-right corner bracket on the settings modal card —
+   it bleeds outside the boundary and shows as two light-coloured lines
+   with a pixel square in the corner. */
+#settingsModal .vox-card::after {
+  display: none;
 }
 
 /* ================================================================

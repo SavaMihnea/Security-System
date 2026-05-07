@@ -18,9 +18,10 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * Implements the Master Security Matrix that determines alerting actions
  * based on system arm mode and sensor type. Handles:
- *   - Entry delay (30s for doors in HOME/AWAY modes)
- *   - Stage 1 (AI voice deterrence via AISecurityService)
+ *   - Entry delay (5s for ARMED_HOME door/vibration, 10s for ARMED_AWAY all sensors)
+ *   - Stage 1 (AI voice deterrence via AISecurityService — ARMED_AWAY only)
  *   - Stage 2 (Hardware siren via WebSocket relay command)
+ *   - Home/Night direct alarm: countdown broadcast to dashboard, firmware fires relay
  *   - I2S audio conflict prevention: Stage 2 is gated behind DETERRANCE_COMPLETE
  *     from the Hub, ensuring the I2S audio stream is fully closed before the
  *     siren relay activates.
@@ -40,7 +41,8 @@ public class AlarmManager {
     private final Map<String, Instant> activeEntryDelays = new ConcurrentHashMap<>();
     private final Map<String, Stage1Session> activeStage1Sessions = new ConcurrentHashMap<>();
 
-    private static final long ENTRY_DELAY_SECONDS = 10;
+    private static final long ENTRY_DELAY_SECONDS      = 10;
+    private static final long HOME_ENTRY_DELAY_SECONDS  = 5;
     private static final long AI_SESSION_TIMEOUT_SECONDS = 120;
 
     // ============================================================
@@ -67,16 +69,12 @@ public class AlarmManager {
                 break;
 
             case ARMED_HOME:
-                if (sensorType == Sensor.SensorType.DOOR) {
-                    action.shouldActivateStage1 = true;
-                    action.entryDelaySeconds = ENTRY_DELAY_SECONDS;
+                // No AI — speakers are inside the house, AI would endanger occupants.
+                // Door/vibration: 5-second countdown on dashboard, then firmware fires siren.
+                if (sensorType == Sensor.SensorType.DOOR || sensorType == Sensor.SensorType.VIBRATION) {
                     action.shouldActivateStage2 = true;
-                    action.actionType = "STAGE1_WITH_ENTRY_DELAY_THEN_STAGE2";
-                } else if (sensorType == Sensor.SensorType.VIBRATION) {
-                    action.shouldActivateStage1 = true;
-                    action.entryDelaySeconds = 0;
-                    action.shouldActivateStage2 = true;
-                    action.actionType = "STAGE1_INSTANT_THEN_STAGE2";
+                    action.entryDelaySeconds = HOME_ENTRY_DELAY_SECONDS;
+                    action.actionType = "HOME_DIRECT_ALARM";
                 } else if (sensorType == Sensor.SensorType.MOTION) {
                     action.actionType = "LOG_ONLY";
                 }
@@ -124,7 +122,13 @@ public class AlarmManager {
         if (action.shouldActivateStage1) {
             startStage1AI(nodeId, sensorName, action.entryDelaySeconds);
         } else if (action.shouldActivateStage2) {
-            activateSiren();
+            if (action.entryDelaySeconds > 0) {
+                // Home mode: show countdown on dashboard, firmware fires relay after delay
+                broadcastAlarmPending(nodeId, sensorName, action.entryDelaySeconds,
+                        nodeId + "_home_" + System.currentTimeMillis());
+            } else {
+                activateSiren();
+            }
         }
 
         if (action.shouldPlayChime) {

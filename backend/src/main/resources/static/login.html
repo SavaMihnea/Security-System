@@ -113,6 +113,7 @@
                 const data = await res.json();
                 localStorage.setItem('jwt_token', data.token);
                 localStorage.setItem('username', data.username);
+                localStorage.setItem('user_role', data.role || 'USER');
                 window.location.href = '/dashboard';
             } else if (res.status === 423) {
                 const data = await res.json();

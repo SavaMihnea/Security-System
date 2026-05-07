@@ -21,6 +21,7 @@
     <a href="/events"    class="vox-nav-link">Events</a>
     <a href="/help"      class="vox-nav-link">Help</a>
     <a href="/about"     class="vox-nav-link">About</a>
+    <button id="btnSettings" class="vox-nav-logout" onclick="window.location.href='/dashboard?settings=open'" style="background:none;border:1px solid rgba(255,255,255,0.15);">&#9881;</button>
     <button class="vox-nav-logout" onclick="logout()">Logout</button>
   </div>
 </nav>
@@ -31,7 +32,10 @@
       <div class="page-eyebrow">Node Registry</div>
       <div class="page-title">Sensors</div>
     </div>
-    <button class="btn-arm btn-arm-home" onclick="loadSensors()">Refresh</button>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span id="wsIndicator" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--text-3);">Connecting…</span>
+      <button class="btn-arm btn-arm-home" onclick="loadSensors()">Refresh</button>
+    </div>
   </div>
 
   <div id="emptyState" class="d-none" style="text-align:center;padding:72px 0;">
@@ -43,9 +47,12 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
 <script src="assets/js/api.js"></script>
 <script>
   requireAuth();
+  if (!isAdmin()) { const g = document.getElementById('btnSettings'); if (g) g.style.display = 'none'; }
 
   const STATUS_BADGE = { ONLINE:'bg-success', OFFLINE:'bg-secondary', TRIGGERED:'bg-danger', FAULT:'bg-warning' };
   const STATUS_CLASS = { ONLINE:'s-online', OFFLINE:'s-offline', TRIGGERED:'s-triggered', FAULT:'s-fault' };
@@ -55,6 +62,11 @@
     DOOR:      `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><rect x="3" y="2" width="18" height="20"/><circle cx="15.5" cy="12" r="1" fill="currentColor"/></svg>`,
     CENTRAL:   `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><rect x="2" y="3" width="20" height="14"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`
   };
+
+  const SENSOR_REFRESH_EVENTS = new Set([
+    'MOTION_DETECTED','VIBRATION_DETECTED','DOOR_OPENED','DOOR_CLOSED',
+    'NODE_ONLINE','NODE_OFFLINE','ALARM_TRIGGERED','ALARM_DISARMED','SIREN_ACTIVE'
+  ]);
 
   async function loadSensors() {
     const container  = document.getElementById('sensorCards');
@@ -103,7 +115,30 @@
     `).join('');
   }
 
+  function connectWebSocket() {
+    const client = new StompJs.Client({
+      webSocketFactory: () => new SockJS('/ws'),
+      reconnectDelay: 5000,
+      onConnect: () => {
+        document.getElementById('wsIndicator').innerHTML =
+          '<span class="ws-live">Live</span>';
+        client.subscribe('/topic/events', (message) => {
+          const event = JSON.parse(message.body);
+          if (SENSOR_REFRESH_EVENTS.has(event.eventType)) {
+            loadSensors();
+          }
+        });
+      },
+      onDisconnect: () => {
+        document.getElementById('wsIndicator').innerHTML =
+          '<span style="color:var(--red);font-size:0.72rem;font-family:\'JetBrains Mono\',monospace;">Offline</span>';
+      }
+    });
+    client.activate();
+  }
+
   loadSensors();
+  connectWebSocket();
 </script>
 </body>
 </html>

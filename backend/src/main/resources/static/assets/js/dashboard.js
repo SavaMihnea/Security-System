@@ -6,6 +6,17 @@
 
 requireAuth();
 
+// Hide gear icon for non-admin users (settings modal is admin-only)
+if (!isAdmin()) {
+    const gear = document.getElementById('btnSettings');
+    if (gear) gear.style.display = 'none';
+}
+
+// Auto-open settings when redirected from another page via ?settings=open
+if (new URLSearchParams(window.location.search).get('settings') === 'open') {
+    openSettingsModal();
+}
+
 const _SVG = {
     lockOpen: `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><rect x="3" y="11" width="18" height="11"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>`,
     lockClosed:`<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><rect x="3" y="11" width="18" height="11"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
@@ -29,6 +40,7 @@ async function loadStatus() {
     if (!res) return;
     const status = await res.json();
     updateStatusBanner(status);
+    loadSchedule(status);
 }
 
 function updateStatusBanner(status) {
@@ -58,6 +70,8 @@ function updateStatusBanner(status) {
         document.getElementById('btnArmHomeNight').classList.remove('d-none');
         document.getElementById('btnDisarm').classList.add('d-none');
         CountdownTimer.clear();
+        _sirenActive = false;
+        updatePanicNavBtn();
     } else {
         banner.classList.add(isNight ? 'status-night' : isHome ? 'status-home' : 'status-armed');
         document.getElementById('btnArmAway').classList.add('d-none');
@@ -76,6 +90,52 @@ async function disarm() {
     const res = await apiFetch('/api/system/disarm', { method: 'POST' });
     if (res?.ok) updateStatusBanner(await res.json());
 }
+
+// ---- Panic nav button state ------------------------------
+let _sirenActive = false;
+
+function updatePanicNavBtn() {
+    const btn = document.getElementById('btnPanicNav');
+    if (!btn) return;
+    if (_sirenActive) {
+        btn.innerHTML = '<span style="letter-spacing:0;margin-right:4px">&#9632;</span>STOP SIREN';
+        btn.classList.add('siren-active');
+    } else {
+        btn.innerHTML = '<span style="letter-spacing:0;margin-right:4px">&#9888;</span>PANIC';
+        btn.classList.remove('siren-active');
+    }
+}
+
+function handlePanicNavClick() {
+    if (_sirenActive) {
+        disarm();
+    } else {
+        openPanicModal();
+    }
+}
+
+// ---- Panic modal -----------------------------------------
+function openPanicModal() {
+    const btn = document.getElementById('btnPanicConfirm');
+    if (btn) { btn.disabled = false; btn.innerHTML = '&#9888;&nbsp; ACTIVATE'; }
+    document.getElementById('panicModal').style.display = 'flex';
+}
+
+function closePanicModal() {
+    document.getElementById('panicModal').style.display = 'none';
+}
+
+async function confirmPanic() {
+    const btn = document.getElementById('btnPanicConfirm');
+    btn.disabled = true;
+    btn.textContent = 'ACTIVATING…';
+    const res = await apiFetch('/api/system/panic', { method: 'POST' });
+    closePanicModal();
+}
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closePanicModal(); closeSettingsModal(); }
+});
 
 // ---- Sensors grid -----------------------------------------
 const STATUS_DOT = { ONLINE: 'online', TRIGGERED: 'triggered', OFFLINE: 'offline', FAULT: 'offline' };
@@ -158,6 +218,7 @@ async function loadSensors() {
 const EVENT_BADGE = {
     ALARM_TRIGGERED:    'bg-danger',
     SIREN_ACTIVE:       'bg-danger',
+    ALARM_DISARMED:     'bg-success',
     MOTION_DETECTED:    'bg-warning text-dark',
     VIBRATION_DETECTED: 'bg-warning text-dark',
     DOOR_OPENED:        'bg-info text-dark',
@@ -187,6 +248,14 @@ async function loadEvents() {
     document.getElementById('diagLastDisarmed').textContent = lastDisarmed ? timeAgo(lastDisarmed.timestamp) : 'NEVER';
 
     renderEventList(events.slice(0, 10));
+
+    // Determine siren state from most recent relevant event on page load
+    const lastSirenEvent = events.find(e =>
+        ['SIREN_ACTIVE', 'ALARM_TRIGGERED', 'ALARM_DISARMED', 'SYSTEM_DISARMED', 'ALARM_CANCELLED'].includes(e.eventType));
+    if (lastSirenEvent?.eventType === 'SIREN_ACTIVE' || lastSirenEvent?.eventType === 'ALARM_TRIGGERED') {
+        _sirenActive = true;
+        updatePanicNavBtn();
+    }
 }
 
 function renderEventList(list) {
@@ -217,6 +286,16 @@ function addEventToList(event) {
         const current = parseInt(alEl.textContent) || 0;
         const next = current + 1;
         alEl.innerHTML = `<span class="text-danger">${next}</span>`;
+    }
+
+    // ALARM_TRIGGERED covers panic + firmware-offline cases; SIREN_ACTIVE covers normal alarm flow
+    if (event.eventType === 'SIREN_ACTIVE' || event.eventType === 'ALARM_TRIGGERED') {
+        _sirenActive = true;
+        updatePanicNavBtn();
+    }
+    if (event.eventType === 'ALARM_DISARMED') {
+        _sirenActive = false;
+        updatePanicNavBtn();
     }
 
     // When Stage 2 fires: AI stopped, siren is running — update the banner
@@ -336,6 +415,8 @@ function connectWebSocket() {
                     CountdownTimer.show(data.sensorName, data.entryDelaySeconds);
                 } else if (data.command === 'ALARM_CANCELLED') {
                     CountdownTimer.clear();
+                    _sirenActive = false;
+                    updatePanicNavBtn();
                 }
             });
         },
@@ -361,6 +442,230 @@ async function loadDiagnostics() {
     const colorMap  = { READY: 'text-success', BUSY: 'text-warning', OFFLINE: 'text-danger' };
     const labelMap  = { READY: 'Ready', BUSY: 'Busy', OFFLINE: 'Offline' };
     el.innerHTML = `<span class="${colorMap[data.aiStatus] || 'text-muted'}">${labelMap[data.aiStatus] || '—'}</span>`;
+}
+
+// ---- Schedule --------------------------------------------
+function loadSchedule(status) {
+    document.getElementById('scheduleEnabled').checked      = status.scheduleEnabled || false;
+    document.getElementById('scheduleArmTime').value        = status.scheduleArmTime || '';
+    document.getElementById('scheduleDisarmTime').value     = status.scheduleDisarmTime || '';
+    const modeEl = document.getElementById('scheduleArmMode');
+    if (status.scheduleArmMode) modeEl.value = status.scheduleArmMode;
+}
+
+let _scheduleSaveTimer = null;
+async function saveSchedule() {
+    clearTimeout(_scheduleSaveTimer);
+    _scheduleSaveTimer = setTimeout(async () => {
+        const statusEl = document.getElementById('scheduleSaveStatus');
+        statusEl.textContent = 'Saving…';
+        const res = await apiFetch('/api/system/schedule', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                scheduleEnabled:  String(document.getElementById('scheduleEnabled').checked),
+                scheduleArmTime:  document.getElementById('scheduleArmTime').value || null,
+                scheduleDisarmTime: document.getElementById('scheduleDisarmTime').value || null,
+                scheduleArmMode:  document.getElementById('scheduleArmMode').value
+            })
+        });
+        statusEl.textContent = res?.ok ? 'Saved' : 'Error';
+        setTimeout(() => { statusEl.textContent = ''; }, 2000);
+    }, 600);
+}
+
+// ---- Settings modal --------------------------------------
+function openSettingsModal() {
+    document.getElementById('settingsUsername').textContent =
+        (localStorage.getItem('username') || '') + '  [ADMIN]';
+
+    switchTab('accounts');
+    loadUserList();
+
+    document.getElementById('settingsModal').style.display = 'flex';
+}
+
+function closeSettingsModal() {
+    document.getElementById('settingsModal').style.display = 'none';
+    ['pwCurrent','pwNew','pwConfirm','newUserUsername','newUserPassword'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    ['pwError','accountsError'].forEach(id =>
+        document.getElementById(id)?.classList.add('d-none'));
+}
+
+function switchTab(tab) {
+    document.getElementById('panelAccounts').style.display = tab === 'accounts' ? '' : 'none';
+    document.getElementById('panelPassword').style.display = tab === 'password'  ? '' : 'none';
+    document.getElementById('tabAccounts').classList.toggle('active', tab === 'accounts');
+    document.getElementById('tabPassword').classList.toggle('active', tab === 'password');
+}
+
+
+async function loadUserList() {
+    const res   = await apiFetch('/api/auth/users');
+    const users = res?.ok ? await res.json() : [];
+    document.getElementById('userList').innerHTML = users.map(u => `
+      <div id="userRow_${u.username}" style="display:flex;align-items:center;justify-content:space-between;
+                  padding:14px 18px;border:1px solid var(--border);margin-bottom:8px;background:var(--bg-alt);">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:0.92rem;
+                       font-weight:600;color:var(--text-1);">${u.username}</span>
+          <span class="badge ${u.role==='ADMIN'?'bg-danger':'bg-secondary'}"
+                style="font-size:0.68rem;padding:4px 9px;letter-spacing:0.06em;">${u.role}</span>
+        </div>
+        ${u.role !== 'ADMIN'
+          ? `<div style="display:flex;gap:8px;">
+               <button class="vox-filter-btn" style="font-size:0.74rem;padding:7px 16px;"
+                       onclick="startUserEdit('${u.username}')">Edit</button>
+               <button class="vox-filter-btn" style="font-size:0.74rem;padding:7px 16px;color:var(--red);"
+                       onclick="deleteUser('${u.username}')">Delete</button>
+             </div>`
+          : '<span style="font-size:0.72rem;letter-spacing:0.1em;color:var(--text-3);">PROTECTED</span>'}
+      </div>`).join('') || '<div style="color:var(--text-3);font-size:0.84rem;padding:16px 0;">No users found.</div>';
+}
+
+function startUserEdit(username) {
+    const row = document.getElementById(`userRow_${username}`);
+    if (!row) return;
+    row.innerHTML = `
+      <div style="width:100%;padding:2px 0;">
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+          <input id="editUsername_${username}" class="form-control form-control-dark"
+                 style="flex:1;min-width:180px;font-size:0.9rem;padding:10px 12px;"
+                 value="${username}" placeholder="Username">
+          <input id="editPassword_${username}" type="password" class="form-control form-control-dark"
+                 style="flex:1;min-width:180px;font-size:0.9rem;padding:10px 12px;"
+                 placeholder="New password (optional)">
+          <button class="btn-arm btn-arm-away" style="font-size:0.76rem;padding:10px 20px;white-space:nowrap;"
+                  onclick="saveUserEdit('${username}')">Save</button>
+          <button class="vox-filter-btn" style="font-size:0.76rem;padding:10px 16px;"
+                  onclick="loadUserList()">Cancel</button>
+        </div>
+        <div id="editError_${username}" class="login-error-msg d-none"
+             style="font-size:0.8rem;margin-top:4px;"></div>
+      </div>`;
+}
+
+async function saveUserEdit(oldUsername) {
+    const newUsername = document.getElementById(`editUsername_${oldUsername}`)?.value.trim();
+    const newPassword = document.getElementById(`editPassword_${oldUsername}`)?.value;
+    const errEl = document.getElementById(`editError_${oldUsername}`);
+
+    errEl?.classList.add('d-none');
+
+    if (!newUsername) {
+        if (errEl) { errEl.textContent = 'Username cannot be empty.'; errEl.classList.remove('d-none'); }
+        return;
+    }
+    if (newPassword && newPassword.length < 8) {
+        if (errEl) { errEl.textContent = 'Password must be at least 8 characters.'; errEl.classList.remove('d-none'); }
+        return;
+    }
+
+    const res = await apiFetch(`/api/auth/users/${oldUsername}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+            newUsername,
+            newPassword: newPassword || null
+        })
+    });
+
+    if (res?.ok) {
+        loadUserList();
+    } else {
+        const data = await res?.json().catch(() => ({}));
+        if (errEl) { errEl.textContent = data?.error || 'Failed to update user.'; errEl.classList.remove('d-none'); }
+    }
+}
+
+
+async function createUser() {
+    const errEl    = document.getElementById('accountsError');
+    const username = document.getElementById('newUserUsername').value.trim();
+    const password = document.getElementById('newUserPassword').value;
+    errEl.classList.add('d-none');
+
+    if (!username || !password) {
+        errEl.textContent = 'Username and password are required.';
+        errEl.classList.remove('d-none');
+        return;
+    }
+    if (password.length < 8) {
+        errEl.textContent = 'Password must be at least 8 characters.';
+        errEl.classList.remove('d-none');
+        return;
+    }
+    const res = await apiFetch('/api/auth/users', {
+        method: 'POST',
+        body: JSON.stringify({ username, password })
+    });
+    if (res?.ok) {
+        document.getElementById('newUserUsername').value = '';
+        document.getElementById('newUserPassword').value = '';
+        loadUserList();
+    } else {
+        const data = await res?.json().catch(() => ({}));
+        errEl.textContent = data?.error || 'Failed to create user.';
+        errEl.classList.remove('d-none');
+    }
+}
+
+async function deleteUser(username) {
+    if (!confirm(`Delete account "${username}"? This cannot be undone.`)) return;
+    const res = await apiFetch(`/api/auth/users/${username}`, { method: 'DELETE' });
+    if (res?.ok) {
+        loadUserList();
+    } else {
+        const data = await res?.json().catch(() => ({}));
+        alert(data?.error || 'Failed to delete user.');
+    }
+}
+
+async function submitPasswordChange() {
+    const errEl   = document.getElementById('pwError');
+    const current = document.getElementById('pwCurrent').value;
+    const next    = document.getElementById('pwNew').value;
+    const confirm = document.getElementById('pwConfirm').value;
+
+    errEl.classList.add('d-none');
+
+    if (!current || !next || !confirm) {
+        errEl.textContent = 'Please fill in all password fields.';
+        errEl.classList.remove('d-none'); return;
+    }
+    if (next !== confirm) {
+        errEl.textContent = 'New passwords do not match.';
+        errEl.classList.remove('d-none'); return;
+    }
+    if (next.length < 8) {
+        errEl.textContent = 'New password must be at least 8 characters.';
+        errEl.classList.remove('d-none'); return;
+    }
+
+    const res = await apiFetch('/api/auth/change-password', {
+        method: 'POST',
+        body: JSON.stringify({ currentPassword: current, newPassword: next })
+    });
+
+    if (res?.ok) {
+        closeSettingsModal();
+        showSuccessToast('Password updated successfully.');
+    } else {
+        const data = await res?.json().catch(() => ({}));
+        errEl.textContent = data?.error || 'Failed to update password.';
+        errEl.classList.remove('d-none');
+    }
+}
+
+function showSuccessToast(msg) {
+    const toast = document.getElementById('alertToast');
+    document.getElementById('alertToastBody').textContent = msg;
+    toast.classList.remove('text-bg-danger');
+    toast.classList.add('text-bg-success');
+    bootstrap.Toast.getOrCreateInstance(toast, { delay: 4000 }).show();
+    setTimeout(() => toast.classList.replace('text-bg-success', 'text-bg-danger'), 4500);
 }
 
 // ---- Init -------------------------------------------------
