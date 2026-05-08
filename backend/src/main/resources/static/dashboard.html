@@ -110,17 +110,31 @@
 
       <!-- Alarm: countdown / siren -->
       <div id="alarmStateView" class="d-none">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:20px;">
-          <div>
-            <div class="countdown-label" id="countdownLabel">ENTRY DELAY - ALARM PENDING</div>
-            <div class="countdown-sensor" id="countdownSensor"></div>
-            <div class="countdown-number" id="countdownNumber">10</div>
-            <div class="countdown-sub" id="countdownSub">seconds until AI deterrence activates</div>
-            <div id="sirenActiveMsg" class="d-none" style="margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:0.82rem;font-weight:700;letter-spacing:0.16em;color:var(--red);text-shadow:var(--ts-glow-r);">
-              ALARM ACTIVE - SIREN ENGAGED
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;">
+
+          <div style="display:flex;align-items:center;gap:22px;flex:1;min-width:0;">
+            <!-- Status indicator: countdown number OR siren icon -->
+            <div style="flex-shrink:0;width:72px;display:flex;align-items:center;justify-content:center;">
+              <div class="countdown-number" id="countdownNumber">10</div>
+              <div id="sirenIcon" class="d-none" style="color:var(--red);line-height:1;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Text block -->
+            <div>
+              <div class="countdown-label" id="countdownLabel">ENTRY DELAY — ALARM PENDING</div>
+              <div class="countdown-sensor" id="countdownSensor"></div>
+              <div id="threatImminentMsg" class="d-none" style="font-family:'JetBrains Mono',monospace;font-size:2rem;font-weight:700;letter-spacing:0.12em;color:var(--red);text-shadow:var(--ts-glow-r);animation:countdownUrgentGlow 0.5s ease-in-out infinite;margin:6px 0 2px;">THREAT IMMINENT</div>
+              <div class="countdown-sub" id="countdownSub">seconds until AI deterrence activates</div>
+              <div id="sirenActiveMsg" class="d-none" style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:0.8rem;font-weight:700;letter-spacing:0.16em;color:var(--red);text-shadow:var(--ts-glow-r);">SIREN ENGAGED</div>
             </div>
           </div>
-          <button class="btn-arm btn-disarm" style="align-self:center;" onclick="disarm()">TERMINATE ALERT</button>
+
+          <button class="btn-arm btn-disarm" style="flex-shrink:0;white-space:nowrap;" onclick="disarm()">TERMINATE ALERT</button>
         </div>
       </div>
     </div>

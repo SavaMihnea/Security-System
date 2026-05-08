@@ -131,6 +131,10 @@ async function confirmPanic() {
     btn.textContent = 'ACTIVATING…';
     const res = await apiFetch('/api/system/panic', { method: 'POST' });
     closePanicModal();
+    if (res?.ok) {
+        _sirenActive = true;
+        updatePanicNavBtn();
+    }
 }
 
 document.addEventListener('keydown', e => {
@@ -252,7 +256,7 @@ async function loadEvents() {
     // Determine siren state from most recent relevant event on page load
     const lastSirenEvent = events.find(e =>
         ['SIREN_ACTIVE', 'ALARM_TRIGGERED', 'ALARM_DISARMED', 'SYSTEM_DISARMED', 'ALARM_CANCELLED'].includes(e.eventType));
-    if (lastSirenEvent?.eventType === 'SIREN_ACTIVE' || lastSirenEvent?.eventType === 'ALARM_TRIGGERED') {
+    if (lastSirenEvent?.eventType === 'SIREN_ACTIVE') {
         _sirenActive = true;
         updatePanicNavBtn();
     }
@@ -288,8 +292,7 @@ function addEventToList(event) {
         alEl.innerHTML = `<span class="text-danger">${next}</span>`;
     }
 
-    // ALARM_TRIGGERED covers panic + firmware-offline cases; SIREN_ACTIVE covers normal alarm flow
-    if (event.eventType === 'SIREN_ACTIVE' || event.eventType === 'ALARM_TRIGGERED') {
+    if (event.eventType === 'SIREN_ACTIVE') {
         _sirenActive = true;
         updatePanicNavBtn();
     }
@@ -302,9 +305,10 @@ function addEventToList(event) {
     if (event.eventType === 'SIREN_ACTIVE') {
         document.getElementById('normalStateView').classList.add('d-none');
         document.getElementById('alarmStateView').classList.remove('d-none');
+        document.getElementById('countdownNumber').classList.add('d-none');
+        document.getElementById('threatImminentMsg').classList.add('d-none');
+        document.getElementById('sirenIcon').classList.remove('d-none');
         document.getElementById('countdownLabel').textContent = 'ALARM ACTIVE';
-        document.getElementById('countdownNumber').textContent = '🚨';
-        document.getElementById('countdownNumber').classList.remove('urgent', 'threat');
         document.getElementById('countdownSub').textContent = 'AI deterrence complete — siren is active';
         document.getElementById('sirenActiveMsg').classList.remove('d-none');
     }
@@ -357,9 +361,8 @@ const CountdownTimer = (() => {
 
             if (remaining <= 0) {
                 _stopInterval();
-                numEl.textContent = 'THREAT IMMINENT';
-                numEl.classList.remove('urgent');
-                numEl.classList.add('threat');
+                numEl.classList.add('d-none');
+                document.getElementById('threatImminentMsg').classList.remove('d-none');
                 subEl.textContent = '';
             }
         }, 1000);
@@ -368,8 +371,13 @@ const CountdownTimer = (() => {
     function clear() {
         _stopInterval();
         const numEl = document.getElementById('countdownNumber');
-        if (numEl) numEl.classList.remove('urgent', 'threat');
-        document.getElementById('countdownLabel').textContent = 'ENTRY DELAY - ALARM PENDING';
+        if (numEl) {
+            numEl.classList.remove('urgent', 'threat', 'd-none');
+            numEl.textContent = '—';
+        }
+        document.getElementById('sirenIcon').classList.add('d-none');
+        document.getElementById('threatImminentMsg').classList.add('d-none');
+        document.getElementById('countdownLabel').textContent = 'ENTRY DELAY — ALARM PENDING';
         document.getElementById('sirenActiveMsg').classList.add('d-none');
         document.getElementById('alarmStateView').classList.add('d-none');
         document.getElementById('normalStateView').classList.remove('d-none');
