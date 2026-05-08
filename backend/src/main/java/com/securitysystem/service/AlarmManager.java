@@ -213,7 +213,7 @@ public class AlarmManager {
     // Siren & Chime
     // ============================================================
 
-    private void activateSiren() {
+    public void activateSiren() {
         Map<String, Object> msg = new HashMap<>();
         msg.put("command", "ACTIVATE_SIREN");
         msg.put("timestamp", Instant.now().toString());

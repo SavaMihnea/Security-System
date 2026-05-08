@@ -6,7 +6,7 @@ import com.securitysystem.model.Event;
 import com.securitysystem.model.SystemConfig;
 import com.securitysystem.repository.EventRepository;
 import com.securitysystem.repository.SystemConfigRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,7 +15,6 @@ import java.time.Instant;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
-@RequiredArgsConstructor
 @SuppressWarnings("null")
 public class SystemService {
 
@@ -23,8 +22,21 @@ public class SystemService {
     private final EventRepository eventRepository;
     private final SimpMessagingTemplate messagingTemplate;
     private final AiService aiService;
+    private final AlarmManager alarmManager;
 
     private final AtomicBoolean panicPending = new AtomicBoolean(false);
+
+    public SystemService(SystemConfigRepository systemConfigRepository,
+                         EventRepository eventRepository,
+                         SimpMessagingTemplate messagingTemplate,
+                         AiService aiService,
+                         @Lazy AlarmManager alarmManager) {
+        this.systemConfigRepository = systemConfigRepository;
+        this.eventRepository        = eventRepository;
+        this.messagingTemplate      = messagingTemplate;
+        this.aiService              = aiService;
+        this.alarmManager           = alarmManager;
+    }
 
     public SystemStatusDto getStatus() {
         SystemStatusDto dto = SystemStatusDto.from(getConfig());
@@ -35,15 +47,22 @@ public class SystemService {
     public SystemStatusDto triggerPanic(String username) {
         panicPending.set(true);
 
-        Event event = new Event();
-        event.setEventType(Event.EventType.ALARM_TRIGGERED);
-        event.setNotes("PANIC triggered by " + username);
-        eventRepository.save(event);
+        Event trigger = new Event();
+        trigger.setEventType(Event.EventType.ALARM_TRIGGERED);
+        trigger.setNotes("PANIC triggered by " + username);
+        eventRepository.save(trigger);
+        try { messagingTemplate.convertAndSend("/topic/events", EventDto.from(trigger)); }
+        catch (Exception ignored) {}
 
-        try {
-            messagingTemplate.convertAndSend("/topic/events",
-                    com.securitysystem.dto.EventDto.from(event));
-        } catch (Exception ignored) {}
+        // Send ACTIVATE_SIREN to the hub so the relay stays on until explicitly stopped
+        alarmManager.activateSiren();
+
+        Event sirenEvent = new Event();
+        sirenEvent.setEventType(Event.EventType.SIREN_ACTIVE);
+        sirenEvent.setNotes("Manual panic by " + username);
+        eventRepository.save(sirenEvent);
+        try { messagingTemplate.convertAndSend("/topic/events", EventDto.from(sirenEvent)); }
+        catch (Exception ignored) {}
 
         return getStatus();
     }
@@ -92,6 +111,8 @@ public class SystemService {
                                || e.getEventType() == Event.EventType.SIREN_ACTIVE);
             aiService.clearAllSessions();
             panicPending.set(false);
+            // Always send DEACTIVATE_SIREN so the hub relay turns off regardless of how it was triggered
+            alarmManager.deactivateSiren();
         }
 
         // Log arm/disarm as an Event for the audit trail

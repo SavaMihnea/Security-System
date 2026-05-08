@@ -26,7 +26,6 @@ public class DataInitializer implements ApplicationRunner {
             authService.register("admin", "Voxwall@2026");
             log.warn("=================================================");
             log.warn("  Default admin user created: admin / Voxwall@2026");
-            log.warn("  CHANGE THIS PASSWORD BEFORE GOING LIVE!");
             log.warn("=================================================");
         }
 
