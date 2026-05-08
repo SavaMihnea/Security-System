@@ -1610,6 +1610,30 @@ body {
   color: var(--text-1);
 }
 
+.sched-divider {
+  width: 1px;
+  flex-shrink: 0;
+  align-self: stretch;
+  background: linear-gradient(to bottom,
+    transparent 0%,
+    rgba(255,255,255,0.16) 20%,
+    rgba(255,255,255,0.16) 80%,
+    transparent 100%);
+  position: relative;
+}
+
+.sched-divider::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) rotate(45deg);
+  width: 5px;
+  height: 5px;
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.35);
+}
+
 /* ================================================================
    SETTINGS MODAL OVERRIDES
    ================================================================ */

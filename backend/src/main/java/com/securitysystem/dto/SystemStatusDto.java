@@ -16,10 +16,13 @@ public class SystemStatusDto {
     private String updatedBy;
     private boolean panicActive;
     private boolean scheduleEnabled;
-    private String scheduleArmTime;
-    private String scheduleDisarmTime;
-    private String scheduleArmMode;
     private String scheduleDays;
+    private String scheduleNightArmTime;
+    private String scheduleNightDisarmTime;
+    private String scheduleHomeArmTime;
+    private String scheduleHomeDisarmTime;
+    private String scheduleAwayArmTime;
+    private String scheduleAwayDisarmTime;
 
     public static SystemStatusDto from(SystemConfig config) {
         SystemStatusDto dto = new SystemStatusDto();
@@ -28,11 +31,13 @@ public class SystemStatusDto {
         dto.setLastUpdated(config.getLastUpdated());
         dto.setUpdatedBy(config.getUpdatedBy());
         dto.setScheduleEnabled(config.isScheduleEnabled());
-        dto.setScheduleArmTime(config.getScheduleArmTime());
-        dto.setScheduleDisarmTime(config.getScheduleDisarmTime());
-        dto.setScheduleArmMode(config.getScheduleArmMode() != null
-                ? config.getScheduleArmMode().name() : null);
         dto.setScheduleDays(config.getScheduleDays());
+        dto.setScheduleNightArmTime(config.getScheduleNightArmTime());
+        dto.setScheduleNightDisarmTime(config.getScheduleNightDisarmTime());
+        dto.setScheduleHomeArmTime(config.getScheduleHomeArmTime());
+        dto.setScheduleHomeDisarmTime(config.getScheduleHomeDisarmTime());
+        dto.setScheduleAwayArmTime(config.getScheduleAwayArmTime());
+        dto.setScheduleAwayDisarmTime(config.getScheduleAwayDisarmTime());
         return dto;
     }
 }

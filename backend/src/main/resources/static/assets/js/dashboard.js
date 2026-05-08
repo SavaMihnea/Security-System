@@ -446,11 +446,13 @@ async function loadDiagnostics() {
 
 // ---- Schedule --------------------------------------------
 function loadSchedule(status) {
-    document.getElementById('scheduleEnabled').checked  = status.scheduleEnabled || false;
-    document.getElementById('scheduleArmTime').value    = status.scheduleArmTime || '';
-    document.getElementById('scheduleDisarmTime').value = status.scheduleDisarmTime || '';
-    const modeEl = document.getElementById('scheduleArmMode');
-    if (status.scheduleArmMode) modeEl.value = status.scheduleArmMode;
+    document.getElementById('scheduleEnabled').checked       = status.scheduleEnabled || false;
+    document.getElementById('schedNightArmTime').value       = status.scheduleNightArmTime    || '';
+    document.getElementById('schedNightDisarmTime').value    = status.scheduleNightDisarmTime || '';
+    document.getElementById('schedHomeArmTime').value        = status.scheduleHomeArmTime     || '';
+    document.getElementById('schedHomeDisarmTime').value     = status.scheduleHomeDisarmTime  || '';
+    document.getElementById('schedAwayArmTime').value        = status.scheduleAwayArmTime     || '';
+    document.getElementById('schedAwayDisarmTime').value     = status.scheduleAwayDisarmTime  || '';
 
     const days = (status.scheduleDays || '').split(',').filter(Boolean);
     document.querySelectorAll('.sched-day-btn[data-day]').forEach(btn => {
@@ -486,11 +488,14 @@ async function saveSchedule() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                scheduleEnabled:    String(document.getElementById('scheduleEnabled').checked),
-                scheduleArmTime:    document.getElementById('scheduleArmTime').value || null,
-                scheduleDisarmTime: document.getElementById('scheduleDisarmTime').value || null,
-                scheduleArmMode:    document.getElementById('scheduleArmMode').value,
-                scheduleDays:       getSelectedScheduleDays() || null
+                scheduleEnabled:        String(document.getElementById('scheduleEnabled').checked),
+                scheduleDays:           getSelectedScheduleDays() || null,
+                scheduleNightArmTime:   document.getElementById('schedNightArmTime').value    || null,
+                scheduleNightDisarmTime:document.getElementById('schedNightDisarmTime').value || null,
+                scheduleHomeArmTime:    document.getElementById('schedHomeArmTime').value     || null,
+                scheduleHomeDisarmTime: document.getElementById('schedHomeDisarmTime').value  || null,
+                scheduleAwayArmTime:    document.getElementById('schedAwayArmTime').value     || null,
+                scheduleAwayDisarmTime: document.getElementById('schedAwayDisarmTime').value  || null,
             })
         });
         statusEl.textContent = res?.ok ? 'Saved' : 'Error';

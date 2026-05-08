@@ -48,16 +48,17 @@ public class SystemController {
     public ResponseEntity<?> setSchedule(
             @RequestBody Map<String, String> body) {
         try {
-            String armMode = body.get("scheduleArmMode");
-            if (armMode != null) SystemConfig.ArmMode.valueOf(armMode); // validate
             return ResponseEntity.ok(systemService.setSchedule(
                     Boolean.parseBoolean(body.getOrDefault("scheduleEnabled", "false")),
-                    body.get("scheduleArmTime"),
-                    body.get("scheduleDisarmTime"),
-                    armMode,
-                    body.get("scheduleDays")));
+                    body.get("scheduleDays"),
+                    body.get("scheduleNightArmTime"),
+                    body.get("scheduleNightDisarmTime"),
+                    body.get("scheduleHomeArmTime"),
+                    body.get("scheduleHomeDisarmTime"),
+                    body.get("scheduleAwayArmTime"),
+                    body.get("scheduleAwayDisarmTime")));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Invalid arm mode"));
+            return ResponseEntity.badRequest().body(Map.of("error", "Invalid schedule data"));
         }
     }
 

@@ -147,28 +147,60 @@
         </div>
       </div>
 
-      <!-- Row 2: Mode + times -->
-      <div class="row g-3 align-items-end">
-        <div class="col-auto">
-          <label class="login-label" style="font-size:0.76rem;margin-bottom:8px;display:block;">Arm Mode</label>
-          <select id="scheduleArmMode" class="form-control form-control-dark" onchange="saveSchedule()" style="min-width:148px;font-size:0.9rem;padding:9px 12px;">
-            <option value="ARMED_HOME_NIGHT">ARM NIGHT</option>
-            <option value="ARMED_HOME">ARM HOME</option>
-            <option value="ARMED_AWAY">ARM AWAY</option>
-          </select>
+      <!-- Row 2: Three-column per-mode layout -->
+      <div style="display:flex;align-items:stretch;">
+
+        <!-- ARM NIGHT -->
+        <div style="flex:1;display:flex;flex-direction:column;gap:14px;padding-right:26px;">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:0.8rem;font-weight:700;letter-spacing:0.12em;color:var(--amber);">ARM NIGHT</span>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;">
+            <div>
+              <label class="login-label" style="font-size:0.7rem;display:block;margin-bottom:5px;">Arm at</label>
+              <input type="time" id="schedNightArmTime" class="form-control form-control-dark" onchange="saveSchedule()" style="font-size:0.88rem;padding:8px 10px;">
+            </div>
+            <div>
+              <label class="login-label" style="font-size:0.7rem;display:block;margin-bottom:5px;">Disarm at</label>
+              <input type="time" id="schedNightDisarmTime" class="form-control form-control-dark" onchange="saveSchedule()" style="font-size:0.88rem;padding:8px 10px;">
+            </div>
+          </div>
         </div>
-        <div class="col-auto">
-          <label class="login-label" style="font-size:0.76rem;margin-bottom:8px;display:block;">Arm at</label>
-          <input type="time" id="scheduleArmTime" class="form-control form-control-dark" onchange="saveSchedule()" style="font-size:0.9rem;padding:9px 12px;">
+
+        <div class="sched-divider"></div>
+
+        <!-- ARM HOME -->
+        <div style="flex:1;display:flex;flex-direction:column;gap:14px;padding:0 26px;">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:0.8rem;font-weight:700;letter-spacing:0.12em;color:var(--teal);">ARM HOME</span>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;">
+            <div>
+              <label class="login-label" style="font-size:0.7rem;display:block;margin-bottom:5px;">Arm at</label>
+              <input type="time" id="schedHomeArmTime" class="form-control form-control-dark" onchange="saveSchedule()" style="font-size:0.88rem;padding:8px 10px;">
+            </div>
+            <div>
+              <label class="login-label" style="font-size:0.7rem;display:block;margin-bottom:5px;">Disarm at</label>
+              <input type="time" id="schedHomeDisarmTime" class="form-control form-control-dark" onchange="saveSchedule()" style="font-size:0.88rem;padding:8px 10px;">
+            </div>
+          </div>
         </div>
-        <div class="col-auto">
-          <label class="login-label" style="font-size:0.76rem;margin-bottom:8px;display:block;">Disarm at</label>
-          <input type="time" id="scheduleDisarmTime" class="form-control form-control-dark" onchange="saveSchedule()" style="font-size:0.9rem;padding:9px 12px;">
+
+        <div class="sched-divider"></div>
+
+        <!-- ARM AWAY -->
+        <div style="flex:1;display:flex;flex-direction:column;gap:14px;padding-left:26px;">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:0.8rem;font-weight:700;letter-spacing:0.12em;color:var(--green);">ARM AWAY</span>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;">
+            <div>
+              <label class="login-label" style="font-size:0.7rem;display:block;margin-bottom:5px;">Arm at</label>
+              <input type="time" id="schedAwayArmTime" class="form-control form-control-dark" onchange="saveSchedule()" style="font-size:0.88rem;padding:8px 10px;">
+            </div>
+            <div>
+              <label class="login-label" style="font-size:0.7rem;display:block;margin-bottom:5px;">Disarm at</label>
+              <input type="time" id="schedAwayDisarmTime" class="form-control form-control-dark" onchange="saveSchedule()" style="font-size:0.88rem;padding:8px 10px;">
+            </div>
+          </div>
         </div>
-        <div class="col d-flex align-items-end">
-          <span id="scheduleSaveStatus" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--text-3);"></span>
-        </div>
+
       </div>
+      <span id="scheduleSaveStatus" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--text-3);display:block;margin-top:10px;"></span>
     </div>
 
   </div>

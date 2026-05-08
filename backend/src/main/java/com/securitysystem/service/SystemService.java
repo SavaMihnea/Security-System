@@ -53,16 +53,19 @@ public class SystemService {
     }
 
     @Transactional
-    public SystemStatusDto setSchedule(boolean enabled, String armTime,
-                                       String disarmTime, String armMode, String days) {
+    public SystemStatusDto setSchedule(boolean enabled, String days,
+                                       String nightArm, String nightDisarm,
+                                       String homeArm,  String homeDisarm,
+                                       String awayArm,  String awayDisarm) {
         SystemConfig config = getConfig();
         config.setScheduleEnabled(enabled);
-        config.setScheduleArmTime(armTime);
-        config.setScheduleDisarmTime(disarmTime);
         config.setScheduleDays(days);
-        if (armMode != null) {
-            config.setScheduleArmMode(SystemConfig.ArmMode.valueOf(armMode));
-        }
+        config.setScheduleNightArmTime(nightArm);
+        config.setScheduleNightDisarmTime(nightDisarm);
+        config.setScheduleHomeArmTime(homeArm);
+        config.setScheduleHomeDisarmTime(homeDisarm);
+        config.setScheduleAwayArmTime(awayArm);
+        config.setScheduleAwayDisarmTime(awayDisarm);
         SystemConfig saved = systemConfigRepository.save(config);
         SystemStatusDto dto = SystemStatusDto.from(saved);
         dto.setPanicActive(panicPending.get());

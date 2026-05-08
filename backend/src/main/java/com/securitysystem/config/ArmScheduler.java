@@ -17,6 +17,7 @@ import java.util.Map;
 
 /**
  * Checks the configured arm/disarm schedule every minute and applies it.
+ * Each arm mode has its own independent arm/disarm times.
  * Times are stored as "HH:mm" strings in SystemConfig and compared against
  * the current local time (server timezone).
  */
@@ -51,19 +52,39 @@ public class ArmScheduler {
         }
 
         String now = LocalTime.now().format(HH_MM);
+        SystemConfig.ArmMode current = config.getArmMode();
 
-        if (now.equals(config.getScheduleArmTime())
-                && config.getArmMode() == SystemConfig.ArmMode.DISARMED) {
-            SystemConfig.ArmMode mode = config.getScheduleArmMode() != null
-                    ? config.getScheduleArmMode()
-                    : SystemConfig.ArmMode.ARMED_HOME_NIGHT;
-            log.info("[SCHEDULE] Auto-arming at {} — mode {}", now, mode);
-            systemService.setArmMode(mode, "schedule");
+        // ARM NIGHT — arms when DISARMED, disarms only when currently in NIGHT mode
+        if (now.equals(config.getScheduleNightArmTime()) && current == SystemConfig.ArmMode.DISARMED) {
+            log.info("[SCHEDULE] Auto-arming NIGHT at {}", now);
+            systemService.setArmMode(SystemConfig.ArmMode.ARMED_HOME_NIGHT, "schedule");
+            return;
+        }
+        if (now.equals(config.getScheduleNightDisarmTime()) && current == SystemConfig.ArmMode.ARMED_HOME_NIGHT) {
+            log.info("[SCHEDULE] Auto-disarming from NIGHT at {}", now);
+            systemService.setArmMode(SystemConfig.ArmMode.DISARMED, "schedule");
+            return;
         }
 
-        if (now.equals(config.getScheduleDisarmTime())
-                && config.getArmMode() != SystemConfig.ArmMode.DISARMED) {
-            log.info("[SCHEDULE] Auto-disarming at {}", now);
+        // ARM HOME — arms when DISARMED, disarms only when currently in HOME mode
+        if (now.equals(config.getScheduleHomeArmTime()) && current == SystemConfig.ArmMode.DISARMED) {
+            log.info("[SCHEDULE] Auto-arming HOME at {}", now);
+            systemService.setArmMode(SystemConfig.ArmMode.ARMED_HOME, "schedule");
+            return;
+        }
+        if (now.equals(config.getScheduleHomeDisarmTime()) && current == SystemConfig.ArmMode.ARMED_HOME) {
+            log.info("[SCHEDULE] Auto-disarming from HOME at {}", now);
+            systemService.setArmMode(SystemConfig.ArmMode.DISARMED, "schedule");
+            return;
+        }
+
+        // ARM AWAY — arms when DISARMED, disarms only when currently in AWAY mode
+        if (now.equals(config.getScheduleAwayArmTime()) && current == SystemConfig.ArmMode.DISARMED) {
+            log.info("[SCHEDULE] Auto-arming AWAY at {}", now);
+            systemService.setArmMode(SystemConfig.ArmMode.ARMED_AWAY, "schedule");
+        }
+        if (now.equals(config.getScheduleAwayDisarmTime()) && current == SystemConfig.ArmMode.ARMED_AWAY) {
+            log.info("[SCHEDULE] Auto-disarming from AWAY at {}", now);
             systemService.setArmMode(SystemConfig.ArmMode.DISARMED, "schedule");
         }
     }
