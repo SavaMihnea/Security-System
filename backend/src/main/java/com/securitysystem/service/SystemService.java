@@ -8,6 +8,7 @@ import com.securitysystem.repository.EventRepository;
 import com.securitysystem.repository.SystemConfigRepository;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,6 +70,15 @@ public class SystemService {
 
     public void clearPanic() {
         panicPending.set(false);
+    }
+
+    /** Re-sends ACTIVATE_SIREN every 4 s while manual panic is active.
+     *  Hub firmware has a relay auto-off timeout; this keepalive prevents it. */
+    @Scheduled(fixedDelay = 4000)
+    public void maintainPanicSiren() {
+        if (panicPending.get()) {
+            alarmManager.activateSiren();
+        }
     }
 
     @Transactional

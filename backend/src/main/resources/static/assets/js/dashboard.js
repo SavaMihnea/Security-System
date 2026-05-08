@@ -131,12 +131,16 @@ async function confirmPanic() {
     const btn = document.getElementById('btnPanicConfirm');
     btn.disabled = true;
     btn.textContent = 'ACTIVATING…';
+    // Set _panicMode BEFORE the request — the SIREN_ACTIVE WebSocket event
+    // can arrive before the HTTP response, and must already see panicMode=true
+    _panicMode = true;
     const res = await apiFetch('/api/system/panic', { method: 'POST' });
     closePanicModal();
     if (res?.ok) {
         _sirenActive = true;
-        _panicMode   = true;
         updatePanicNavBtn();
+    } else {
+        _panicMode = false;
     }
 }
 
