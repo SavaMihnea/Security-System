@@ -28,24 +28,44 @@ public class SensorHealthCheckScheduler {
         Instant now = Instant.now();
         List<Sensor> sensors = sensorRepository.findAll();
 
+        // Step 1: check the CENTRAL gateway heartbeat
         for (Sensor sensor : sensors) {
+            if (sensor.getType() != Sensor.SensorType.CENTRAL) continue;
             if (sensor.getLastSeen() == null) continue;
-
-            long secondsSinceLastSeen = (now.getEpochSecond() - sensor.getLastSeen().getEpochSecond());
-
-            // Only the CENTRAL gateway sends regular heartbeats (every 10s).
-            // Door/vibration/motion nodes are event-driven — they go silent between triggers
-            // and must not be auto-offlined after 90s.  Use a 24h timeout for those.
-            long timeout = sensor.getType() == Sensor.SensorType.CENTRAL
-                    ? HEARTBEAT_TIMEOUT_SECONDS
-                    : 86400L;
-
-            if (secondsSinceLastSeen >= timeout
-                    && sensor.getStatus() != Sensor.SensorStatus.OFFLINE) {
+            long age = now.getEpochSecond() - sensor.getLastSeen().getEpochSecond();
+            if (age >= HEARTBEAT_TIMEOUT_SECONDS && sensor.getStatus() != Sensor.SensorStatus.OFFLINE) {
                 sensor.setStatus(Sensor.SensorStatus.OFFLINE);
                 sensorRepository.save(sensor);
-                log.debug("Marked sensor {} ({}) as OFFLINE (no heartbeat for {} seconds)",
-                        sensor.getNodeId(), sensor.getName(), secondsSinceLastSeen);
+                log.debug("Marked CENTRAL {} as OFFLINE (no heartbeat for {}s)", sensor.getNodeId(), age);
+            }
+        }
+
+        // Step 2: if the gateway is offline, all nodes behind it are unreachable — mark them too
+        boolean gatewayOffline = sensors.stream()
+                .filter(s -> s.getType() == Sensor.SensorType.CENTRAL)
+                .anyMatch(s -> s.getStatus() == Sensor.SensorStatus.OFFLINE);
+
+        if (gatewayOffline) {
+            for (Sensor sensor : sensors) {
+                if (sensor.getType() == Sensor.SensorType.CENTRAL) continue;
+                if (sensor.getStatus() != Sensor.SensorStatus.OFFLINE) {
+                    sensor.setStatus(Sensor.SensorStatus.OFFLINE);
+                    sensorRepository.save(sensor);
+                    log.debug("Marked sensor {} ({}) as OFFLINE (gateway offline)", sensor.getNodeId(), sensor.getName());
+                }
+            }
+            return;
+        }
+
+        // Step 3: gateway is up — apply 24h staleness timeout to event-driven nodes
+        for (Sensor sensor : sensors) {
+            if (sensor.getType() == Sensor.SensorType.CENTRAL) continue;
+            if (sensor.getLastSeen() == null) continue;
+            long age = now.getEpochSecond() - sensor.getLastSeen().getEpochSecond();
+            if (age >= 86400L && sensor.getStatus() != Sensor.SensorStatus.OFFLINE) {
+                sensor.setStatus(Sensor.SensorStatus.OFFLINE);
+                sensorRepository.save(sensor);
+                log.debug("Marked sensor {} ({}) as OFFLINE (no data for {}s)", sensor.getNodeId(), sensor.getName(), age);
             }
         }
     }

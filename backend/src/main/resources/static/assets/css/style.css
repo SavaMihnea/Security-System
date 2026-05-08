@@ -451,12 +451,12 @@ body {
 .btn-disarm:hover    { background: rgba(204,17,34,0.3); box-shadow: 0 0 24px var(--red-glow); }
 
 .btn-panic-nav {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.66rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  padding: 5px 13px;
+  padding: 5px 14px;
   background: rgba(204,17,34,0.12);
   border: 1px solid rgba(204,17,34,0.55);
   color: #ff4455;
@@ -666,10 +666,20 @@ body {
   position: relative;
 }
 
-.sensor-card.s-online    { border-top: 2px solid var(--green); }
-.sensor-card.s-triggered { border-top: 2px solid var(--red); box-shadow: 0 0 30px rgba(204,17,34,0.08); }
-.sensor-card.s-offline   { border-top: 2px solid var(--text-4); opacity: 0.55; }
-.sensor-card.s-fault     { border-top: 2px solid var(--amber); }
+.sensor-card.s-online    { border: 2px solid var(--green);   box-shadow: 0 0 20px rgba(0,230,118,0.07); }
+.sensor-card.s-triggered { border: 2px solid var(--red);     box-shadow: 0 0 30px rgba(204,17,34,0.08); }
+.sensor-card.s-offline   { border: 2px solid var(--text-4);  opacity: 0.55; }
+.sensor-card.s-fault     { border: 2px solid var(--amber);   box-shadow: 0 0 20px rgba(255,171,0,0.07); }
+
+/* Corner accent color matches full border color per status */
+.sensor-card.s-online.tac::before,
+.sensor-card.s-online.tac::after    { border-color: var(--green);  z-index: 3; }
+.sensor-card.s-triggered.tac::before,
+.sensor-card.s-triggered.tac::after { border-color: var(--red);    z-index: 3; }
+.sensor-card.s-offline.tac::before,
+.sensor-card.s-offline.tac::after   { border-color: var(--text-4); z-index: 3; }
+.sensor-card.s-fault.tac::before,
+.sensor-card.s-fault.tac::after     { border-color: var(--amber);  z-index: 3; }
 
 .sensor-card-icon {
   width: 42px; height: 42px;
