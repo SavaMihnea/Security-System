@@ -92,67 +92,85 @@
     </div>
   </div>
 
-  <!-- THREAT ASSESSMENT -->
-  <div class="threat-banner tac" id="countdownRow">
-    <span class="tc-tr"></span><span class="tc-bl"></span>
+  <!-- THREAT ASSESSMENT + SCHEDULE: side by side -->
+  <div style="display:flex;gap:16px;align-items:stretch;flex-wrap:wrap;margin-bottom:12px;">
 
-    <!-- Normal: no active alarm -->
-    <div id="normalStateView" class="threat-ok">
-      <div class="threat-ok-dot"></div>
-      <div>
-        <div class="threat-ok-label">Threat Assessment</div>
-        <div class="threat-ok-value">No immediate threats detected</div>
-      </div>
-    </div>
+    <!-- THREAT ASSESSMENT -->
+    <div class="threat-banner tac" id="countdownRow" style="flex:1;min-width:280px;margin-bottom:0;">
+      <span class="tc-tr"></span><span class="tc-bl"></span>
 
-    <!-- Alarm: countdown / siren -->
-    <div id="alarmStateView" class="d-none">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:20px;">
+      <!-- Normal: no active alarm -->
+      <div id="normalStateView" class="threat-ok">
+        <div class="threat-ok-dot"></div>
         <div>
-          <div class="countdown-label" id="countdownLabel">ENTRY DELAY - ALARM PENDING</div>
-          <div class="countdown-sensor" id="countdownSensor"></div>
-          <div class="countdown-number" id="countdownNumber">10</div>
-          <div class="countdown-sub" id="countdownSub">seconds until AI deterrence activates</div>
-          <div id="sirenActiveMsg" class="d-none" style="margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:0.82rem;font-weight:700;letter-spacing:0.16em;color:var(--red);text-shadow:var(--ts-glow-r);">
-            ALARM ACTIVE - SIREN ENGAGED
-          </div>
+          <div class="threat-ok-label">Threat Assessment</div>
+          <div class="threat-ok-value">No immediate threats detected</div>
         </div>
-        <button class="btn-arm btn-disarm" style="align-self:center;" onclick="disarm()">TERMINATE ALERT</button>
       </div>
-    </div>
-  </div>
 
-  <!-- SCHEDULE CARD -->
-  <div class="vox-card tac mb-3" style="padding:20px 24px;">
-    <span class="tc-tr"></span><span class="tc-bl"></span>
-    <div class="vox-card-header" style="margin-bottom:16px;">
-      <span class="vox-card-title">Auto Schedule</span>
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--text-2);letter-spacing:0.1em;">
-        <input type="checkbox" id="scheduleEnabled" onchange="saveSchedule()" style="accent-color:var(--green);">
-        ENABLED
-      </label>
-    </div>
-    <div class="row g-3">
-      <div class="col-6 col-md-3">
-        <label class="login-label">Arm at</label>
-        <input type="time" id="scheduleArmTime" class="form-control form-control-dark" onchange="saveSchedule()">
-      </div>
-      <div class="col-6 col-md-3">
-        <label class="login-label">Disarm at</label>
-        <input type="time" id="scheduleDisarmTime" class="form-control form-control-dark" onchange="saveSchedule()">
-      </div>
-      <div class="col-12 col-md-4">
-        <label class="login-label">Arm Mode</label>
-        <select id="scheduleArmMode" class="form-control form-control-dark" onchange="saveSchedule()">
-          <option value="ARMED_HOME_NIGHT">ARM NIGHT</option>
-          <option value="ARMED_HOME">ARM HOME</option>
-          <option value="ARMED_AWAY">ARM AWAY</option>
-        </select>
-      </div>
-      <div class="col-12 col-md-2 d-flex align-items-end">
-        <span id="scheduleSaveStatus" style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--text-3);"></span>
+      <!-- Alarm: countdown / siren -->
+      <div id="alarmStateView" class="d-none">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:20px;">
+          <div>
+            <div class="countdown-label" id="countdownLabel">ENTRY DELAY - ALARM PENDING</div>
+            <div class="countdown-sensor" id="countdownSensor"></div>
+            <div class="countdown-number" id="countdownNumber">10</div>
+            <div class="countdown-sub" id="countdownSub">seconds until AI deterrence activates</div>
+            <div id="sirenActiveMsg" class="d-none" style="margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:0.82rem;font-weight:700;letter-spacing:0.16em;color:var(--red);text-shadow:var(--ts-glow-r);">
+              ALARM ACTIVE - SIREN ENGAGED
+            </div>
+          </div>
+          <button class="btn-arm btn-disarm" style="align-self:center;" onclick="disarm()">TERMINATE ALERT</button>
+        </div>
       </div>
     </div>
+
+    <!-- SCHEDULE CARD -->
+    <div class="vox-card tac" style="flex:1;min-width:280px;padding:28px 32px;">
+      <span class="tc-tr"></span><span class="tc-bl"></span>
+
+      <!-- Row 1: Enable toggle + day buttons on same line -->
+      <div style="margin-bottom:22px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 0;">
+        <label style="display:inline-flex;align-items:center;gap:9px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--text-2);letter-spacing:0.1em;white-space:nowrap;">
+          <input type="checkbox" id="scheduleEnabled" onchange="saveSchedule()" style="accent-color:var(--green);width:15px;height:15px;">
+          ENABLE AUTO SCHEDULE
+        </label>
+        <div style="display:flex;flex-wrap:wrap;gap:7px;align-items:center;">
+          <button type="button" class="sched-day-btn" data-day="MON" onclick="toggleScheduleDay('MON')">MON</button>
+          <button type="button" class="sched-day-btn" data-day="TUE" onclick="toggleScheduleDay('TUE')">TUE</button>
+          <button type="button" class="sched-day-btn" data-day="WED" onclick="toggleScheduleDay('WED')">WED</button>
+          <button type="button" class="sched-day-btn" data-day="THU" onclick="toggleScheduleDay('THU')">THU</button>
+          <button type="button" class="sched-day-btn" data-day="FRI" onclick="toggleScheduleDay('FRI')">FRI</button>
+          <button type="button" class="sched-day-btn" data-day="SAT" onclick="toggleScheduleDay('SAT')">SAT</button>
+          <button type="button" class="sched-day-btn" data-day="SUN" onclick="toggleScheduleDay('SUN')">SUN</button>
+          <button type="button" class="sched-day-btn sched-day-all" onclick="selectAllScheduleDays()">ALL</button>
+        </div>
+      </div>
+
+      <!-- Row 2: Mode + times -->
+      <div class="row g-3 align-items-end">
+        <div class="col-auto">
+          <label class="login-label" style="font-size:0.76rem;margin-bottom:8px;display:block;">Arm Mode</label>
+          <select id="scheduleArmMode" class="form-control form-control-dark" onchange="saveSchedule()" style="min-width:148px;font-size:0.9rem;padding:9px 12px;">
+            <option value="ARMED_HOME_NIGHT">ARM NIGHT</option>
+            <option value="ARMED_HOME">ARM HOME</option>
+            <option value="ARMED_AWAY">ARM AWAY</option>
+          </select>
+        </div>
+        <div class="col-auto">
+          <label class="login-label" style="font-size:0.76rem;margin-bottom:8px;display:block;">Arm at</label>
+          <input type="time" id="scheduleArmTime" class="form-control form-control-dark" onchange="saveSchedule()" style="font-size:0.9rem;padding:9px 12px;">
+        </div>
+        <div class="col-auto">
+          <label class="login-label" style="font-size:0.76rem;margin-bottom:8px;display:block;">Disarm at</label>
+          <input type="time" id="scheduleDisarmTime" class="form-control form-control-dark" onchange="saveSchedule()" style="font-size:0.9rem;padding:9px 12px;">
+        </div>
+        <div class="col d-flex align-items-end">
+          <span id="scheduleSaveStatus" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--text-3);"></span>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- STAT CARDS -->

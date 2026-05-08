@@ -19,6 +19,7 @@ public class SystemStatusDto {
     private String scheduleArmTime;
     private String scheduleDisarmTime;
     private String scheduleArmMode;
+    private String scheduleDays;
 
     public static SystemStatusDto from(SystemConfig config) {
         SystemStatusDto dto = new SystemStatusDto();
@@ -31,6 +32,7 @@ public class SystemStatusDto {
         dto.setScheduleDisarmTime(config.getScheduleDisarmTime());
         dto.setScheduleArmMode(config.getScheduleArmMode() != null
                 ? config.getScheduleArmMode().name() : null);
+        dto.setScheduleDays(config.getScheduleDays());
         return dto;
     }
 }

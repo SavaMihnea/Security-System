@@ -8,8 +8,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.Map;
 
 /**
  * Checks the configured arm/disarm schedule every minute and applies it.
@@ -25,11 +29,26 @@ public class ArmScheduler {
     private final SystemService systemService;
 
     private static final DateTimeFormatter HH_MM = DateTimeFormatter.ofPattern("HH:mm");
+    private static final Map<DayOfWeek, String> DAY_ABBR = Map.of(
+        DayOfWeek.MONDAY,    "MON",
+        DayOfWeek.TUESDAY,   "TUE",
+        DayOfWeek.WEDNESDAY, "WED",
+        DayOfWeek.THURSDAY,  "THU",
+        DayOfWeek.FRIDAY,    "FRI",
+        DayOfWeek.SATURDAY,  "SAT",
+        DayOfWeek.SUNDAY,    "SUN"
+    );
 
     @Scheduled(fixedDelay = 60_000)
     public void checkSchedule() {
         SystemConfig config = systemConfigRepository.findById(1L).orElse(null);
         if (config == null || !config.isScheduleEnabled()) return;
+
+        String scheduleDays = config.getScheduleDays();
+        if (scheduleDays != null && !scheduleDays.isBlank()) {
+            String today = DAY_ABBR.get(LocalDate.now().getDayOfWeek());
+            if (!Arrays.asList(scheduleDays.split(",")).contains(today)) return;
+        }
 
         String now = LocalTime.now().format(HH_MM);
 

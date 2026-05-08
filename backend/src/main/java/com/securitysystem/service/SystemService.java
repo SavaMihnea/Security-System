@@ -54,11 +54,12 @@ public class SystemService {
 
     @Transactional
     public SystemStatusDto setSchedule(boolean enabled, String armTime,
-                                       String disarmTime, String armMode) {
+                                       String disarmTime, String armMode, String days) {
         SystemConfig config = getConfig();
         config.setScheduleEnabled(enabled);
         config.setScheduleArmTime(armTime);
         config.setScheduleDisarmTime(disarmTime);
+        config.setScheduleDays(days);
         if (armMode != null) {
             config.setScheduleArmMode(SystemConfig.ArmMode.valueOf(armMode));
         }
@@ -97,6 +98,9 @@ public class SystemService {
                 : Event.EventType.SYSTEM_ARMED);
         event.setNotes(mode.name() + " by " + updatedBy);
         eventRepository.save(event);
+        try {
+            messagingTemplate.convertAndSend("/topic/events", EventDto.from(event));
+        } catch (Exception ignored) {}
 
         // Log ALARM_DISARMED after SYSTEM_DISARMED so it appears first (newest) in the events list
         if (alarmWasActive) {

@@ -47,6 +47,9 @@ public class SystemConfig {
     @Column(nullable = false)
     private boolean scheduleEnabled = false;
 
+    @Column(length = 50)
+    private String scheduleDays; // e.g. "MON,TUE,WED,THU,FRI" — null/blank = every day
+
     public enum ArmMode {
         /** System off — no sensors processed. */
         DISARMED,

@@ -18,10 +18,10 @@ if (new URLSearchParams(window.location.search).get('settings') === 'open') {
 }
 
 const _SVG = {
-    lockOpen: `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><rect x="3" y="11" width="18" height="11"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>`,
-    lockClosed:`<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><rect x="3" y="11" width="18" height="11"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
-    home:      `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
-    moon:      `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
+    lockOpen: `<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><rect x="3" y="11" width="18" height="11"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>`,
+    lockClosed:`<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><rect x="3" y="11" width="18" height="11"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
+    home:      `<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
+    moon:      `<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
 };
 const STATUS_ICON = {
     DISARMED:         _SVG.lockOpen,
@@ -446,11 +446,34 @@ async function loadDiagnostics() {
 
 // ---- Schedule --------------------------------------------
 function loadSchedule(status) {
-    document.getElementById('scheduleEnabled').checked      = status.scheduleEnabled || false;
-    document.getElementById('scheduleArmTime').value        = status.scheduleArmTime || '';
-    document.getElementById('scheduleDisarmTime').value     = status.scheduleDisarmTime || '';
+    document.getElementById('scheduleEnabled').checked  = status.scheduleEnabled || false;
+    document.getElementById('scheduleArmTime').value    = status.scheduleArmTime || '';
+    document.getElementById('scheduleDisarmTime').value = status.scheduleDisarmTime || '';
     const modeEl = document.getElementById('scheduleArmMode');
     if (status.scheduleArmMode) modeEl.value = status.scheduleArmMode;
+
+    const days = (status.scheduleDays || '').split(',').filter(Boolean);
+    document.querySelectorAll('.sched-day-btn[data-day]').forEach(btn => {
+        btn.classList.toggle('active', days.includes(btn.dataset.day));
+    });
+}
+
+function toggleScheduleDay(day) {
+    const btn = document.querySelector(`.sched-day-btn[data-day="${day}"]`);
+    if (btn) btn.classList.toggle('active');
+    saveSchedule();
+}
+
+function selectAllScheduleDays() {
+    const btns = document.querySelectorAll('.sched-day-btn[data-day]');
+    const allActive = Array.from(btns).every(btn => btn.classList.contains('active'));
+    btns.forEach(btn => btn.classList.toggle('active', !allActive));
+    saveSchedule();
+}
+
+function getSelectedScheduleDays() {
+    return Array.from(document.querySelectorAll('.sched-day-btn[data-day].active'))
+        .map(btn => btn.dataset.day).join(',');
 }
 
 let _scheduleSaveTimer = null;
@@ -463,10 +486,11 @@ async function saveSchedule() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                scheduleEnabled:  String(document.getElementById('scheduleEnabled').checked),
-                scheduleArmTime:  document.getElementById('scheduleArmTime').value || null,
+                scheduleEnabled:    String(document.getElementById('scheduleEnabled').checked),
+                scheduleArmTime:    document.getElementById('scheduleArmTime').value || null,
                 scheduleDisarmTime: document.getElementById('scheduleDisarmTime').value || null,
-                scheduleArmMode:  document.getElementById('scheduleArmMode').value
+                scheduleArmMode:    document.getElementById('scheduleArmMode').value,
+                scheduleDays:       getSelectedScheduleDays() || null
             })
         });
         statusEl.textContent = res?.ok ? 'Saved' : 'Error';

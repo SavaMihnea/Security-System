@@ -54,7 +54,8 @@ public class SystemController {
                     Boolean.parseBoolean(body.getOrDefault("scheduleEnabled", "false")),
                     body.get("scheduleArmTime"),
                     body.get("scheduleDisarmTime"),
-                    armMode));
+                    armMode,
+                    body.get("scheduleDays")));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", "Invalid arm mode"));
         }
