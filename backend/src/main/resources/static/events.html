@@ -77,6 +77,22 @@
   </div>
 </div>
 
+<!-- Resolve All confirmation modal -->
+<div id="resolveAllModal" style="display:none;position:fixed;inset:0;z-index:1050;background:rgba(0,0,0,0.78);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+  <div class="vox-card tac" style="position:relative;width:100%;max-width:400px;margin:20px;padding:36px 40px 32px;">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;font-weight:600;letter-spacing:0.24em;text-transform:uppercase;color:var(--red);text-shadow:var(--ts-glow-r);margin-bottom:14px;">Action Required</div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:700;letter-spacing:0.1em;color:var(--text-1);margin-bottom:16px;">Resolve All Active Alerts</div>
+    <div style="font-size:0.9rem;color:var(--text-2);margin-bottom:28px;line-height:1.6;">
+      Resolve all <span id="resolveAllN" style="font-family:'JetBrains Mono',monospace;color:var(--amber);font-weight:700;"></span> active alert(s)?<br>
+      <span style="font-size:0.78rem;color:var(--text-3);">This will mark them as resolved and cannot be undone.</span>
+    </div>
+    <div style="display:flex;gap:12px;">
+      <button class="btn-arm btn-disarm" style="flex:1;font-size:0.78rem;padding:13px 0;" onclick="confirmResolveAll()">YES — RESOLVE ALL</button>
+      <button class="vox-filter-btn" style="flex:1;font-size:0.78rem;padding:13px 0;" onclick="closeResolveAllModal()">CANCEL</button>
+    </div>
+  </div>
+</div>
+
 <!-- Resolve modal -->
 <div class="modal fade" id="resolveModal" tabindex="-1">
   <div class="modal-dialog modal-sm modal-dialog-centered">
@@ -169,14 +185,24 @@
     resolveTargetId=null; loadEvents();
   }
 
-  async function resolveAll(){
+  function resolveAll(){
     const n=allEvents.filter(e=>!e.resolved).length;
-    if(!n){alert('No active alerts.');return;}
-    if(!confirm(`Resolve all ${n} active alert(s)?`))return;
-    const r=await apiFetch('/api/events/resolve-all',{method:'PUT'});
-    if(r?.ok){const d=await r.json();alert(`Resolved ${d.resolved} alert(s).`);}
+    if(!n)return;
+    document.getElementById('resolveAllN').textContent=n;
+    document.getElementById('resolveAllModal').style.display='flex';
+  }
+
+  function closeResolveAllModal(){
+    document.getElementById('resolveAllModal').style.display='none';
+  }
+
+  async function confirmResolveAll(){
+    closeResolveAllModal();
+    await apiFetch('/api/events/resolve-all',{method:'PUT'});
     loadEvents();
   }
+
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeResolveAllModal();});
 
   async function loadEvents(){
     const ev=await apiFetch('/api/events').then(r=>r?.json()).catch(()=>[]);

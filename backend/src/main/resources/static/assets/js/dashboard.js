@@ -71,6 +71,7 @@ function updateStatusBanner(status) {
         document.getElementById('btnDisarm').classList.add('d-none');
         CountdownTimer.clear();
         _sirenActive = false;
+        _panicMode   = false;
         updatePanicNavBtn();
     } else {
         banner.classList.add(isNight ? 'status-night' : isHome ? 'status-home' : 'status-armed');
@@ -93,6 +94,7 @@ async function disarm() {
 
 // ---- Panic nav button state ------------------------------
 let _sirenActive = false;
+let _panicMode   = false;   // true when siren was started via manual panic button
 
 function updatePanicNavBtn() {
     const btn = document.getElementById('btnPanicNav');
@@ -133,6 +135,7 @@ async function confirmPanic() {
     closePanicModal();
     if (res?.ok) {
         _sirenActive = true;
+        _panicMode   = true;
         updatePanicNavBtn();
     }
 }
@@ -301,8 +304,9 @@ function addEventToList(event) {
         updatePanicNavBtn();
     }
 
-    // When Stage 2 fires: AI stopped, siren is running — update the banner
-    if (event.eventType === 'SIREN_ACTIVE') {
+    // When Stage 2 fires: AI stopped, siren is running — update the banner.
+    // Skip if the siren was started manually via the panic button (_panicMode).
+    if (event.eventType === 'SIREN_ACTIVE' && !_panicMode) {
         document.getElementById('normalStateView').classList.add('d-none');
         document.getElementById('alarmStateView').classList.remove('d-none');
         document.getElementById('countdownNumber').classList.add('d-none');
