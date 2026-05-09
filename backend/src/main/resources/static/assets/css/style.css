@@ -954,7 +954,7 @@ body {
 .about-hero-map {
   position: absolute;
   right: 1%; top: 1%;
-  width: 72%; height: 100%;
+  width: 65%; height: 100%;
   overflow: hidden;
   pointer-events: none;
 }
