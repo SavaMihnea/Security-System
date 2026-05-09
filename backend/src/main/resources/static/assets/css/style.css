@@ -391,22 +391,22 @@ body {
 /* Arm mode state classes */
 #statusBanner.status-disarmed { border: 1px solid var(--border-hi); }
 
-#statusBanner.status-armed  { border: 2px solid rgba(0,230,118,0.6);  box-shadow: 0 0 40px rgba(0,230,118,0.08); }
+#statusBanner.status-armed  { border: 1px solid rgba(0,230,118,0.6);  box-shadow: 0 0 40px rgba(0,230,118,0.08); }
 #statusBanner.status-armed #statusText  { text-shadow: var(--ts-glow-g); color: var(--green); }
 #statusBanner.status-armed.tac::before,
 #statusBanner.status-armed.tac::after  { border-color: var(--green); z-index: 3; }
 
-#statusBanner.status-home   { border: 2px solid rgba(0,212,255,0.55); box-shadow: 0 0 40px rgba(0,212,255,0.06); }
+#statusBanner.status-home   { border: 1px solid rgba(0,212,255,0.55); box-shadow: 0 0 40px rgba(0,212,255,0.06); }
 #statusBanner.status-home #statusText   { text-shadow: var(--ts-glow-t); color: var(--teal); }
 #statusBanner.status-home.tac::before,
 #statusBanner.status-home.tac::after   { border-color: var(--teal);  z-index: 3; }
 
-#statusBanner.status-night  { border: 2px solid rgba(255,171,0,0.6);  box-shadow: 0 0 40px rgba(255,171,0,0.08); }
+#statusBanner.status-night  { border: 1px solid rgba(255,171,0,0.6);  box-shadow: 0 0 40px rgba(255,171,0,0.08); }
 #statusBanner.status-night #statusText  { text-shadow: 0 0 16px var(--amber-glow), 0 1px 2px rgba(0,0,0,0.9); color: var(--amber); }
 #statusBanner.status-night.tac::before,
 #statusBanner.status-night.tac::after  { border-color: var(--amber); z-index: 3; }
 
-#statusBanner.status-alarm  { border: 2px solid rgba(204,17,34,0.7);  box-shadow: 0 0 60px rgba(204,17,34,0.15); animation: alarmCorePulse 0.9s ease-in-out infinite; }
+#statusBanner.status-alarm  { border: 1px solid rgba(204,17,34,0.7);  box-shadow: 0 0 60px rgba(204,17,34,0.15); animation: alarmCorePulse 0.9s ease-in-out infinite; }
 #statusBanner.status-alarm #statusText  { text-shadow: var(--ts-glow-r); color: var(--red); }
 #statusBanner.status-alarm.tac::before,
 #statusBanner.status-alarm.tac::after  { border-color: var(--red);   z-index: 3; }
