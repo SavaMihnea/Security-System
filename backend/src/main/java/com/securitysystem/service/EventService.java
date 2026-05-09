@@ -14,11 +14,11 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-@SuppressWarnings("null")
 @Slf4j
 public class EventService {
 
@@ -86,8 +86,8 @@ public class EventService {
         // Reset all affected sensors back to ONLINE
         active.stream()
                 .map(Event::getSensor)
-                .filter(s -> s != null)
-                .map(s -> s.getNodeId())
+                .filter(Objects::nonNull)
+                .map(Sensor::getNodeId)
                 .distinct()
                 .forEach(nodeId -> sensorRepository.findByNodeId(nodeId).ifPresent(sensor -> {
                     sensor.setStatus(Sensor.SensorStatus.ONLINE);

@@ -11,7 +11,6 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@SuppressWarnings("null")
 public class SensorService {
 
     private final SensorRepository sensorRepository;
@@ -22,7 +21,7 @@ public class SensorService {
                 .toList();
     }
 
-    public SensorDto getSensor(Long id) {
+    public SensorDto getSensor(long id) {
         return sensorRepository.findById(id)
                 .map(SensorDto::from)
                 .orElseThrow(() -> new IllegalArgumentException("Sensor not found: " + id));

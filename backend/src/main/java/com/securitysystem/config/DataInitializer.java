@@ -24,9 +24,7 @@ public class DataInitializer implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         if (userRepository.count() == 0) {
             authService.register("admin", "Voxwall@2026");
-            log.warn("=================================================");
-            log.warn("  Default admin user created: admin / Voxwall@2026");
-            log.warn("=================================================");
+            log.info("[INIT] Default admin user created. Change the password after first login.");
         }
 
         // Idempotent: ensure the admin account always carries ADMIN role.
