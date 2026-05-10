@@ -81,3 +81,29 @@ function timeAgo(dateStr) {
     if (safeDiff < 86400) return `${Math.floor(safeDiff / 3600)}h ago`;
     return new Date(dateStr).toLocaleDateString();
 }
+
+function toggleTheme() {
+    const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('voxwall-theme', next);
+}
+
+function toggleNavMenu() {
+    document.querySelector('.vox-nav-links')?.classList.toggle('open');
+}
+
+function switchSchedTab(mode) {
+    ['Night','Home','Away'].forEach(m => {
+        const col = document.getElementById('schedCol' + m);
+        const btn = document.getElementById('schedTab' + m);
+        const active = m.toLowerCase() === mode;
+        if (col) col.classList.toggle('sched-tab-active', active);
+        if (btn) btn.classList.toggle('active', active);
+    });
+}
+
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.vox-nav')) {
+        document.querySelector('.vox-nav-links')?.classList.remove('open');
+    }
+});

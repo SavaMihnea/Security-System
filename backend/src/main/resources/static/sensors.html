@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('voxwall-theme')||'dark')</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VOXWALL - Sensors</title>
   <link rel="icon" type="image/png" href="/assets/keylogo.png">
@@ -21,9 +22,11 @@
     <a href="/events"    class="vox-nav-link">Events</a>
     <a href="/help"      class="vox-nav-link">Help</a>
     <a href="/about"     class="vox-nav-link">About</a>
-    <button id="btnSettings" class="vox-nav-logout" onclick="window.location.href='/dashboard?settings=open'" style="background:none;border:1px solid rgba(255,255,255,0.15);">&#9881;</button>
+    <button id="btnSettings" class="vox-nav-logout" onclick="window.location.href='/dashboard?settings=open'" style="background:none;">&#9881;</button>
+    <button class="btn-theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme"></button>
     <button class="vox-nav-logout" onclick="logout()">Logout</button>
   </div>
+  <button class="vox-nav-hamburger" onclick="toggleNavMenu()" aria-label="Menu">&#9776;</button>
 </nav>
 
 <div class="page-wrap">

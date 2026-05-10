@@ -286,7 +286,7 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.12;
+  opacity: 0.5;
   pointer-events: none;
 }
 
@@ -450,17 +450,17 @@ body {
   border-left: 2px solid currentColor;
 }
 
-.btn-arm-away  { color: var(--green); border-color: rgba(0,230,118,0.4); }
-.btn-arm-away:hover  { background: rgba(0,230,118,0.1); box-shadow: 0 0 20px rgba(0,230,118,0.2); }
+.btn-arm-away  { color: var(--green); border-color: rgba(0,230,118,0.55); background: rgba(0,230,118,0.18); }
+.btn-arm-away:hover  { background: rgba(0,230,118,0.30); box-shadow: 0 0 20px rgba(0,230,118,0.25); }
 
-.btn-arm-home  { color: var(--teal); border-color: rgba(0,212,255,0.4); }
-.btn-arm-home:hover  { background: rgba(0,212,255,0.1); box-shadow: 0 0 20px rgba(0,212,255,0.2); }
+.btn-arm-home  { color: var(--teal); border-color: rgba(0,212,255,0.55); background: rgba(0,212,255,0.18); }
+.btn-arm-home:hover  { background: rgba(0,212,255,0.30); box-shadow: 0 0 20px rgba(0,212,255,0.25); }
 
-.btn-arm-night { color: var(--amber); border-color: rgba(255,171,0,0.4); }
-.btn-arm-night:hover { background: rgba(255,171,0,0.1); box-shadow: 0 0 20px rgba(255,171,0,0.2); }
+.btn-arm-night { color: var(--amber); border-color: rgba(255,171,0,0.55); background: rgba(255,171,0,0.18); }
+.btn-arm-night:hover { background: rgba(255,171,0,0.30); box-shadow: 0 0 20px rgba(255,171,0,0.25); }
 
-.btn-disarm    { color: #fff; border-color: rgba(204,17,34,0.6); background: rgba(204,17,34,0.15); }
-.btn-disarm:hover    { background: rgba(204,17,34,0.3); box-shadow: 0 0 24px var(--red-glow); }
+.btn-disarm    { color: #fff; border-color: rgba(204,17,34,0.7); background: rgba(204,17,34,0.22); }
+.btn-disarm:hover    { background: rgba(204,17,34,0.38); box-shadow: 0 0 24px var(--red-glow); }
 
 .btn-panic-nav {
   font-family: 'Inter', sans-serif;
@@ -987,7 +987,7 @@ body {
   background: linear-gradient(
     to right,
     var(--bg-card) 0%,
-    rgba(12,12,22,0.85) 18%,
+    var(--bg-card) 10%,
     transparent 50%
   );
   pointer-events: none;
@@ -1618,7 +1618,6 @@ body {
 .sched-day-btn.sched-day-all {
   border-color: rgba(255,255,255,0.25);
   color: var(--text-2);
-  margin-left: 6px;
 }
 
 .sched-day-btn.sched-day-all:hover {
@@ -1688,4 +1687,215 @@ body {
   .stat-tile-value { font-size: 2.4rem; }
   .tl-phase, .tl-line { display: none; }
   .timeline-item { grid-template-columns: 1fr; }
+}
+
+/* ================================================================
+   LIGHT MODE THEME  ( toggled via data-theme="light" on <html> )
+   ================================================================ */
+
+:root[data-theme="light"] {
+  --bg:        #90b8d0;
+  --bg-card:   #a0c4dc;
+  --bg-alt:    #84aac4;
+  --bg-hover:  #78a0bc;
+  --border:    #4e7898;
+  --border-hi: #3a6484;
+
+  --text-1: #0c1826;
+  --text-2: #1e3448;
+  --text-3: #4a6880;
+  --text-4: #7a9ab4;
+
+  --green:      #007a30;
+  --green-glow: rgba(0,122,48,0.3);
+  --amber:      #b07000;
+  --amber-glow: rgba(176,112,0,0.3);
+  --teal:       #0078a8;
+  --teal-glow:  rgba(0,120,168,0.3);
+
+  --ts-crisp: 0 1px 2px rgba(0,0,0,0.12),0 0 1px rgba(0,0,0,0.06);
+  --ts-head:  0 0 20px rgba(0,0,0,0.05),0 1px 0 rgba(0,0,0,0.06),0 2px 8px rgba(0,0,0,0.1);
+  --ts-glow-r: 0 0 16px var(--red-glow),0 1px 2px rgba(0,0,0,0.12);
+  --ts-glow-g: 0 0 14px var(--green-glow),0 1px 2px rgba(0,0,0,0.12);
+  --ts-glow-t: 0 0 14px var(--teal-glow),0 1px 2px rgba(0,0,0,0.12);
+}
+
+/* Scanline overlay — remove in light mode */
+html[data-theme="light"]::after { display: none; }
+
+/* Grid lines — flip to subtle dark lines on light background */
+html[data-theme="light"] body {
+  background-image:
+    linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px);
+}
+
+/* Navbar */
+html[data-theme="light"] .vox-nav {
+  background: rgba(144,184,208,0.97);
+}
+
+/* Scrollbar thumb */
+html[data-theme="light"] ::-webkit-scrollbar-thumb { background: #c0c0d4; }
+
+/* Form inputs */
+html[data-theme="light"] .form-control-dark {
+  background: rgba(0,0,0,0.04);
+  color-scheme: light;
+}
+html[data-theme="light"] .form-control-dark:focus { background: rgba(0,0,0,0.06); }
+html[data-theme="light"] .form-control-dark option { background: #90b8d0; }
+
+/* Login brand — remove white text-glow that looks wrong on light bg */
+html[data-theme="light"] .login-brand {
+  text-shadow: 0 0 40px rgba(0,0,0,0.06), var(--ts-head);
+}
+
+/* Video backgrounds — near-invisible + multiply in light mode */
+html[data-theme="light"] .login-video-bg {
+  opacity: 0.06;
+  mix-blend-mode: multiply;
+}
+html[data-theme="light"] .core-video {
+  opacity: 0.4;
+  filter: invert(1);
+  mix-blend-mode: multiply;
+}
+
+/* Logo: swap white inner glow for subtle dark shadow */
+html[data-theme="light"] .core-logo {
+  filter: drop-shadow(0 0 20px rgba(204,17,34,0.35)) drop-shadow(0 0 6px rgba(0,0,0,0.18));
+}
+
+/* Schedule day buttons — white-rgba borders are invisible on light bg */
+html[data-theme="light"] .sched-day-btn { border-color: rgba(0,0,0,0.2); }
+html[data-theme="light"] .sched-day-btn.sched-day-all { border-color: rgba(0,0,0,0.28); }
+
+/* Schedule divider — flip white-rgba to dark-rgba */
+html[data-theme="light"] .sched-divider {
+  background: linear-gradient(to bottom,transparent 0%,rgba(0,0,0,0.18) 20%,rgba(0,0,0,0.18) 80%,transparent 100%);
+}
+html[data-theme="light"] .sched-divider::before {
+  background: rgba(0,0,0,0.15);
+  border-color: rgba(0,0,0,0.25);
+}
+
+/* ---- Theme toggle button ---- */
+.btn-theme-toggle {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-3);
+  background: transparent;
+  border: 1px solid var(--border);
+  padding: 5px 0;
+  width: 2.6rem;
+  text-align: center;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  margin-left: 8px;
+}
+.btn-theme-toggle:hover { color: var(--text-1); border-color: var(--border-hi); }
+/* Dark mode → sun icon (press to switch to light) */
+.btn-theme-toggle::before { content: '☀'; }
+/* Light mode → moon icon (press to switch to dark) */
+html[data-theme="light"] .btn-theme-toggle::before { content: '☾'; }
+
+/* ================================================================
+   HAMBURGER BUTTON
+   ================================================================ */
+.vox-nav-hamburger {
+  display: none;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  font-size: 1rem;
+  padding: 5px 10px;
+  cursor: pointer;
+  line-height: 1;
+  transition: color 0.15s, border-color 0.15s;
+}
+.vox-nav-hamburger:hover { color: var(--text-1); border-color: var(--border-hi); }
+
+/* ================================================================
+   MOBILE — 768px breakpoint
+   ================================================================ */
+@media (max-width: 768px) {
+
+  /* Show hamburger */
+  .vox-nav-hamburger { display: flex; align-items: center; }
+
+  /* Nav links: compact dropdown anchored under the hamburger button */
+  .vox-nav-links {
+    display: none;
+    position: absolute;
+    top: 58px;
+    right: 16px;
+    width: 190px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    background: rgba(5,5,10,0.99);
+    border: 1px solid var(--border-hi);
+    z-index: 490;
+  }
+  html[data-theme="light"] .vox-nav-links {
+    background: rgba(120,160,188,0.99);
+  }
+  .vox-nav-links.open { display: flex; }
+
+  /* All items: uniform size and style, centered */
+  .vox-nav-links .vox-nav-link,
+  .vox-nav-links .vox-nav-logout,
+  .vox-nav-links .btn-theme-toggle {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-2);
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    padding: 11px 16px;
+    margin: 0;
+    width: 100%;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+    box-sizing: border-box;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .vox-nav-links .vox-nav-logout:last-child { border-bottom: none; }
+  .vox-nav-links .vox-nav-link:hover,
+  .vox-nav-links .vox-nav-logout:hover,
+  .vox-nav-links .btn-theme-toggle:hover {
+    background: var(--bg-hover);
+    color: var(--text-1);
+  }
+  .vox-nav-links .vox-nav-link.active { color: var(--text-1); background: var(--bg-alt); }
+
+  /* Arm buttons: stack vertically */
+  .arm-buttons {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 0 16px;
+  }
+  .btn-arm { width: 100%; }
+
+  /* Schedule: hide column dividers, show tab row */
+  .sched-tabs-mobile { display: flex !important; }
+  #schedModeRow { flex-direction: column !important; }
+  #schedModeRow .sched-divider { display: none !important; }
+  #schedColNight,
+  #schedColHome,
+  #schedColAway {
+    display: none !important;
+    padding: 0 !important;
+  }
+  #schedColNight.sched-tab-active,
+  #schedColHome.sched-tab-active,
+  #schedColAway.sched-tab-active { display: flex !important; }
 }

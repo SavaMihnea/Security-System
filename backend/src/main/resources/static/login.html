@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('voxwall-theme')||'dark')</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VOXWALL - Login</title>
     <link rel="icon" type="image/png" href="/assets/keylogo.png">
@@ -10,6 +11,9 @@
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body class="login-body">
+
+<button class="btn-theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme"
+  style="position:fixed;top:16px;right:20px;z-index:10;"></button>
 
 <video class="login-video-bg" autoplay muted loop playsinline preload="auto">
     <source src="/assets/earth.mp4" type="video/mp4">
@@ -81,6 +85,12 @@
 <script>
     if (localStorage.getItem('jwt_token')) {
         window.location.href = '/dashboard';
+    }
+
+    function toggleTheme() {
+        const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('voxwall-theme', next);
     }
 
     function togglePassword() {

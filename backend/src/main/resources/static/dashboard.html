@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('voxwall-theme')||'dark')</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VOXWALL - Dashboard</title>
   <link rel="icon" type="image/png" href="/assets/keylogo.png">
@@ -24,9 +25,11 @@
     <a href="/events"    class="vox-nav-link">Events</a>
     <a href="/help"      class="vox-nav-link">Help</a>
     <a href="/about"     class="vox-nav-link">About</a>
-    <button id="btnSettings" class="vox-nav-logout" onclick="openSettingsModal()" style="background:none;border:1px solid rgba(255,255,255,0.15);">&#9881;</button>
+    <button id="btnSettings" class="vox-nav-logout" onclick="openSettingsModal()" style="background:none;">&#9881;</button>
+    <button class="btn-theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme"></button>
     <button class="vox-nav-logout" onclick="logout()">Logout</button>
   </div>
+  <button class="vox-nav-hamburger" onclick="toggleNavMenu()" aria-label="Menu">&#9776;</button>
 </nav>
 
 <div class="page-wrap">
@@ -161,11 +164,18 @@
         </div>
       </div>
 
+      <!-- Mobile tab selector (hidden on desktop via CSS) -->
+      <div class="sched-tabs-mobile" style="display:none;gap:6px;margin-bottom:16px;">
+        <button id="schedTabNight" class="sched-day-btn active" onclick="switchSchedTab('night')" style="color:var(--amber);border-color:rgba(255,171,0,0.5);">NIGHT</button>
+        <button id="schedTabHome"  class="sched-day-btn"        onclick="switchSchedTab('home')"  style="color:var(--teal);border-color:rgba(0,212,255,0.5);">HOME</button>
+        <button id="schedTabAway"  class="sched-day-btn"        onclick="switchSchedTab('away')"  style="color:var(--green);border-color:rgba(0,230,118,0.5);">AWAY</button>
+      </div>
+
       <!-- Row 2: Three-column per-mode layout -->
-      <div style="display:flex;align-items:stretch;">
+      <div id="schedModeRow" style="display:flex;align-items:stretch;">
 
         <!-- ARM NIGHT -->
-        <div style="flex:1;display:flex;flex-direction:column;gap:14px;padding-right:26px;">
+        <div id="schedColNight" class="sched-tab-active" style="flex:1;display:flex;flex-direction:column;gap:14px;padding-right:26px;">
           <span style="font-family:'JetBrains Mono',monospace;font-size:0.8rem;font-weight:700;letter-spacing:0.12em;color:var(--amber);">ARM NIGHT</span>
           <div style="display:flex;gap:12px;flex-wrap:wrap;">
             <div>
@@ -182,7 +192,7 @@
         <div class="sched-divider"></div>
 
         <!-- ARM HOME -->
-        <div style="flex:1;display:flex;flex-direction:column;gap:14px;padding:0 26px;">
+        <div id="schedColHome" style="flex:1;display:flex;flex-direction:column;gap:14px;padding:0 26px;">
           <span style="font-family:'JetBrains Mono',monospace;font-size:0.8rem;font-weight:700;letter-spacing:0.12em;color:var(--teal);">ARM HOME</span>
           <div style="display:flex;gap:12px;flex-wrap:wrap;">
             <div>
@@ -199,7 +209,7 @@
         <div class="sched-divider"></div>
 
         <!-- ARM AWAY -->
-        <div style="flex:1;display:flex;flex-direction:column;gap:14px;padding-left:26px;">
+        <div id="schedColAway" style="flex:1;display:flex;flex-direction:column;gap:14px;padding-left:26px;">
           <span style="font-family:'JetBrains Mono',monospace;font-size:0.8rem;font-weight:700;letter-spacing:0.12em;color:var(--green);">ARM AWAY</span>
           <div style="display:flex;gap:12px;flex-wrap:wrap;">
             <div>
