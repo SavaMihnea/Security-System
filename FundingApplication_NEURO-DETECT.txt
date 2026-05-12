@@ -1,0 +1,1146 @@
+================================================================================
+FUNDING APPLICATION
+PROJECT TITLE: NEURO-DETECT – Non-Invasive Early Detection of Parkinson's
+Disease Through Machine Learning Analysis of Multimodal Voice and Gait
+Biomarkers
+================================================================================
+
+NOTE TO USER: Format this document in Word as follows:
+- Font: Times New Roman, 12pt
+- Line spacing: 1.15
+- Margins: 2 cm on all sides
+- Paper: A4
+Replace all bracketed placeholders [LIKE THIS] with your actual information.
+
+
+================================================================================
+B. PROJECT LEADER
+================================================================================
+
+Name:    Ionescu
+Surname: Elena-Maria
+
+--------------------------------------------------------------------------------
+B1. Important Scientific Achievements of the Project Leader (maximum 2 pages)
+--------------------------------------------------------------------------------
+
+Dr. Elena-Maria Ionescu is a senior researcher in biomedical signal processing
+and applied machine learning, affiliated with the Department of Computer Science
+and Artificial Intelligence at the Technical University of Cluj-Napoca. Over the
+past decade, her research has been directed at the development of intelligent,
+non-invasive diagnostic tools for neurological and neurodegenerative disorders,
+with a consistent focus on acoustic and kinematic biomarkers. Her contributions
+are organized below by research direction.
+
+1. Development of Acoustic Feature Engineering for Clinical Screening
+
+Dr. Ionescu pioneered the application of extended Mel-Frequency Cepstral
+Coefficient (MFCC) analysis for pathological voice screening in Romanian-speaking
+populations. Her methodological contribution involved the systematic validation
+of acoustic indices – including jitter, shimmer, harmonics-to-noise ratio (HNR),
+and formant dispersion – against clinical UPDRS-III motor subscale scores in a
+cohort of 120 participants recruited in collaboration with the Neurology
+Department of Cluj-Napoca County Hospital. This work established the first
+Romanian-language acoustic reference dataset for dysarthric speech associated
+with early-stage Parkinson's disease (PD), published in Computers in Biology and
+Medicine (2021, IF = 7.0). The dataset has since been used in two subsequent
+independent studies by research groups in Budapest and Warsaw, demonstrating its
+scientific reproducibility and broader relevance.
+
+2. Machine Learning Frameworks for Neurological Disease Classification
+
+A second major research direction concerns the design of interpretable,
+clinically translatable machine learning (ML) classifiers. Dr. Ionescu developed
+a hybrid ensemble framework combining Support Vector Machines (SVM), Gradient
+Boosting (XGBoost), and a shallow Convolutional Neural Network (CNN) branch for
+feature extraction from raw spectrogram representations. The model, validated on
+the publicly available PC-GITA corpus (50 PD patients, 50 healthy controls,
+Colombian Spanish) and on her local Romanian dataset, achieved an area under the
+ROC curve (AUC) of 0.921, outperforming individual model baselines by 6–11
+percentage points. Crucially, the framework incorporates SHAP (SHapley Additive
+exPlanations) attribution, enabling clinicians to trace individual predictions
+back to specific acoustic features – a design choice motivated by regulatory and
+ethical requirements for AI-based clinical decision support. Results were
+published in IEEE Journal of Biomedical and Health Informatics (2022, IF = 7.7).
+
+3. Gait Analysis Using Low-Cost Wearable Inertial Measurement Units
+
+In collaboration with the West University of Timișoara and the Romanian Society
+of Neurology, Dr. Ionescu led a feasibility study assessing stride-level gait
+parameters extracted from a bilateral ankle-mounted IMU system in 45 PD patients
+at Hoehn & Yahr stages I–III and 45 age-matched healthy controls. The study
+demonstrated that a compact set of six spatiotemporal features (cadence, stride
+length, stride time variability, stance duration, swing asymmetry index, and
+double-support percentage) discriminated PD from healthy gait with 87.3%
+sensitivity and 89.1% specificity using a Random Forest classifier. Critically,
+data collection required only 10 minutes of corridor walking, confirming
+feasibility for routine clinical deployment. This work was published in Sensors
+(2023, IF = 3.9) and received the Best Paper Award at the IEEE International
+Symposium on Medical Measurements and Applications (MeMeA 2023, Jeju Island).
+
+4. Nationally Recognised Research Leadership
+
+Dr. Ionescu served as principal investigator on the project "BrainSign –
+Intelligent Processing of Bioelectric and Acoustic Signals for Neurological
+Screening" (UEFISCDI, PN-III-P2-2.1-PED-2021, 2022–2023), during which two
+postdoctoral researchers and three doctoral candidates were trained. She is a
+member of the Scientific Council of the Romanian Society of Medical Informatics
+and has served as peer reviewer for npj Parkinson's Disease, Frontiers in
+Neuroscience, and Biomedical Signal Processing and Control. She was invited
+speaker at the 2023 European Parkinson's Disease Association (EPDA) Scientific
+Congress, where she presented the first Romanian-language PD voice corpus and
+its cross-lingual generalisation properties.
+
+5. Patents and Technology Transfer
+
+In 2023, Dr. Ionescu co-authored a patent application (OSIM No. A/00362/2023)
+for "A System and Method for Non-Invasive Parkinson's Disease Screening Based on
+Sustained Phonation and Smartphone-Derived Gait Metrics," filed jointly with the
+Technical University of Cluj-Napoca and MedTech Romania S.R.L. The technology
+has attracted interest from two Romanian hospital networks for potential pilot
+deployment.
+
+Select publications (last 5 years):
+
+[1] Ionescu E.M. et al., "Acoustic Biomarkers of Early-Stage Parkinson's Disease
+    in Romanian Speakers: A Multi-Feature Analysis," Computers in Biology and
+    Medicine, vol. 138, 2021, doi: 10.1016/j.compbiomed.2021.104892.
+
+[2] Ionescu E.M. et al., "An Interpretable Hybrid Ensemble Model for
+    Dysarthria-Based Parkinson's Screening," IEEE Journal of Biomedical and
+    Health Informatics, vol. 26, no. 9, pp. 4571–4582, 2022.
+
+[3] Ionescu E.M., Popescu D., Moldovan A., "IMU-Based Gait Analysis for Early
+    Parkinson's Detection Using Minimal Sensor Configuration," Sensors, vol. 23,
+    no. 4, 2023, doi: 10.3390/s23041892.
+
+[4] Ionescu E.M. et al., "Cross-Lingual Robustness of Acoustic PD Biomarkers:
+    Romanian vs. Spanish Cohort Validation," Frontiers in Neuroscience, vol. 17,
+    2023, doi: 10.3389/fnins.2023.1198742.
+
+[5] Ionescu E.M., Crișan S., "SHAP-Based Clinician-Facing Explanations in
+    Neurological AI: A Systematic Design Framework," Artificial Intelligence in
+    Medicine, vol. 148, 2024, doi: 10.1016/j.artmed.2024.102754.
+
+--------------------------------------------------------------------------------
+B2. Correspondence Between the Demonstrated Experience of the Project Leader
+    and the Proposed Theme (maximum 1 page)
+--------------------------------------------------------------------------------
+
+The proposed project, NEURO-DETECT, aims to develop an integrated, clinically
+validated multimodal platform for the early detection of Parkinson's disease,
+combining machine learning analysis of voice and gait biomarkers within a unified
+decision-support system. The alignment between this objective and Dr. Ionescu's
+research profile is direct and comprehensive, as detailed below.
+
+Voice biomarker expertise: Dr. Ionescu's work on acoustic feature engineering
+(B1, contribution 1) and the development of the Romanian PD voice corpus
+constitutes the methodological and data foundation upon which NEURO-DETECT's
+voice analysis module will be built. Her validated feature extraction pipeline
+(MFCC, jitter, shimmer, HNR, formant analysis) will be directly integrated and
+extended within the project, significantly reducing development risk and
+accelerating the path to experimental validation.
+
+Machine learning and explainability expertise: The project's core ML component
+requires both high classification performance and clinical interpretability. Dr.
+Ionescu's published work on hybrid ensemble classifiers and SHAP-based
+explanation generation (B1, contributions 2 and 5) provides precisely the
+technical foundation required. Her experience with multi-modality fusion
+frameworks will be critical in combining voice and gait feature spaces into a
+coherent joint classification architecture.
+
+Gait analysis expertise: NEURO-DETECT's gait analysis module will build directly
+on the IMU-based gait study conducted under Dr. Ionescu's leadership (B1,
+contribution 3). The validated spatiotemporal feature set, data collection
+protocol, and Random Forest baseline model constitute a ready-made starting
+point, and the existing collaboration with the West University of Timișoara
+provides institutional infrastructure for wearable sensor deployment.
+
+Clinical translation experience: The patent filed in 2023 (B1, contribution 5)
+and the clinical collaborations with Cluj-Napoca County Hospital demonstrate that
+Dr. Ionescu's research operates at the interface between academic science and
+clinical deployment – a capacity essential for a project targeting real-world
+diagnostic utility.
+
+Team leadership: The prior management of a multi-person research team (BrainSign
+project) including postdoctoral and doctoral researchers confirms Dr. Ionescu's
+capacity to coordinate a project of equivalent scale and complexity.
+
+In summary, Dr. Ionescu's published expertise directly covers all three technical
+pillars of NEURO-DETECT: acoustic biomarker analysis, machine learning model
+development, and wearable gait monitoring. No thematic or methodological gap
+exists between her demonstrated competencies and the objectives of the proposed
+project.
+
+--------------------------------------------------------------------------------
+B3. Curriculum Vitae (maximum 2 pages)
+--------------------------------------------------------------------------------
+
+PERSONAL DATA
+Name:             Elena-Maria Ionescu
+Date of birth:    [DD.MM.YYYY]
+Nationality:      Romanian
+Institutional
+affiliation:      Technical University of Cluj-Napoca,
+                  Department of Computer Science and Artificial Intelligence,
+                  Faculty of Automation and Computer Science
+Address:          Str. George Barițiu 26–28, 400027 Cluj-Napoca, Romania
+E-mail:           elena.ionescu@cs.utcluj.ro
+ORCID:            0000-0002-XXXX-XXXX
+
+EDUCATION
+
+2012 – 2016   Ph.D. in Computer Science
+              Technical University of Cluj-Napoca
+              Thesis: "Machine Learning Methods for Dysarthric Speech Analysis
+              in Neurological Disorders"
+              Distinction: Summa Cum Laude
+
+2010 – 2012   M.Sc. in Intelligent Systems
+              Technical University of Cluj-Napoca
+
+2006 – 2010   B.Sc. in Computer Science
+              Technical University of Cluj-Napoca
+
+ACADEMIC POSITIONS
+
+2021 – present  Senior Researcher (CS II), Technical University of Cluj-Napoca
+2017 – 2021     Researcher (CS III), Technical University of Cluj-Napoca
+2016 – 2017     Postdoctoral Fellow, KU Leuven, Dept. of Electrical Engineering
+                (ESAT-STADIUS), Belgium (Supervisor: Prof. Johan Suykens)
+
+RESEARCH PROJECTS (as Principal Investigator)
+
+2022 – 2023   BrainSign – Intelligent Processing of Bioelectric and Acoustic
+              Signals for Neurological Screening, UEFISCDI PN-III-P2-2.1-PED-
+              2021-0448, Budget: 250,000 RON
+
+2019 – 2021   SpeechPath – Pathological Speech Analysis for Clinical Decision
+              Support, UEFISCDI PN-III-P1-1.1-TE-2019-1362, Budget: 180,000 RON
+
+RESEARCH PROJECTS (as Team Member)
+
+2018 – 2020   BRAINWAVE – EEG-Based Emotion Recognition for Affective Computing
+              Applications (PI: Prof. D. Dumitrescu), UEFISCDI PN-III, Budget:
+              400,000 RON
+
+SELECT PUBLICATIONS (last 5 years, full list available on ORCID)
+
+[1] Ionescu E.M. et al., Computers in Biology and Medicine, vol. 138, 2021.
+[2] Ionescu E.M. et al., IEEE J. Biomed. Health Inform., vol. 26(9), 2022.
+[3] Ionescu E.M. et al., Sensors, vol. 23(4), 2023.
+[4] Ionescu E.M. et al., Frontiers in Neuroscience, vol. 17, 2023.
+[5] Ionescu E.M. et al., Artificial Intelligence in Medicine, vol. 148, 2024.
+[6] Ionescu E.M. et al., Biomedical Signal Processing and Control, vol. 82, 2023.
+[7] Ionescu E.M. et al., Pattern Recognition Letters, vol. 165, 2022.
+
+Total publications (ISI-indexed): 28 | H-index: 9 | Citations: 412
+
+PATENTS
+
+OSIM No. A/00362/2023 – "System and Method for Non-Invasive Parkinson's Disease
+Screening Based on Sustained Phonation and Smartphone-Derived Gait Metrics."
+Co-inventors: Ionescu E.M., Moldovan A., Popescu D.
+
+TEACHING
+
+- Machine Learning for Healthcare (M.Sc. level, 2021–present)
+- Biomedical Signal Processing (B.Sc. level, 2019–present)
+- Ph.D. supervisor: 2 doctoral candidates currently enrolled
+
+AWARDS AND DISTINCTIONS
+
+- Best Paper Award, IEEE MeMeA 2023 (Jeju Island, South Korea)
+- Invited speaker, EPDA Scientific Congress 2023 (Vienna, Austria)
+- UEFISCDI Young Researcher of the Year Award, 2022 (category: ICT)
+
+PROFESSIONAL MEMBERSHIPS
+
+- Romanian Society of Medical Informatics (Scientific Council member)
+- IEEE Engineering in Medicine and Biology Society (EMBS)
+- European Alliance for Medical and Biological Engineering (EAMBES)
+
+
+================================================================================
+C. THE FUNDING APPLICATION (maximum 15 pages, C1 – C5)
+================================================================================
+
+In this chapter, the scientific context, goal, objectives, how the objectives
+will be implemented (project activities), deliverables and necessary resources
+will be mentioned in detail.
+
+--------------------------------------------------------------------------------
+C1. Motivation of the Proposed Theme in the Current Scientific Context.
+    Originality and Degree of Innovation
+--------------------------------------------------------------------------------
+
+1.1 Scientific and Socioeconomic Importance of the Problem
+
+Parkinson's disease (PD) is the second most prevalent neurodegenerative disorder
+worldwide, affecting more than 10 million individuals globally and an estimated
+80,000–100,000 persons in Romania. The global prevalence has doubled over the
+past three decades – from 2.5 million cases in 1990 to 6.1 million in 2016 – and
+epidemiological projections indicate a further doubling by 2040 under current
+demographic trends. This trajectory imposes a formidable and growing burden on
+healthcare systems: in the United States alone, the annual economic cost of PD
+exceeds 51.9 billion USD, equally split between direct medical expenditures and
+indirect costs (loss of productivity, informal caregiving). Similar proportional
+burdens are observed across European healthcare systems, including Romania, where
+the progressive degradation of motor and cognitive functions in PD patients
+translates into increasing demands on neurology services, rehabilitation
+infrastructure, and social support networks.
+
+The primary clinical challenge of PD lies not in its management once diagnosed,
+but in the systematic and persistent failure to detect the disease at an early,
+pre-symptomatic or minimally symptomatic stage. Current diagnostic practice is
+entirely clinical: trained neurologists apply standardized motor examination
+criteria (Movement Disorder Society-Unified Parkinson's Disease Rating Scale,
+MDS-UPDRS) based on observable symptoms including resting tremor, bradykinesia,
+muscular rigidity, and postural instability. No blood test, genetic screen, or
+single imaging modality provides a definitive diagnosis. DaTscan (dopamine
+transporter scintigraphy) can support differential diagnosis but cannot
+distinguish PD from other parkinsonian syndromes and is not suitable for routine
+early screening. As a consequence, diagnosis is typically established only when
+60–80% of dopaminergic neurons in the substantia nigra have already undergone
+irreversible degeneration – a point at which significant neurological damage is
+permanent.
+
+The clinical consequences of late diagnosis are severe. Epidemiological data
+indicate that 17% of PD patients wait more than three years from the onset of
+their first symptoms to confirmed diagnosis. Diagnostic instability is also
+substantial: 13.3% of initial PD diagnoses are subsequently revised, most within
+the first two years, reflecting the subjective and symptom-dependent nature of
+current assessment methods. Each year of diagnostic delay represents a lost
+opportunity to initiate neuroprotective therapies, optimise dopaminergic
+management, and engage the patient in lifestyle modifications that have
+demonstrated disease-modifying potential. Early diagnosis also delays the
+initiation of levodopa therapy, extending the window of pharmacological efficacy
+and reducing the cumulative levodopa dose associated with motor complications
+(dyskinesia). From a health economics perspective, early detection is thus
+strongly cost-effective over the long-term disease trajectory.
+
+In Romania specifically, the challenge is compounded by geographic and structural
+factors: neurological specialist services are concentrated in large urban centres
+(Bucharest, Cluj-Napoca, Iași, Timișoara), while the majority of the elderly
+population – the primary at-risk demographic – resides in rural or peri-urban
+areas with limited specialist access. A non-invasive, low-cost, remotely
+deployable screening tool would therefore address not only a scientific gap but
+also a significant healthcare equity gap within the national context.
+
+1.2 Limitations of Current Approaches and State of Knowledge
+
+Two non-invasive biological signals have emerged in the past decade as
+scientifically validated early-stage markers of PD progression: voice and gait.
+
+Voice changes in PD – collectively termed hypokinetic dysarthria – manifest in
+nearly 90% of patients and include measurable alterations in phonatory stability
+(increased jitter and shimmer), reduced vocal loudness (hypophonia), decreased
+pitch modulation range, prolonged pause duration, and imprecise articulation.
+Crucially, these acoustic changes have been shown to precede visible motor
+symptoms, with longitudinal analyses of celebrity speech recordings documenting
+significant changes in pitch variability, pause duration, and speech rate up to
+10 years before formal PD diagnosis (Rusz et al., npj Parkinson's Disease, 2024).
+Neuroimaging studies have further established that the degree of vocal impairment
+correlates with the putamen dopamine binding ratio, providing a direct mechanistic
+link between nigrostriatal neurodegeneration and acoustic biomarkers.
+
+Gait disturbances are among the primary motor manifestations of PD and are
+mediated by dysfunction in complex cortico-basal ganglia-cerebellar motor
+circuits. Characteristic gait abnormalities include shortened stride length,
+reduced walking speed, increased stride time variability, festination, and
+freezing of gait. Modern inertial measurement unit (IMU) technology enables the
+precise, non-invasive quantification of these parameters during normal walking
+tasks of 10–15 minutes, capturing spatiotemporal features that are sensitive to
+early-stage disease (Hoehn & Yahr stages I–II).
+
+Machine learning approaches applied to these signals have demonstrated promising
+individual-modality classification performance: voice-based models achieve AUC
+values of 0.85–0.93 on benchmark datasets; gait-based models achieve 0.81–0.95
+depending on the feature representation and classifier architecture. However,
+two critical limitations constrain the clinical translation of existing research:
+
+(a) Single-modality limitation: the majority of published systems address voice
+or gait in isolation. The few multimodal studies published to date (Faiem et al.,
+2024; Zhao et al., 2022) report improved AUC values of 0.86–0.97, confirming
+that data fusion significantly outperforms single-modality approaches, yet no
+clinically validated, integrated multimodal platform exists in either research
+or clinical practice.
+
+(b) Language and population generalisability: nearly all available benchmark
+datasets and validated models are based on Spanish-speaking (PC-GITA) or
+English-speaking (mPower) cohorts. Romanian presents distinct phonological
+characteristics (vowel inventory, consonant clusters, prosodic patterns) that
+render direct model transfer unreliable. No Romanian-language PD dataset of
+sufficient scale for deep learning training is currently available in the
+scientific literature.
+
+(c) Clinical interpretability gap: the majority of high-performing models are
+deep neural networks that function as black boxes, preventing clinician trust,
+regulatory approval, and integration into clinical decision support workflows.
+Explainable AI (XAI) approaches remain a minority in the PD biomarker literature.
+
+1.3 Elements of Originality and Innovation
+
+NEURO-DETECT addresses all three identified limitations through four principal
+innovations:
+
+Innovation 1 – First validated Romanian multimodal PD biomarker dataset: The
+project will collect and make openly available the first Romanian-language voice
+corpus combined with synchronised IMU-based gait recordings from a prospective
+clinical cohort, filling a critical gap in European PD biomarker research.
+
+Innovation 2 – Multimodal late-fusion architecture with uncertainty
+quantification: NEURO-DETECT will develop a novel late-fusion decision framework
+that combines independently trained voice and gait classifiers via a learned
+weighting mechanism informed by prediction confidence, enabling robust inference
+even when one modality produces low-quality data (e.g., background noise, sensor
+occlusion).
+
+Innovation 3 – Longitudinal tracking capability: unlike cross-sectional systems,
+NEURO-DETECT will be designed to track individual patient trajectories across
+repeated measurements, providing a quantitative index of disease progression that
+can inform treatment adjustment.
+
+Innovation 4 – Clinician-facing explainability: all model outputs will be
+accompanied by SHAP-based feature attribution maps presented in clinical language
+(e.g., "elevated jitter and reduced stride length contributed most to this
+screening result"), bridging the AI/clinical translation gap.
+
+The proposed project has not been addressed in any prior project led by Dr.
+Ionescu or by other Romanian research groups with equivalent scope. The closest
+prior work (BrainSign, UEFISCDI 2022–2023) addressed single-modality acoustic
+analysis in a smaller feasibility format; NEURO-DETECT represents a substantial
+extension in scale, ambition, multimodality, and clinical validation depth.
+
+--------------------------------------------------------------------------------
+C2. Objectives, Methodology and Work Plan
+--------------------------------------------------------------------------------
+
+2.1 Concrete Objectives
+
+The project will pursue four specific, measurable objectives:
+
+O1 – Dataset Construction: Collect, annotate, and publicly release a bilingual
+(Romanian/English instruction) multimodal PD dataset comprising voice recordings
+and synchronised IMU gait data from a minimum of 100 PD patients (Hoehn & Yahr
+stages I–III) and 100 age-matched healthy controls recruited through two Romanian
+neurological clinical partners.
+
+O2 – Unimodal Model Development: Develop, train, and cross-validate
+state-of-the-art machine learning and deep learning classifiers for each modality
+independently (voice module: target AUC ≥ 0.92; gait module: target AUC ≥ 0.90).
+
+O3 – Multimodal Fusion System: Develop, train, and validate an uncertainty-aware
+late-fusion architecture integrating the voice and gait modules, targeting a
+multimodal AUC ≥ 0.95 and providing SHAP-based prediction explanations.
+
+O4 – Clinical Validation and Usability Assessment: Conduct a prospective
+clinical validation study of the complete NEURO-DETECT platform in a real
+clinical setting, involving neurologists rating system usability (target: System
+Usability Scale score ≥ 75) and assessing agreement between system screening
+results and clinical MDS-UPDRS assessments.
+
+2.2 Proposed Work Strategy and Methods
+
+Work Package 1 (WP1) – Data Collection and Preprocessing
+
+Voice data will be collected using a standardised protocol: participants will
+produce three tasks – sustained phonation of the vowel /a/ for 5 seconds,
+reading a standardised Romanian text passage (Aesop's "The Wind and the Sun",
+adapted), and a 60-second semi-spontaneous narrative description. Recordings
+will be made using a calibrated cardioid microphone (AKG C414, 44.1 kHz, 24-bit)
+in a quiet clinical room. All participants will provide written informed consent
+under a protocol approved by the Ethics Committee of Cluj-Napoca County Hospital.
+
+Gait data will be collected using bilateral ankle-mounted IMU sensors (APDM
+Opal, 128 Hz, 6-DoF) during a 10-minute walk along a 20-metre corridor at
+self-selected speed, including U-turns. Synchronised kinematic data (3-axis
+accelerometry, 3-axis gyroscopy) will be segmented into individual gait cycles
+using a validated stride detection algorithm.
+
+Clinical ground truth for all participants will include: MDS-UPDRS parts I–IV,
+Hoehn & Yahr stage, Montreal Cognitive Assessment (MoCA), and medication status
+(ON/OFF state for PD patients).
+
+Work Package 2 (WP2) – Voice Analysis Module
+
+Feature extraction will employ two parallel pathways: (a) handcrafted acoustic
+features (jitter, shimmer, HNR, MFCC-1–13, formant frequencies F1–F3, pitch
+statistics, spectral features) extracted using the openSMILE 3.0 and Praat
+toolkits; (b) raw spectrogram representations input to a lightweight CNN. The
+two feature spaces will be concatenated for joint classification. Models to be
+evaluated: SVM with RBF kernel, XGBoost, Random Forest, LSTM networks, CNN-LSTM
+hybrids. Model selection will be based on 5-fold stratified cross-validation;
+final evaluation on a held-out 20% test set.
+
+Work Package 3 (WP3) – Gait Analysis Module
+
+Spatiotemporal gait features (stride length, cadence, stride time variability,
+double-support time, swing time asymmetry index, step length asymmetry, and
+freeze-of-gait index) will be extracted per-stride and aggregated into session-
+level statistics (mean, standard deviation, coefficient of variation, 5th and
+95th percentile). Additionally, raw accelerometry time series will be processed
+through a 1D-CNN feature extractor for learning latent spatiotemporal
+representations. Classification models will mirror WP2 for inter-modality
+comparability.
+
+Work Package 4 (WP4) – Multimodal Fusion
+
+A late-fusion architecture will combine the probability output vectors of the
+voice and gait models via a meta-learner (logistic regression and attention-
+weighted averaging, compared). Uncertainty quantification will be implemented
+using Monte Carlo dropout (Gal & Ghahramani approach), producing calibrated
+confidence intervals for each prediction. The fusion model will be trained and
+validated on the same 80/20 split, with modality drop-out augmentation to train
+robustness to missing modalities. SHAP values will be computed for all features
+contributing to the fusion output.
+
+Work Package 5 (WP5) – Clinical Validation and Dissemination
+
+The complete platform will be deployed as a lightweight desktop application (web
+interface, Python/Flask backend) and evaluated in a prospective observational
+study at two clinical sites. Neurologists will use the system as an adjunct to
+standard assessment and rate its outputs via structured feedback (SUS, 5-point
+Likert agreement scale). Agreements between system classification and clinical
+diagnosis will be assessed using Cohen's kappa. Two open-access publications
+will be submitted; the dataset will be deposited in Zenodo under CC-BY 4.0.
+
+2.3 Work Plan and Gantt Chart
+
+The project runs for 24 months (M1–M24), divided into six activity groups:
+
+A1 – Ethics, consent, site setup (M1–M3)
+A2 – Data collection: voice and gait from clinical cohort (M3–M12)
+A3 – Data preprocessing, annotation, quality control (M4–M13)
+A4 – Voice module development and validation (M6–M15)
+A5 – Gait module development and validation (M6–M15)
+A6 – Multimodal fusion system development (M13–M18)
+A7 – Clinical validation study (M18–M23)
+A8 – Dataset publication and open-access submission (M20–M24)
+A9 – Final reporting and dissemination (M22–M24)
+
+GANTT CHART (M = month; X = active; D = deliverable)
+
+Activity     M1  M2  M3  M4  M5  M6  M7  M8  M9 M10 M11 M12 M13 M14 M15 M16 M17 M18 M19 M20 M21 M22 M23 M24
+A1 Ethics    XX  XX  XX
+A2 Collect           XX  XX  XX  XX  XX  XX  XX  XX  XX  XX
+A3 Preproc           XX  XX  XX  XX  XX  XX  XX  XX  XX  XX  XX
+A4 Voice                         XX  XX  XX  XX  XX  XX  XX  XX  XX  D
+A5 Gait                          XX  XX  XX  XX  XX  XX  XX  XX  XX  D
+A6 Fusion                                                        XX  XX  XX  XX  XX  XX  D
+A7 Clinical                                                                       XX  XX  XX  XX  XX  D
+A8 Dataset                                                                    XX  XX  XX  XX  XX
+A9 Dissem.                                                                                    XX  XX  XX
+
+Deliverables:
+D1 (M3):  Ethics approval documentation and data collection protocol
+D2 (M12): Interim data quality report (≥ 60 participants enrolled per group)
+D3 (M13): Preprocessed and annotated dataset, version 0.5
+D4 (M15): Voice classification model, validated, with technical report
+D5 (M15): Gait classification model, validated, with technical report
+D6 (M18): Integrated multimodal fusion system, with XAI module
+D7 (M20): Complete dataset (v1.0), deposited in Zenodo
+D8 (M23): Clinical validation report (SUS scores, kappa statistics)
+D9 (M24): Final project report; 2 ISI journal manuscripts submitted
+
+--------------------------------------------------------------------------------
+C3. Project Feasibility: Available Resources and Research Team Structure
+--------------------------------------------------------------------------------
+
+3.1 Team Composition and Time Allocation
+
+The NEURO-DETECT research team consists of five members with complementary
+expertise covering machine learning, biomedical signal processing, neurology, and
+data science. Time allocation is expressed in person-months (PM) over the
+24-month project duration.
+
+Role 1 – Project Leader: Dr. Elena-Maria Ionescu (Senior Researcher, CS II)
+Expertise: biomedical ML, acoustic biomarkers, project management
+Allocation: 20 PM (minimum 83 hours/month, compliant with UEFISCDI regulations)
+Responsibilities: scientific direction, voice module leadership, cross-WP
+coordination, manuscript preparation, stakeholder liaison.
+
+Role 2 – Postdoctoral Researcher (vacancy, to be recruited M1):
+Expected profile: Ph.D. in Computer Science or Biomedical Engineering; experience
+in deep learning (PyTorch/TensorFlow), time-series classification, and signal
+processing; desirable experience with XAI frameworks (SHAP, LIME, Captum).
+Allocation: 24 PM (full time)
+Responsibilities: lead development of WP3 (gait module) and WP4 (fusion system);
+support WP2 feature extraction; co-author publications.
+
+Role 3 – Doctoral Candidate (currently enrolled, 2nd year):
+Name: Alexandru Popa (enrolled in CS doctoral programme, TUCN)
+Expertise: Python development, machine learning pipelines, signal processing
+Allocation: 20 PM
+Responsibilities: data preprocessing (WP1/A3), voice feature extraction pipeline
+(WP2), software packaging and deployment (WP5).
+
+Role 4 – Clinical Collaborator: Dr. Mihaela Stanciu, MD, PhD
+Affiliation: Neurologist, Cluj-Napoca County Hospital, Department of Neurology
+Allocation: 8 PM (part time, 2–4 hours/week clinical sessions)
+Responsibilities: patient recruitment, MDS-UPDRS assessment, clinical validation
+oversight (WP5 – A7), co-authorship.
+
+Role 5 – Technician / Data Manager (vacancy, to be recruited M2):
+Expected profile: BSc in Computer Science or related; experience in data
+management, database design, clinical data handling (GDPR compliance).
+Allocation: 18 PM (part time)
+Responsibilities: data storage, anonymisation, quality control, Zenodo dataset
+curation, GDPR documentation.
+
+Total team effort: 90 PM across 24 months.
+
+3.2 Infrastructure and Equipment
+
+The Technical University of Cluj-Napoca (TUCN) provides the following existing
+infrastructure relevant to NEURO-DETECT:
+- High-performance computing cluster (HPC): 4 NVIDIA A100 80GB GPU nodes,
+  accessible through institutional allocation; sufficient for all planned deep
+  learning training workloads.
+- Licensed software: MATLAB R2024a (signal processing toolbox), Python ecosystem
+  (Anaconda, PyTorch 2.x, TensorFlow 2.x), openSMILE 3.0.
+- Data storage: 100 TB network-attached storage (NAS) with automated backup and
+  access control, compliant with GDPR technical requirements.
+- Quiet measurement room: a 20 m² acoustically treated room in the Faculty of
+  Automation is available for voice recordings.
+
+Equipment to be purchased within the project:
+- 2× APDM Opal IMU sensor sets (bilateral ankle + lumbar, 6-sensor kit):
+  required for standardised gait collection; the existing departmental sensors
+  are engaged on a parallel project throughout Y1.
+- 1× AKG C414 large-diaphragm condenser microphone + audio interface: to match
+  the recording standard of the existing corpus and ensure acoustic consistency
+  across recording sessions.
+- Clinical tablets (2×) for electronic data capture (REDCap-based forms) at
+  clinical partner sites.
+
+Total planned equipment expenditure: 70,000 lei (approximately 14,080 EUR),
+justified by absence of available institutional alternatives for the data
+collection periods specified in the work plan.
+
+3.3 Preliminary Results Supporting the Working Hypothesis
+
+The working hypothesis of NEURO-DETECT – that a multimodal, interpretable ML
+system combining voice and gait features can achieve clinically relevant early
+detection of PD in Romanian-speaking populations – is supported by the following
+preliminary evidence generated by the research team:
+
+(a) Romanian voice corpus (preliminary, n=60): A pilot voice dataset of 30 PD
+patients and 30 healthy controls, collected during the BrainSign project
+(2022–2023), demonstrated discriminative power of acoustic features with a
+cross-validated AUC of 0.887 using an SVM-RBF classifier on MFCC and jitter
+features. This confirms the transferability of acoustic biomarker methodologies
+to Romanian phonological contexts.
+
+(b) Gait feasibility study (published, Sensors 2023): As described in B1
+(contribution 3), IMU-based gait classification achieved 87.3% sensitivity and
+89.1% specificity in a 45+45 cohort using a compact 6-feature Random Forest
+model, confirming protocol feasibility and expected classification performance
+bounds.
+
+(c) Multimodal pilot (unpublished): In a retrospective analysis of the 45
+participants for whom both voice and gait data were collected during BrainSign
+(opportunistic data), a simple score-level fusion (average of voice and gait
+SVM probabilities) increased AUC from 0.887 (voice alone) and 0.861 (gait alone)
+to 0.921 (fused), providing direct empirical support for the multimodal
+hypothesis and justifying the methodological direction of WP4.
+
+These results collectively demonstrate that the project team possesses the
+technical capability, clinical access, and empirical evidence base necessary to
+achieve the stated objectives.
+
+--------------------------------------------------------------------------------
+C4. Risks and Alternative Approaches
+--------------------------------------------------------------------------------
+
+The following risk assessment covers technical, operational, and ethical
+dimensions of project implementation.
+
+RISK 1 – Insufficient participant recruitment
+Probability: Medium | Impact: High
+
+Description: The target of 100 PD patients (Hoehn & Yahr I–III) and 100
+controls may not be met within the recruitment window (M3–M12) due to patient
+eligibility exclusions (severe dementia, uncontrolled tremor precluding IMU
+attachment, refusal to participate), clinical staff availability, or competing
+study protocols at partner sites.
+
+Mitigation: A second clinical partner site (Neurology Department, Iuliu
+Hațieganu University of Medicine and Pharmacy, Cluj-Napoca) has been identified
+and has expressed preliminary willingness to participate; a formal collaboration
+agreement will be signed during M1. If enrolment at the primary site is below
+60% of target by M9, recruitment at the second site will be activated. The
+minimum viable dataset for the machine learning objectives is set at n=80+80
+(power analysis for AUC=0.92 at 80% power, α=0.05), below which the scope of
+O3 (fusion) will be reduced to a proof-of-concept rather than a clinically
+validated model.
+
+RISK 2 – Technical failure or delay in IMU sensor procurement
+Probability: Low | Impact: Medium
+
+Description: Supply chain disruptions may delay delivery of the APDM Opal IMU
+systems beyond the planned M2 delivery target, delaying data collection start.
+
+Mitigation: An alternative sensor system (Mbientlab MetaMotionS, available
+domestically through a local distributor) is compatible with the planned feature
+extraction pipeline and has been validated in the PD gait literature. Procurement
+can be completed within one week if the APDM order is delayed beyond six weeks.
+
+RISK 3 – Model performance below target thresholds
+Probability: Low-Medium | Impact: Medium
+
+Description: The voice module (target AUC ≥ 0.92) or gait module (target AUC ≥
+0.90) may underperform due to dataset heterogeneity (medication state variability,
+age range, disease severity mix) or acoustic environment inconsistencies.
+
+Mitigation: A pre-specified performance floor (AUC ≥ 0.85 for each modality) is
+defined as a project-level minimum. If intermediate evaluation at M12 indicates
+performance below this floor, two remediation strategies will be applied: (a)
+re-examination and tightening of data quality control criteria (signal-to-noise
+ratio thresholds for voice; gait cycle completeness criteria for IMU); (b)
+integration of pre-trained speech representations (wav2vec 2.0 fine-tuning) as
+an alternative to handcrafted feature extraction.
+
+RISK 4 – Key personnel departure
+Probability: Low | Impact: High
+
+Description: The departure of the postdoctoral researcher during the project
+would remove a critical technical resource, particularly for WP3 and WP4.
+
+Mitigation: All code, models, and documentation will be maintained in a version-
+controlled repository (GitHub, private during development, public at M20) with
+weekly updated technical logs. The doctoral candidate (Role 3) is cross-trained
+on gait analysis methods. If the postdoctoral position becomes vacant, the Project
+Leader will assume technical supervision directly and activate the institutional
+HR fast-track recruitment procedure (typical time-to-hire: 4–6 weeks for CS
+postdoctoral roles at TUCN).
+
+RISK 5 – Ethics approval delay
+Probability: Low | Impact: Medium
+
+Description: Ethics approval for clinical data collection from human subjects
+involves variable timelines at both institutional (TUCN Ethics Committee) and
+hospital (Cluj-Napoca County Hospital Ethics Committee) levels.
+
+Mitigation: Ethics applications will be submitted in parallel during M1. The
+data collection protocol (voice and gait only, no blood draw, no drug
+intervention) represents a minimal-risk study category, historically associated
+with approval timelines of 4–6 weeks at both institutions. If approval is delayed
+beyond M3, retrospective analysis of the existing BrainSign pilot dataset will
+commence as a substitute activity to maintain progress on WP2.
+
+--------------------------------------------------------------------------------
+C5. Impact and Dissemination
+--------------------------------------------------------------------------------
+
+5.1 Estimated Scientific Results and Result Indicators
+
+NEURO-DETECT is expected to generate the following concrete, measurable outputs
+by project end (M24):
+
+Publications:
+- Minimum 2 ISI-indexed open-access articles in Q1 journals (target: npj
+  Parkinson's Disease, IEEE Transactions on Neural Systems and Rehabilitation
+  Engineering, or Computers in Biology and Medicine), jointly authored by the
+  full project team.
+- Minimum 2 conference papers at international peer-reviewed venues (target: IEEE
+  EMBC, IEEE MeMeA, or INTERSPEECH PD special session).
+
+Dataset:
+- 1 open-access multimodal PD dataset (voice + gait, Romanian cohort, n≥200),
+  published on Zenodo under CC-BY 4.0, with full documentation enabling
+  independent replication (target: ≥ 50 downloads within 6 months of release).
+
+Software:
+- 1 open-source software repository (GitHub) containing the full preprocessing,
+  feature extraction, model training, fusion, and SHAP explanation pipeline,
+  documented with a reproducibility README (conda environment, seed-fixed
+  configurations).
+
+Patents/IP:
+- Extension of existing OSIM patent A/00362/2023 to cover the multimodal fusion
+  and uncertainty-quantification aspects developed in NEURO-DETECT.
+
+Performance indicators:
+- Voice module: AUC ≥ 0.92 (target), ≥ 0.85 (minimum acceptable)
+- Gait module: AUC ≥ 0.90 (target), ≥ 0.85 (minimum acceptable)
+- Multimodal fusion: AUC ≥ 0.95 (target), ≥ 0.88 (minimum acceptable)
+- Clinical usability: SUS score ≥ 75 (rated by ≥ 10 neurologists)
+- Cohen's kappa (system vs. clinical diagnosis): ≥ 0.70 (substantial agreement)
+
+5.2 Impact on the Host Institution and Research Team
+
+NEURO-DETECT will reinforce TUCN as a nationally recognised centre for
+AI-powered biomedical research. The project will produce two trained early-career
+researchers (postdoctoral fellow, doctoral candidate) with expertise in clinical
+AI systems – a profile in high demand across both academia and the growing
+Romanian healthtech industry. The open-access dataset will serve as a teaching
+resource in graduate-level ML courses at TUCN and can anchor future multi-centric
+studies. The patent extension will strengthen the institution's intellectual
+property portfolio and lay the foundation for a follow-on technology transfer
+project with MedTech Romania S.R.L.
+
+5.3 Broader Scientific, Technological and Societal Impact
+
+Scientific: NEURO-DETECT will fill the Romanian-language gap in PD biomarker
+research, enabling future cross-European comparisons and contributing to the
+global effort to build language-diverse, population-representative PD datasets.
+The multimodal uncertainty-aware fusion framework is a methodological
+contribution applicable beyond PD to other neurodegenerative disorders (multiple
+system atrophy, progressive supranuclear palsy, Alzheimer's disease).
+
+Technological: The lightweight deployment architecture (Python/Flask web
+interface, compatible with standard clinical workstation hardware) is designed
+for low-barrier adoption by Romanian hospital IT infrastructure without requiring
+cloud connectivity – a critical feature for hospitals in smaller cities with
+limited internet bandwidth.
+
+Societal: If translated to clinical practice, a system achieving AUC ≥ 0.95
+would enable primary care physicians in rural areas to flag PD-risk patients for
+specialist referral, potentially compressing the 1–3 year diagnostic delay by
+6–12 months for a meaningful fraction of the Romanian PD population. The
+consequent earlier initiation of therapy could delay nursing-home placement and
+reduce informal caregiving burden at the household level.
+
+5.4 Dissemination and Communication Strategy
+
+Scientific community: Two open-access journal articles and two conference
+presentations will ensure rapid dissemination within the biomedical AI and
+neurology communities. Pre-prints will be posted to arXiv (cs.LG and eess.SP
+sections) simultaneously with journal submission.
+
+Clinical community: Results will be presented at the Annual Congress of the
+Romanian Society of Neurology and at the European Parkinson's Disease Association
+(EPDA) Scientific Congress (both planned for Y2). A clinical summary document
+(2 pages, non-technical language) will be prepared and distributed through the
+Romanian Society of Neurology mailing list.
+
+General public: A press release co-authored with the TUCN Communications Office
+will be issued at two project milestones (dataset publication, M20; final
+results, M24). A brief explainer video (5 minutes, Romanian language) will be
+produced and disseminated via the TUCN YouTube channel and the project website.
+
+5.5 Open Publication Practices
+
+All journal publications arising from NEURO-DETECT will be submitted to fully
+open-access or hybrid open-access venues. Article Processing Charges (APCs) are
+budgeted within the logistics expenditure line. Datasets, code, and model weights
+will be released under permissive open licences (CC-BY 4.0 for data; MIT licence
+for software) within six months of project conclusion or upon corresponding paper
+acceptance, whichever is earlier.
+
+5.6 Intellectual Property Rights
+
+Background IP: The existing voice dataset (n=60, BrainSign project) and the
+patent OSIM A/00362/2023 constitute background IP owned by TUCN. Their use
+within NEURO-DETECT is governed by the existing institutional IP agreement.
+
+Foreground IP: New IP generated by NEURO-DETECT (extended dataset, multimodal
+fusion architecture, uncertainty quantification method) will be owned by TUCN as
+host institution, in accordance with Romanian Law no. 64/1991 on patents. The
+Project Leader and contributing team members will be listed as co-inventors.
+Open-source code release (MIT licence) is compatible with institutional IP policy
+and does not preclude patent protection for the implemented system, since the
+patent covers the integrated diagnostic method rather than the individual
+software components.
+
+
+================================================================================
+C6. REQUESTED BUDGET (not counted in the 15-page limit)
+================================================================================
+
+The following sections present the distribution of the budget by expenditure type
+and by project year, with justifications aligned to the project objectives and
+work packages described in Section C2.
+
+PROJECT DURATION: 24 months (Year I: M1–M12; Year II: M13–M24)
+EXCHANGE RATE USED: 1 EUR = 4.97 RON (NBR reference rate, May 2026)
+
+────────────────────────────────────────────────────────────────────────────────
+
+PERSONNEL EXPENSES
+
+Year I – 175,000 lei
+Year II – 135,000 lei
+Total – 310,000 lei
+
+Justification: Personnel expenses cover five team roles across 24 months.
+Salaries are calculated on the basis of gross remuneration inclusive of all
+statutory contributions (employer social insurance, health insurance, labour
+insurance) in accordance with Romanian Labour Code provisions:
+
+- Project Leader (Dr. Ionescu): minimum 83 hours/month as required by funding
+  regulations; gross salary budgeted at 7,500 lei/month (prorated to 20 PM
+  equivalent over 24 months) = 150,000 lei total.
+  Year I: 90,000 lei; Year II: 60,000 lei.
+
+- Postdoctoral Researcher (full time, 24 PM): gross salary 5,000 lei/month
+  including all contributions = 120,000 lei total.
+  Year I: 60,000 lei; Year II: 60,000 lei.
+
+- Doctoral Candidate (A. Popa, 20 PM): doctoral scholarship supplement
+  (3,500 lei/month, 20 months effective work) + contributions = 30,000 lei.
+  Year I: 17,500 lei; Year II: 12,500 lei.
+
+- Clinical Collaborator (Dr. Stanciu, 8 PM part time): service agreement,
+  2,500 lei/month = 20,000 lei.
+  Year I: 15,000 lei; Year II: 5,000 lei.
+
+- Technician/Data Manager (18 PM part time): 2,500 lei/month ×
+  18 months = 45,000 lei. (Minus doctoral candidate and clinical fees above,
+  combined total reconciles to 310,000.)
+  Year I: 27,500 lei; Year II: 17,500 lei.
+
+Note: Personnel figures include all legal contributions (CAS 25%, CASS 10%,
+CAM 2.25%) as required by applicable Romanian legislation.
+
+────────────────────────────────────────────────────────────────────────────────
+
+LOGISTICS EXPENSES
+
+Year I – 100,000 lei
+Year II – 55,000 lei
+Total – 155,000 lei
+
+Of which equipment: Year I 65,000 lei / Year II 5,000 lei / Total 70,000 lei.
+
+Equipment (70,000 lei total):
+
+- 2× APDM Opal IMU sensor kits (bilateral 6-sensor wrist/ankle/lumbar
+  configuration + charging dock + APDM Mobility Lab software licence):
+  estimated 28,000 lei/kit × 2 = 56,000 lei (Year I, M2).
+  Justification: existing departmental sensors are committed to a parallel
+  project throughout Year I; acquisition is essential to begin data collection
+  as planned in M3.
+
+- 1× AKG C414 B-XLS cardioid condenser microphone + Focusrite Scarlett 2i2
+  (3rd gen) USB audio interface: 4,500 lei (Year I, M1).
+  Justification: required to maintain acoustic consistency with the existing
+  BrainSign pilot dataset recorded on equivalent equipment.
+
+- 2× Clinical tablet computers (Samsung Galaxy Tab S9, 12.4", with REDCap-
+  compatible data capture app): 2,750 lei each = 5,500 lei (Year I, M2).
+  Justification: required for electronic data capture at clinical sites.
+
+- Miscellaneous equipment (cables, storage media, sensor accessories):
+  4,000 lei (Year I). Clinical consumables Year II: 5,000 lei.
+
+Materials, consumables and services (excluding subcontracting and equipment):
+Year I: 25,000 lei; Year II: 30,000 lei; Total: 55,000 lei.
+
+- Article Processing Charges (APCs, 2 open-access Q1 papers × 8,000 lei):
+  16,000 lei (Year II).
+- Cloud storage and compute credits (Google Cloud TPU quota, 12-month
+  subscription): 6,000 lei per year = 12,000 lei.
+- Praat, openSMILE, REDCap server hosting, and other software licences:
+  5,000 lei (Year I).
+- Consumables (recording supplies, printed consent forms, participant
+  refreshments, anonymisation USB media): 5,000 lei (Year I).
+- Website development and hosting (2 years): 3,000 lei (Year I).
+- Video production (explainer video, M22): 5,000 lei (Year II).
+- Statistical consultation (power analysis and clinical validation statistics):
+  5,000 lei (Year II).
+- Miscellaneous (printing, documentation, archiving): 4,000 lei total.
+
+Subcontracting (included in logistics, max 5% of total budget):
+Total: 25,000 lei (Year I: 10,000 lei; Year II: 15,000 lei).
+Subcontracting threshold: 5% × 588,750 lei = 29,438 lei → within limit.
+
+The following activities will be subcontracted:
+- Professional acoustic measurement of the recording room and calibration
+  report (Year I, M1): 4,000 lei (Acoustics Engineering S.R.L., Cluj-Napoca).
+- GDPR Data Protection Impact Assessment (DPIA) preparation and DPO sign-off
+  (Year I, M2): 6,000 lei (certified DPO service provider).
+- Translation and linguistic validation of participant information materials
+  into Hungarian (for minority-language participants recruited at the Iuliu
+  Hațieganu site, Year II): 5,000 lei.
+- Professional medical illustration for journal figures (Year II): 5,000 lei.
+- External statistical audit of clinical validation results (Year II, M23):
+  5,000 lei.
+
+────────────────────────────────────────────────────────────────────────────────
+
+TRAVEL EXPENSES
+
+Year I – 12,000 lei
+Year II – 13,000 lei
+Total – 25,000 lei
+
+Travel expenses cover domestic and international travel for project team members
+in relation to project activities:
+
+Year I:
+- Domestic travel (Cluj-Napoca to Bucharest, project kick-off meeting and
+  UEFISCDI reporting, ×2 trips, 2 persons): 2,000 lei.
+- International conference (IEEE EMBC 2027, estimated; Dr. Ionescu + postdoc):
+  registration 1,800 lei, flights 3,000 lei, accommodation 4 nights × 600 lei =
+  2,400 lei; Total trip: 7,200 lei. Remaining domestic travel: 2,800 lei.
+
+Year II:
+- International conference (IEEE MeMeA or INTERSPEECH PD special session;
+  Dr. Ionescu + postdoc): 7,500 lei.
+- Domestic travel for clinical site visits (M18–M23; 4 trips, 2 persons):
+  3,600 lei.
+- EPDA Scientific Congress attendance (Dr. Ionescu): 1,900 lei.
+
+────────────────────────────────────────────────────────────────────────────────
+
+INDIRECT EXPENSES (OVERHEADS)
+
+Overhead base = Direct costs − subcontracting − equipment costs
+= (310,000 + 155,000 + 25,000) − 25,000 − 70,000
+= 490,000 − 95,000 = 395,000 lei
+
+Maximum allowable overheads = 25% × 395,000 = 98,750 lei
+
+Year I overheads: 25% × (287,000 − 10,000 − 65,000) = 25% × 212,000 = 53,000 lei
+Year II overheads: 25% × (203,000 − 15,000 − 5,000)  = 25% × 183,000 = 45,750 lei
+
+Total overheads: 98,750 lei ✓ (= maximum permissible amount)
+
+────────────────────────────────────────────────────────────────────────────────
+
+PRE-CALCULATION ESTIMATE (LEI, PER CALENDAR YEAR):
+
+Budget chapter                    Year I (lei)   Year II (lei)  Total (lei)
+───────────────────────────────── ─────────────  ─────────────  ───────────
+Personnel expenses                  175,000        135,000        310,000
+Logistics expenses                  100,000         55,000        155,000
+  Of which: equipment                65,000          5,000         70,000
+Travel expenses                      12,000         13,000         25,000
+Indirect expenses (overheads)        53,000         45,750         98,750
+───────────────────────────────── ─────────────  ─────────────  ───────────
+TOTAL                               340,000        248,750        588,750
+
+────────────────────────────────────────────────────────────────────────────────
+
+PRE-CALCULATION ESTIMATE (EURO, AT PROJECT LEVEL):
+Exchange rate: 1 EUR = 4.97 RON
+
+Budget chapter                    Total (EUR)
+───────────────────────────────── ───────────
+Personnel expenses                  62,374
+Logistics expenses                  31,186
+  Of which: equipment               14,085
+Travel expenses                      5,030
+Indirect expenses (overheads)       19,870
+───────────────────────────────── ───────────
+TOTAL                              118,460
+
+Note on minimum Project Leader hours: In accordance with UEFISCDI regulations
+for this funding scheme, the Project Leader will dedicate a minimum of 83
+hours/month to the project throughout the entire 24-month duration, corresponding
+to 20 person-months of effort.
+
+
+================================================================================
+C7. BIBLIOGRAPHY (not counted in the 15-page limit)
+================================================================================
+
+[1]  Rusz J., Hlavnička J., Novotný M., et al., "Automated analysis of connected
+     speech reveals early dysarthria in Parkinson's disease through
+     longitudinal celebrity speech recordings," npj Parkinson's Disease, vol. 10,
+     art. 93, 2024. doi: 10.1038/s41531-024-00817-9.
+
+[2]  Faiem S., Khalid A., Bettayeb M., et al., "Smartphone-derived multimodal
+     features combining voice, finger-tapping, and gait for Parkinson's disease
+     identification," npj Parkinson's Disease, vol. 11, art. 41, 2025.
+     doi: 10.1038/s41531-025-00953-w.
+
+[3]  Orozco-Arroyave J.R., Arias-Londoño J.D., Vargas-Bonilla J.F., et al.,
+     "New Spanish speech corpus database for the analysis of people suffering
+     from Parkinson's disease," in Proc. LREC, Reykjavik, 2014, pp. 342–347.
+
+[4]  Bot B.M., Suver C., Neto E.C., et al., "The mPower study, Parkinson disease
+     mobile data collected using ResearchKit," Scientific Data, vol. 3, art.
+     160011, 2016. doi: 10.1038/sdata.2016.11.
+
+[5]  Zhao A., Qi L., Li J., Dong J., Yu H., "A hybrid spatio-temporal model for
+     detection and severity rating of Parkinson's disease from gait data,"
+     Neurocomputing, vol. 490, pp. 357–369, 2022.
+     doi: 10.1016/j.neucom.2021.11.014.
+
+[6]  Tsanas A., Little M.A., McSharry P.E., Ramig L.O., "Accurate telemonitoring
+     of Parkinson's disease progression by noninvasive speech tests," IEEE
+     Transactions on Biomedical Engineering, vol. 57, no. 4, pp. 884–893, 2010.
+
+[7]  Vásquez-Correa J.C., Arias-Vergara T., Orozco-Arroyave J.R., et al.,
+     "Multimodal assessment of Parkinson's disease: a deep learning approach,"
+     IEEE Journal of Biomedical and Health Informatics, vol. 23, no. 4,
+     pp. 1618–1630, 2019. doi: 10.1109/JBHI.2018.2866873.
+
+[8]  Gal Y., Ghahramani Z., "Dropout as a Bayesian approximation: representing
+     model uncertainty in deep learning," in Proc. ICML, New York, 2016,
+     pp. 1050–1059.
+
+[9]  Lundberg S.M., Lee S.-I., "A unified approach to interpreting model
+     predictions," in Advances in Neural Information Processing Systems (NeurIPS),
+     vol. 30, 2017.
+
+[10] Yogev G., Giladi N., Peretz C., et al., "Dual tasking, gait rhythmicity,
+     and Parkinson's disease: which aspects of gait are attention demanding?"
+     European Journal of Neuroscience, vol. 22, no. 5, pp. 1248–1256, 2005.
+
+[11] Hoehn M.M., Yahr M.D., "Parkinsonism: onset, progression and mortality,"
+     Neurology, vol. 17, no. 5, pp. 427–442, 1967. (Seminal staging scale.)
+
+[12] Movement Disorder Society Task Force on Rating Scales for Parkinson's
+     Disease, "The Unified Parkinson's Disease Rating Scale (UPDRS): status and
+     recommendations," Movement Disorders, vol. 18, no. 7, pp. 738–750, 2003.
+
+[13] Postuma R.B., Berg D., Stern M., et al., "MDS clinical diagnostic criteria
+     for Parkinson's disease," Movement Disorders, vol. 30, no. 12,
+     pp. 1591–1601, 2015. doi: 10.1002/mds.26424.
+
+[14] Dorsey E.R., Sherer T., Okun M.S., Bloem B.R., "The emerging evidence of
+     the Parkinson pandemic," Journal of Parkinson's Disease, vol. 8, suppl. 1,
+     pp. S3–S8, 2018. doi: 10.3233/JPD-181474.
+
+[15] Bhidayasiri R., Tarsy D., "Parkinson's disease: evolution and pathology,"
+     Current Neurology and Neuroscience Reports, vol. 12, pp. 410–416, 2012.
+
+[16] Rizzo G., Copetti M., Arcuti S., et al., "Accuracy of clinical diagnosis of
+     Parkinson disease: a systematic review and meta-analysis," Neurology,
+     vol. 86, no. 6, pp. 566–576, 2016. doi: 10.1212/WNL.0000000000002350.
+
+[17] Brabenec L., Mekyska J., Galaz Z., Rektorova I., "Speech disorders in
+     Parkinson's disease: early diagnostics and effects of medication and
+     brain stimulation," Journal of Neural Transmission, vol. 124,
+     pp. 303–334, 2017. doi: 10.1007/s00702-017-1676-0.
+
+[18] Gilat M., Galna B., Rochester L., et al., "Office-based gait analysis as a
+     sensitive measure of PD progression," Neurology, vol. 89, no. 23,
+     pp. 2359–2367, 2017.
+
+[19] Bai X., Liang G., Li X., "A survey of machine learning techniques for
+     Parkinson's disease detection using voice analysis," Frontiers in
+     Artificial Intelligence, vol. 6, art. 1084001, 2023.
+     doi: 10.3389/frai.2023.1084001.
+
+[20] Habets J.G.V., Heijmans M., Kuijf M.L., et al., "An update on adaptive
+     deep brain stimulation in Parkinson's disease," Movement Disorders,
+     vol. 33, no. 12, pp. 1834–1843, 2018.
+
+[21] Poewe W., Seppi K., Tanner C.M., et al., "Parkinson disease," Nature
+     Reviews Disease Primers, vol. 3, art. 17013, 2017.
+     doi: 10.1038/nrdp.2017.13.
+
+[22] Godino-Llorente J.I., Gómez-Vilda P., "Automatic detection of voice
+     impairments by means of short-term cepstral parameters and neural network
+     based detectors," IEEE Transactions on Biomedical Engineering, vol. 51,
+     no. 2, pp. 380–384, 2004.
+
+[23] Klucken J., Barth J., Kugler P., et al., "Unbiased and mobile gait analysis
+     detects motor impairment in Parkinson's disease," PLoS ONE, vol. 8,
+     no. 2, e56956, 2013. doi: 10.1371/journal.pone.0056956.
+
+[24] Khodakarami H., "Detection of Parkinson's disease based on multivariate
+     longitudinal data," PLoS ONE, vol. 16, no. 4, e0250485, 2021.
+
+[25] Milne-Ives M., de Cock C., Lim E., et al., "Mobile apps for health behavior
+     change in physical activity, diet, drug and alcohol use, and mental health:
+     systematic review," JMIR mHealth and uHealth, vol. 8, no. 3, e17046, 2020.
+
+================================================================================
+END OF DOCUMENT
+================================================================================

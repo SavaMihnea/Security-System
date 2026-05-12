@@ -312,95 +312,11 @@
 </div>
 
 <!-- Settings Modal -->
-<div id="settingsModal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.82);align-items:flex-start;justify-content:center;padding:max(20px,calc(50vh - 300px)) 20px 40px;overflow-y:auto;">
-  <div class="vox-card tac" style="width:100%;max-width:800px;padding:40px 44px 36px;position:relative;min-height:560px;">
-    <span class="tc-tr"></span><span class="tc-bl"></span>
-
-    <!-- Header -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;">
-      <div>
-        <div class="page-eyebrow" style="margin:0 0 8px;font-size:0.72rem;letter-spacing:0.18em;">Account Settings</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:1.2rem;font-weight:700;letter-spacing:0.08em;color:var(--text-1);" id="settingsUsername"></div>
-      </div>
-      <button class="vox-nav-logout" style="padding:10px 18px;font-size:0.9rem;" onclick="closeSettingsModal()">&#10005;</button>
-    </div>
-
-    <!-- Tabs -->
-    <div class="d-flex gap-3 mb-5" id="settingsTabs">
-      <button class="vox-filter-btn active" id="tabAccounts" onclick="switchTab('accounts')"
-              style="font-size:0.82rem;padding:10px 26px;letter-spacing:0.1em;">Accounts</button>
-      <button class="vox-filter-btn active" id="tabPassword" onclick="switchTab('password')"
-              style="font-size:0.82rem;padding:10px 26px;letter-spacing:0.1em;">Password</button>
-    </div>
-
-    <!-- ACCOUNTS TAB -->
-    <div id="panelAccounts" style="display:none;">
-      <div class="page-eyebrow mb-3" style="font-size:0.72rem;letter-spacing:0.18em;">User Accounts</div>
-      <div id="userList" style="margin-bottom:36px;"></div>
-
-      <div class="page-eyebrow mb-3" style="font-size:0.72rem;letter-spacing:0.18em;">Create New Account</div>
-      <div class="mb-3">
-        <label class="login-label" style="font-size:0.74rem;margin-bottom:8px;display:block;">Username</label>
-        <input type="text" id="newUserUsername" class="form-control form-control-dark"
-               placeholder="Enter username" autocomplete="off"
-               style="font-size:0.92rem;padding:11px 14px;">
-      </div>
-      <div class="mb-4">
-        <label class="login-label" style="font-size:0.74rem;margin-bottom:8px;display:block;">
-          Password <span style="color:var(--text-3);font-size:0.68rem;">(minimum 8 characters)</span>
-        </label>
-        <input type="password" id="newUserPassword" class="form-control form-control-dark"
-               placeholder="Enter password" autocomplete="new-password"
-               style="font-size:0.92rem;padding:11px 14px;">
-      </div>
-      <div class="d-flex justify-content-end">
-        <button class="btn-arm btn-arm-away" style="font-size:0.8rem;padding:11px 28px;letter-spacing:0.08em;" onclick="createUser()">Create Account</button>
-      </div>
-      <div id="accountsError" class="login-error-msg d-none" style="margin-top:12px;font-size:0.8rem;"></div>
-    </div>
-
-    <!-- PASSWORD TAB -->
-    <div id="panelPassword">
-      <div id="pwCurrentRow" class="mb-4">
-        <label class="login-label" style="font-size:0.74rem;margin-bottom:8px;display:block;">Current Password</label>
-        <input type="password" id="pwCurrent" class="form-control form-control-dark"
-               autocomplete="current-password" style="font-size:0.92rem;padding:11px 14px;">
-      </div>
-      <div class="mb-4">
-        <label class="login-label" style="font-size:0.74rem;margin-bottom:8px;display:block;">New Password</label>
-        <input type="password" id="pwNew" class="form-control form-control-dark"
-               autocomplete="new-password" style="font-size:0.92rem;padding:11px 14px;">
-      </div>
-      <div class="mb-4">
-        <label class="login-label" style="font-size:0.74rem;margin-bottom:8px;display:block;">Confirm New Password</label>
-        <input type="password" id="pwConfirm" class="form-control form-control-dark"
-               autocomplete="new-password" style="font-size:0.92rem;padding:11px 14px;">
-      </div>
-      <div id="pwError" class="login-error-msg d-none" style="margin-bottom:16px;font-size:0.8rem;"></div>
-      <div class="d-flex gap-3 justify-content-end">
-        <button class="vox-filter-btn" style="font-size:0.8rem;padding:10px 22px;" onclick="closeSettingsModal()">Cancel</button>
-        <button class="btn-arm btn-arm-away" style="font-size:0.8rem;padding:11px 28px;" onclick="submitPasswordChange()">Update Password</button>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- Toast -->
-<div class="toast-container position-fixed bottom-0 end-0 p-3">
-  <div id="alertToast" class="toast text-bg-danger" role="alert">
-    <div class="toast-header text-bg-danger">
-      <strong class="me-auto">ALERT</strong>
-      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
-    </div>
-    <div class="toast-body" id="alertToastBody"></div>
-  </div>
-</div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
 <script src="assets/js/api.js"></script>
+<script src="assets/js/settings.js"></script>
 <script src="assets/js/dashboard.js"></script>
 </body>
 </html>

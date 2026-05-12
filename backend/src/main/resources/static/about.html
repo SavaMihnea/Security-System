@@ -22,7 +22,7 @@
     <a href="/events"    class="vox-nav-link">Events</a>
     <a href="/help"      class="vox-nav-link">Help</a>
     <a href="/about"     class="vox-nav-link active">About</a>
-    <button id="btnSettings" class="vox-nav-logout" onclick="window.location.href='/dashboard?settings=open'" style="background:none;">&#9881;</button>
+    <button id="btnSettings" class="vox-nav-logout" onclick="openSettingsModal()" style="background:none;">&#9881;</button>
     <button class="btn-theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme"></button>
     <button class="vox-nav-logout" onclick="logout()">Logout</button>
   </div>
@@ -69,7 +69,7 @@
 
   <!-- OPERATIONAL STATISTICS -->
   <div class="page-eyebrow mb-3">Operational Statistics - Projected Impact</div>
-  <div class="row g-3 mb-5">
+  <div class="row g-3" style="margin-bottom:20px;">
     <div class="col-6 col-md-3">
       <div class="stat-tile tac">
         <span class="tc-tr"></span><span class="tc-bl"></span>
@@ -101,7 +101,7 @@
   </div>
 
   <!-- OPERATION TIMELINE -->
-  <div class="page-eyebrow mb-4">Operation Timeline</div>
+  <div class="page-eyebrow mb-3">Operation Timeline</div>
   <div class="vox-card tac mb-5" style="padding:32px 36px;position:relative;overflow:hidden;">
     <span class="tc-tr"></span><span class="tc-bl"></span>
     <span class="about-tl-glow"></span>
@@ -163,6 +163,7 @@
 
 </div>
 <script src="assets/js/api.js"></script>
+<script src="assets/js/settings.js"></script>
 <script>
   if (!isAdmin()) { const g = document.getElementById('btnSettings'); if (g) g.style.display = 'none'; }
 </script>

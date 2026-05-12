@@ -22,7 +22,7 @@
     <a href="/events"    class="vox-nav-link active">Events</a>
     <a href="/help"      class="vox-nav-link">Help</a>
     <a href="/about"     class="vox-nav-link">About</a>
-    <button id="btnSettings" class="vox-nav-logout" onclick="window.location.href='/dashboard?settings=open'" style="background:none;">&#9881;</button>
+    <button id="btnSettings" class="vox-nav-logout" onclick="openSettingsModal()" style="background:none;">&#9881;</button>
     <button class="btn-theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme"></button>
     <button class="vox-nav-logout" onclick="logout()">Logout</button>
   </div>
@@ -112,6 +112,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="assets/js/api.js"></script>
+<script src="assets/js/settings.js"></script>
 <script>
   requireAuth();
   if (!isAdmin()) { const g = document.getElementById('btnSettings'); if (g) g.style.display = 'none'; }
